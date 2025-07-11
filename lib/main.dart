@@ -49,27 +49,29 @@ Future<void> main() async {
     return true;
   };*/
 
-  if(GetPlatform.isWeb){
+  /*if(GetPlatform.isWeb){
     await Firebase.initializeApp(options: const FirebaseOptions(
         apiKey: "AIzaSyD0Z911mOoWCVkeGdjhIKwWFPRgvd6ZyAw",
         authDomain: "stackmart-500c7.firebaseapp.com",
-        projectId: "stackmart-500c7",
+        projectId: "bqfresh-68d58",
         storageBucket: "stackmart-500c7.appspot.com",
-        messagingSenderId: "491987943015",
-        appId: "1:491987943015:web:d8bc7ab8dbc9991c8f1ec2"
+        messagingSenderId: "548787113722",
+        appId: "1:548787113722:ios:061fafc3e6d184988c4343"
     ));
   } else if(GetPlatform.isAndroid) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
         apiKey: "AIzaSyCc3OCd5I2xSlnftZ4bFAbuCzMhgQHLivA",
-        appId: "1:491987943015:android:a6fb4303cc4bf3d18f1ec2",
-        messagingSenderId: "491987943015",
-        projectId: "stackmart-500c7",
+        appId: "1:548787113722:android:011c304c8b66a96d8c4343",
+        messagingSenderId: "548787113722",
+        projectId: "bqfresh-68d58",
       ),
     );
   } else {
     await Firebase.initializeApp();
-  }
+  }*/
+
+  await Firebase.initializeApp();
 
   Map<String, Map<String, String>> languages = await di.init();
 
