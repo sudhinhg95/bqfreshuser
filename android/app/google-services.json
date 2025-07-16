@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:548787113722:android:011c304c8b66a96d8c4343",
+        "mobilesdk_app_id": "1:548787113722:android:d89057ccfdaf18528c4343",
         "android_client_info": {
-          "package_name": "com.app.bqfresh"
+          "package_name": "com.bqfresh.app"
         }
       },
       "oauth_client": [],
