@@ -187,29 +187,36 @@ class _MyAppState extends State<MyApp> {
               dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},
             ),
             theme: themeController.darkTheme ? dark() : light(),
-            locale: localizeController.locale,
-            translations: Messages(languages: widget.languages),
-            fallbackLocale: Locale(AppConstants.languages[0].languageCode!, AppConstants.languages[0].countryCode),
+      locale: localizeController.locale,
+      translations: Messages(languages: widget.languages),
+      fallbackLocale: AppConstants.languages.isNotEmpty
+        ? Locale(AppConstants.languages[0].languageCode ?? 'en', AppConstants.languages[0].countryCode ?? 'US')
+        : const Locale('en', 'US'),
             initialRoute: GetPlatform.isWeb ? RouteHelper.getInitialRoute() : RouteHelper.getSplashRoute(widget.body),
             getPages: RouteHelper.routes,
             defaultTransition: Transition.topLevel,
             transitionDuration: const Duration(milliseconds: 500),
-            builder: (BuildContext context, widget) {
-              return MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1)), child: Material(
-                child: Stack(children: [
-
-                  widget!,
-
-                  GetBuilder<SplashController>(builder: (splashController){
-                    if(!splashController.savedCookiesData && !splashController.getAcceptCookiesStatus(splashController.configModel != null ? splashController.configModel!.cookiesText! : '')){
-                      return ResponsiveHelper.isWeb() ? const Align(alignment: Alignment.bottomCenter, child: CookiesView()) : const SizedBox();
-                    }else{
-                      return const SizedBox();
-                    }
-                  })
-                ]),
-              ));
-          },
+            builder: (BuildContext context, Widget? child) {
+              final Widget displayedChild = child ?? const SizedBox();
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1)),
+                child: Material(
+                  child: Stack(
+                    children: [
+                      displayedChild,
+                      GetBuilder<SplashController>(builder: (splashController) {
+                        final cookiesText = splashController.configModel?.cookiesText ?? '';
+                        if (!splashController.savedCookiesData && !splashController.getAcceptCookiesStatus(cookiesText)) {
+                          return ResponsiveHelper.isWeb() ? const Align(alignment: Alignment.bottomCenter, child: CookiesView()) : const SizedBox();
+                        } else {
+                          return const SizedBox();
+                        }
+                      })
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         });
       });
