@@ -92,11 +92,13 @@ class MedicineItemCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: isShop ? CrossAxisAlignment.center : CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
 
-                      Text(
-                        item.storeName ?? '',
-                        maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
-                      ),
+                      // Show item description instead of store/vendor name (single-line)
+                      if (item.description != null && item.description!.isNotEmpty)
+                        Text(
+                          item.description!,
+                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
+                        ),
 
                       Text(item.name ?? '', style: robotoBold,
                         maxLines: 1, overflow: TextOverflow.ellipsis,

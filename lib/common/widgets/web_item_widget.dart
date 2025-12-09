@@ -113,7 +113,8 @@ class WebItemWidget extends StatelessWidget {
                           child: CustomImage(
                             isHovered: hovered,
                             image: '${isStore ? store != null ? store!.logoFullUrl : '' : item!.imageFullUrl}',
-                            height: desktop ? 140 : length == null ? 100 : 65, width: desktop ? isStore ? 275 : 300 : 80, fit: BoxFit.cover,
+                            // Increased image size for listings (desktop larger)
+                            height: desktop ? 200 : length == null ? 120 : 80, width: desktop ? (isStore ? 320 : 360) : 80, fit: BoxFit.cover,
                           ),
                         ),
 
@@ -146,7 +147,7 @@ class WebItemWidget extends StatelessWidget {
                               Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
                                 Text(
                                   isStore ? store!.name! : item!.name!,
-                                  style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall),
+                                  style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault),
                                   maxLines: desktop ? 1 : 1, overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(width: Dimensions.paddingSizeExtraSmall),
@@ -169,8 +170,9 @@ class WebItemWidget extends StatelessWidget {
                                 ),
                               ) : const SizedBox(),
 
-                              (isStore ? store!.address != null : item!.storeName != null) ? Text(
-                                isStore ? store!.address ?? '' : item!.storeName ?? '',
+                              // Show item description in place of store name for item entries; for stores show address.
+                              (isStore ? store!.address != null : (item!.description != null && item!.description!.isNotEmpty)) ? Text(
+                                isStore ? store!.address ?? '' : item!.description ?? '',
                                 style: robotoRegular.copyWith(
                                   fontWeight: FontWeight.w300,
                                   fontSize: Dimensions.fontSizeOverSmall,
@@ -178,7 +180,7 @@ class WebItemWidget extends StatelessWidget {
                                 ),
                                 maxLines: 1, overflow: TextOverflow.ellipsis,
                               ) : const SizedBox(),
-                              SizedBox(height: ((desktop || isStore) && (isStore ? store!.address != null : item!.storeName != null)) ? 5 : 0),
+                              SizedBox(height: ((desktop || isStore) && (isStore ? store!.address != null : false)) ? 5 : 0),
 
                               isStore ? RatingBar(
                                 rating: isStore ? store!.avgRating : item!.avgRating, size: desktop ? 15 : 12,

@@ -42,6 +42,8 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
   GoogleMapController? _controller;
   bool _isLoading = true;
   Set<Marker> _markers = HashSet<Marker>();
+  Set<Polyline> _polylines = HashSet<Polyline>();
+  LatLng? _lastDeliveryLatLng;
   Timer? _timer;
   bool showChatPermission = true;
   bool isHovered = false;
@@ -120,6 +122,7 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
                   minMaxZoomPreference: const MinMaxZoomPreference(0, 16),
                   zoomControlsEnabled: false,
                   markers: _markers,
+                  polylines: _polylines,
                   onMapCreated: (GoogleMapController controller) {
                     _controller = controller;
                     _isLoading = false;
@@ -136,6 +139,34 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
                   style: Get.isDarkMode ? Get.find<ThemeController>().darkMap : Get.find<ThemeController>().lightMap,
                 ),
               ),
+
+              // Ensure marker/polyline updates when track data changes (timer updates)
+              // If controller is ready and deliveryMan location changed, update map visuals
+              Builder(builder: (_) {
+                // Guard against nulls captured by the closure: ensure track and deliveryMan exist before access
+                if (_controller != null && track != null && track.deliveryMan != null) {
+                  final dm = track.deliveryMan!;
+                  try {
+                    final LatLng currentDeliveryLatLng = LatLng(double.parse(dm.lat ?? '0'), double.parse(dm.lng ?? '0'));
+                    // Only update map when coordinate changed to avoid excessive redraws
+                    if (_lastDeliveryLatLng == null || _lastDeliveryLatLng!.latitude != currentDeliveryLatLng.latitude || _lastDeliveryLatLng!.longitude != currentDeliveryLatLng.longitude) {
+                      _lastDeliveryLatLng = currentDeliveryLatLng;
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setMarker(
+                          track!.orderType == 'parcel' ? Store(latitude: track.receiverDetails!.latitude, longitude: track.receiverDetails!.longitude,
+                              address: track.receiverDetails!.address, name: track.receiverDetails!.contactPersonName) : track.store, dm,
+                          track.orderType == 'take_away' ? Get.find<LocationController>().position.latitude == 0 ? track.deliveryAddress : AddressModel(
+                            latitude: Get.find<LocationController>().position.latitude.toString(),
+                            longitude: Get.find<LocationController>().position.longitude.toString(),
+                            address: Get.find<LocationController>().address,
+                          ) : track.deliveryAddress, track.orderType == 'take_away', track.orderType == 'parcel', track.moduleType == 'food',
+                        );
+                      });
+                    }
+                  } catch (_) {}
+                }
+                return const SizedBox.shrink();
+              }),
 
               _isLoading ? const Center(child: CircularProgressIndicator()) : const SizedBox(),
 
@@ -294,6 +325,30 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
         rotation: rotation,
         icon: deliveryBoyImageData,
       )) : const SizedBox();
+
+      // Build a simple straight-line polyline between delivery person and destination/store
+      try {
+        _polylines = HashSet<Polyline>();
+        List<LatLng> points = [];
+        if (deliveryMan != null) {
+          points.add(LatLng(double.parse(deliveryMan.lat ?? '0'), double.parse(deliveryMan.lng ?? '0')));
+        }
+        // prefer destination (addressModel) as the end point, else store coords
+        if (addressModel != null && addressModel.latitude != null) {
+          points.add(LatLng(double.parse(addressModel.latitude!), double.parse(addressModel.longitude!)));
+        } else if (store != null) {
+          points.add(LatLng(double.parse(store.latitude!), double.parse(store.longitude!)));
+        }
+
+        if (points.length >= 2) {
+          _polylines.add(Polyline(
+            polylineId: const PolylineId('route'),
+            points: points,
+            color: Get.theme.primaryColor,
+            width: 4,
+          ));
+        }
+      } catch (_) {}
 
     }catch(_) {}
     setState(() {});

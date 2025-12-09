@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/location/screens/pick_map_screen.dart';
 import 'package:sixam_mart/features/location/screens/web_landing_page.dart';
+import 'package:http/http.dart' as http;
 
 class AccessLocationScreen extends StatefulWidget {
   final bool fromSignUp;
@@ -52,10 +53,28 @@ class _AccessLocationScreenState extends State<AccessLocationScreen> {
   }
 
   void checkInternet() async {
-    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-    bool isConnected = connectivityResult.contains(ConnectivityResult.wifi) || connectivityResult.contains(ConnectivityResult.mobile);
-    if(!isConnected) {
-      Get.offAll(()=> const NoInternetScreen());
+    final connectivityResult = await Connectivity().checkConnectivity();
+    bool isNetworkAvailable = connectivityResult != ConnectivityResult.none;
+
+    if (!isNetworkAvailable) {
+      Get.offAll(() => const NoInternetScreen());
+      return;
+    }
+
+    try {
+      final response = await http.get(Uri.parse('https://www.google.com'))
+          .timeout(const Duration(seconds: 3));
+
+      if (response.statusCode != 200) {
+        Get.offAll(() => const NoInternetScreen());
+      }
+
+    } on SocketException catch (_) {
+      Get.offAll(() => const NoInternetScreen());
+    } on TimeoutException catch (_) {
+      Get.offAll(() => const NoInternetScreen());
+    } catch (_) {
+      Get.offAll(() => const NoInternetScreen());
     }
   }
 

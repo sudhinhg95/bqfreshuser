@@ -271,15 +271,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                           ),
                         ) : const SizedBox(),
 
-                        (itemController.item!.description != null && itemController.item!.description!.isNotEmpty) ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('description'.tr, style: robotoMedium),
-                            const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-                            Text(itemController.item!.description!, style: robotoRegular),
-                            const SizedBox(height: Dimensions.paddingSizeLarge),
-                          ],
-                        ) : const SizedBox(),
+                        // Description removed from item details view per request.
 
                         (widget.item!.nutritionsName != null && widget.item!.nutritionsName!.isNotEmpty) ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,8 +315,8 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                       padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
                       child: CustomButton(
                         isLoading: cartController.isLoading,
-                        buttonText: (Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! && stock! <= 0) ? 'out_of_stock'.tr
-                            : itemController.item!.availableDateStarts != null ? 'order_now'.tr : itemController.cartIndex != -1 ? 'update_in_cart'.tr : 'add_to_cart'.tr,
+                        // Hide visible 'out_of_stock' label; button remains disabled when stock <= 0
+                        buttonText: itemController.item!.availableDateStarts != null ? 'order_now'.tr : itemController.cartIndex != -1 ? 'update_in_cart'.tr : 'add_to_cart'.tr,
                         onPressed: (!Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! || stock! > 0) ?  () async {
                           if(!Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! || stock! > 0) {
                             if(itemController.item!.availableDateStarts != null) {

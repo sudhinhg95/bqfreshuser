@@ -36,7 +36,8 @@ class ItemCard extends StatelessWidget {
       isItem: true,
       child: Stack(children: [
         Container(
-          width: 200,
+          // slightly wider card so image appears larger and layout remains balanced
+          width: 240,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
             color: Theme.of(context).cardColor,
@@ -89,20 +90,8 @@ class ItemCard extends StatelessWidget {
 
                         OrganicTag(item: item, placeInImage: false),
 
-                        (item.stock != null && item.stock! < 0) ? Positioned(
-                          bottom: 10, left : 0,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withOpacity( 0.5),
-                              borderRadius: const BorderRadius.only(
-                                topRight: Radius.circular(Dimensions.radiusLarge),
-                                bottomRight: Radius.circular(Dimensions.radiusLarge),
-                              ),
-                            ),
-                            child: Text('out_of_stock'.tr, style: robotoRegular.copyWith(color: Theme.of(context).cardColor, fontSize: Dimensions.fontSizeSmall)),
-                          ),
-                        ) : const SizedBox(),
+                        // Stock badge intentionally hidden across listing cards per request.
+                        const SizedBox.shrink(),
 
                         isShop ? const SizedBox() : Positioned(
                           bottom: 10, right: 20,
@@ -127,15 +116,22 @@ class ItemCard extends StatelessWidget {
                             alignment: isPopularItem ? Alignment.center : Alignment.centerLeft,
                             child: Column(
                                 crossAxisAlignment: isPopularItem ? CrossAxisAlignment.center : CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                              (isFood || isShop) ? Text(item.storeName ?? '', style: robotoRegular.copyWith(color: Theme.of(context).disabledColor))
-                                  : Text(item.name ?? '', style: robotoBold, maxLines: 1, overflow: TextOverflow.ellipsis),
+                              // Always show item name here. Do not show store/vendor name for items.
+                              Text(item.name ?? '', style: isPopularItem ? robotoBold.copyWith(fontSize: Dimensions.fontSizeDefault) : robotoBold.copyWith(fontSize: Dimensions.fontSizeDefault), maxLines: 1, overflow: TextOverflow.ellipsis),
 
-                              (isFood || isShop) ? Flexible(
-                                child: Text(
-                                  item.name ?? '',
-                                  style: robotoBold, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              // Description below the item name (single line truncated)
+                              if (item.description != null && item.description!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    item.description!,
+                                    style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeExtraSmall),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ) : item.ratingCount! > 0 ? Row(mainAxisAlignment: isPopularItem ? MainAxisAlignment.center : MainAxisAlignment.start, children: [
+
+                              item.ratingCount! > 0 ? Row(mainAxisAlignment: isPopularItem ? MainAxisAlignment.center : MainAxisAlignment.start, children: [
                                 Icon(Icons.star, size: 14, color: Theme.of(context).primaryColor),
                                 const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
@@ -146,16 +142,8 @@ class ItemCard extends StatelessWidget {
                               ]) : const SizedBox(),
 
                               // showUnitOrRattings(context);
-                              (isFood || isShop) ? item.ratingCount! > 0 ? Row(mainAxisAlignment: isPopularItem ? MainAxisAlignment.center : MainAxisAlignment.start, children: [
-                                Icon(Icons.star, size: 14, color: Theme.of(context).primaryColor),
-                                const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                                Text(item.avgRating!.toStringAsFixed(1), style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall)),
-                                const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                                Text("(${item.ratingCount})", style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor)),
-
-                              ]) : const SizedBox() : (Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item.unitType != null) ? Text(
+                              // For food/shop modules show unit when available; otherwise already shown ratings above.
+                              (Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item.unitType != null) ? Text(
                                 '(${ item.unitType ?? ''})',
                                 style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).hintColor),
                               ) : const SizedBox(),

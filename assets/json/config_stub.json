@@ -1,0 +1,14 @@
+{
+  "business_name": "BQ Fresh (Local)",
+  "logo_full_url": "",
+  "address": "",
+  "phone": "",
+  "email": "",
+  "country": "",
+  "currency_symbol": "",
+  "currency_symbol_direction": "left",
+  "app_minimum_version_android": 1.0,
+  "app_minimum_version_ios": 1.0,
+  "module": null,
+  "module_config": {}
+}

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/common/widgets/custom_asset_image_widget.dart';
@@ -27,9 +26,7 @@ class ItemTitleViewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) {
-      print(inStock ? 'out_of_stock'.tr : 'in_stock'.tr);
-    }
+    // Hide visible stock labels — do not print or display 'in_stock'/'out_of_stock'
     final bool isLoggedIn = AuthHelper.isLoggedIn();
     double? startingPrice;
     double? endingPrice;
@@ -132,38 +129,25 @@ class ItemTitleViewWidget extends StatelessWidget {
           SizedBox(height: (itemController.item!.genericName != null && itemController.item!.genericName!.isNotEmpty) ? Dimensions.paddingSizeSmall : 0),
 
           Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-              decoration: BoxDecoration(
-                color: inStock ? Colors.red.shade50 : Colors.green.shade50, borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-              ),
-              child: Text(inStock ? 'out_of_stock'.tr : 'in_stock'.tr, style: robotoRegular.copyWith(
-                color: Theme.of(context).primaryColor,
-                fontSize: Dimensions.fontSizeExtraSmall,
-              )),
-            ),
+            // Stock label intentionally hidden per request. Keep layout spacing.
+            const SizedBox.shrink(),
             const SizedBox(width: Dimensions.paddingSizeDefault),
 
             OrganicTag(item: item!, fromDetails: true),
           ]),
           const SizedBox(height: Dimensions.paddingSizeSmall),
 
-          InkWell(
-            onTap: () {
-              if(inStorePage) {
-                Get.back();
-              }else {
-                Get.offNamed(RouteHelper.getStoreRoute(id: item!.storeId, page: 'item'));
-              }
-            },
-            child: Padding(
+          // Show item description in place of store name per user request.
+          if (item!.description != null && item!.description!.isNotEmpty)
+            Padding(
               padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
               child: Text(
-                item!.storeName!,
-                style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
+                item!.description!.trim(),
+                style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
           //const SizedBox(height: Dimensions.paddingSizeSmall),
 
           if(item!.ratingCount! > 0)
@@ -254,22 +238,17 @@ class ItemTitleViewWidget extends StatelessWidget {
               ],
             ) : const SizedBox(),
 
-            InkWell(
-              onTap: () {
-                if(inStorePage) {
-                  Get.back();
-                }else {
-                  Get.offNamed(RouteHelper.getStoreRoute(id: item!.storeId, page: 'item'));
-                }
-              },
-              child: Padding(
+            // Show item description in place of store name for mobile/detail view.
+            if (item!.description != null && item!.description!.isNotEmpty)
+              Padding(
                 padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
                 child: Text(
-                  item!.storeName!,
-                  style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
+                  item!.description!.trim(),
+                  style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
             const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -319,16 +298,8 @@ class ItemTitleViewWidget extends StatelessWidget {
 
                 OrganicTag(item: item!, fromDetails: true),
 
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-                  decoration: BoxDecoration(
-                    color: inStock ? Colors.red : Colors.green, borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                  ),
-                  child: Text(inStock ? 'out_of_stock'.tr : 'in_stock'.tr, style: robotoRegular.copyWith(
-                    color: Colors.white,
-                    fontSize: Dimensions.fontSizeSmall,
-                  )),
-                ),
+                // Stock label hidden on mobile/detail view as well.
+                const SizedBox.shrink(),
               ]),
 
             ]),

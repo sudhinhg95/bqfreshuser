@@ -27,4 +27,6 @@ abstract class SplashServiceInterface {
   Future<void> saveSuggestedLocationStatus(bool data);
   bool getReferBottomSheetStatus();
   Future<void> saveReferBottomSheetStatus(bool data);
+  bool getPopupBannerStatus();
+  Future<void> savePopupBannerStatus(bool data);
 }

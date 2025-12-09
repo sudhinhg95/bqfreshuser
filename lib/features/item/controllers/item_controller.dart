@@ -25,6 +25,9 @@ import 'package:sixam_mart/features/item/domain/services/item_service_interface.
 class ItemController extends GetxController implements GetxService {
   final ItemServiceInterface itemServiceInterface;
   ItemController({required this.itemServiceInterface});
+
+  List<Item>? _latestItemList;
+  List<Item>? get latestItemList => _latestItemList;
   
   List<Item>? _popularItemList;
   List<Item>? get popularItemList => _popularItemList;
@@ -61,6 +64,9 @@ class ItemController extends GetxController implements GetxService {
   
   String _popularType = 'all';
   String get popularType => _popularType;
+
+  String _latestType = 'all';
+  String get latestType => _latestType;
   
   String _reviewedType = 'all';
   String get reviewType => _reviewedType;
@@ -142,6 +148,39 @@ class ItemController extends GetxController implements GetxService {
     _discountedItemList = null;
     _featuredCategoriesItem = null;
     _recommendedItemList = null;
+  }
+
+  Future<void> getLatestItemList(bool reload, String type, bool notify, {DataSourceEnum dataSource = DataSourceEnum.local, bool fromRecall = false}) async {
+    _latestType = type;
+    if(reload) {
+      _latestItemList = null;
+    }
+    if(notify) {
+      update();
+    }
+    if(_latestItemList == null || reload || fromRecall) {
+      List<Item>? items;
+      if(dataSource == DataSourceEnum.local) {
+        items = await itemServiceInterface.getLatestItemList(type, dataSource);
+        _prepareLatestItems(items);
+        getLatestItemList(false, type, notify, dataSource: DataSourceEnum.client, fromRecall: true);
+      } else {
+        items = await itemServiceInterface.getLatestItemList(type, dataSource);
+        _prepareLatestItems(items);
+      }
+      print("Latest Items:");
+      print(_latestItemList);
+    }
+  }
+
+  
+  _prepareLatestItems(List<Item>? items) {
+    if (items != null) {
+      _latestItemList = [];
+      _latestItemList!.addAll(items);
+      _isLoading = false;
+    }
+    update();
   }
 
   Future<void> getPopularItemList(bool reload, String type, bool notify, {DataSourceEnum dataSource = DataSourceEnum.local, bool fromRecall = false}) async {

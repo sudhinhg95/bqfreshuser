@@ -17,7 +17,7 @@ class BannerRepository implements BannerRepositoryInterface {
   BannerRepository({required this.apiClient});
 
   @override
-  Future getList({int? offset, bool isBanner = false, bool isTaxiBanner = false, bool isFeaturedBanner = false, bool isParcelOtherBanner = false, bool isPromotionalBanner = false, DataSourceEnum? source}) async {
+  Future getList({int? offset, bool isBanner = false, bool isTaxiBanner = false, bool isFeaturedBanner = false, bool isParcelOtherBanner = false, bool isPromotionalBanner = false, bool isPopUpBanner = false,DataSourceEnum? source}) async {
     if (isBanner) {
       return await _getBannerList(source: source!);
     } else if (isTaxiBanner) {
@@ -28,6 +28,9 @@ class BannerRepository implements BannerRepositoryInterface {
       return await _getParcelOtherBannerList();
     } else if (isPromotionalBanner) {
       return await _getPromotionalBannerList();
+    } else if(isPopUpBanner) {
+      return await _getPopUpBannerList();
+
     }
   }
 
@@ -54,6 +57,99 @@ class BannerRepository implements BannerRepositoryInterface {
 
     return bannerModel;
   }
+
+  
+Future<BannerModel?> _getPopUpBannerList() async {
+  BannerModel? bannerModel;
+
+  try {
+    print('🔔 Popup API: Calling ${AppConstants.popupBannerUri}');
+    Response response = await apiClient.getData(AppConstants.popupBannerUri).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        print('🔔 Popup API: Request timed out after 10 seconds');
+        return Response(statusCode: 408, statusText: 'Timeout', body: null);
+      },
+    );
+    print('🔔 Popup API: Response Status: ${response.statusCode}');
+    print('🔔 Popup API: Response Body: ${response.body}');
+
+    if (response.statusCode == 200 && response.body != null) {
+      print('🔔 Popup API: Response body type: ${response.body.runtimeType}');
+      // Check if response.body is already a BannerModel structure
+      if (response.body is Map<String, dynamic>) {
+        final body = response.body as Map<String, dynamic>;
+        print('🔔 Popup API: Response is Map, keys: ${body.keys.toList()}');
+        // If it already has 'banners' or 'campaigns' key, use it directly
+        if (body.containsKey('banners') || body.containsKey('campaigns')) {
+          print('🔔 Popup API: Found banners/campaigns key, parsing directly');
+          bannerModel = BannerModel.fromJson(body);
+          // Debug: Check if banners were parsed
+          if (bannerModel?.banners != null) {
+            print('🔔 Popup API: Parsed ${bannerModel!.banners!.length} banners');
+            for (var i = 0; i < bannerModel!.banners!.length; i++) {
+              final b = bannerModel!.banners![i];
+              print('🔔 Popup API: Banner $i - imageFullUrl: ${b.imageFullUrl}, image: ${b.image}');
+              // If imageFullUrl is null but we have image_full_url in raw data, fix it
+              if (b.imageFullUrl == null && body['banners'] is List) {
+                final rawBanner = (body['banners'] as List)[i];
+                if (rawBanner is Map && rawBanner.containsKey('image_full_url')) {
+                  print('🔔 Popup API: Fixing banner $i - setting imageFullUrl from raw data');
+                  b.imageFullUrl = rawBanner['image_full_url'] as String?;
+                  print('🔔 Popup API: Fixed banner $i - imageFullUrl: ${b.imageFullUrl}');
+                }
+              }
+            }
+          }
+        } else {
+          // If it's a single banner object, wrap it in a list
+          print('🔔 Popup API: No banners key, wrapping body as single banner');
+          bannerModel = BannerModel.fromJson({
+            'banners': [body]
+          });
+        }
+      } else if (response.body is List) {
+        // If response is a list, wrap it in banners
+        print('🔔 Popup API: Response is List, wrapping in banners');
+        bannerModel = BannerModel.fromJson({
+          'banners': response.body
+        });
+      } else {
+        // Single object, wrap in list
+        print('🔔 Popup API: Response is other type, wrapping as single banner');
+        bannerModel = BannerModel.fromJson({
+          'banners': [response.body]
+        });
+      }
+    } else {
+      print('🔔 Popup API: Error - Status ${response.statusCode}, body: ${response.body}');
+    }
+  } catch (e, stackTrace) {
+    print('Popup Banner API Exception: $e');
+    print('Stack trace: $stackTrace');
+  }
+
+  // Optional: print just the image URLs for easier debugging
+  if (bannerModel?.banners != null) {
+    print('🔔 Popup API: Found ${bannerModel!.banners!.length} banners in model');
+    for (var b in bannerModel!.banners!) {
+      print('🔔 Popup API: Banner ID: ${b.id}, Title: ${b.title}');
+      print('🔔 Popup API: Banner imageFullUrl: ${b.imageFullUrl}');
+      print('🔔 Popup API: Banner image: ${b.image}');
+      print('🔔 Popup API: Banner type: ${b.type}');
+    }
+  }
+  if (bannerModel?.campaigns != null) {
+    print('Popup Banner: Found ${bannerModel!.campaigns!.length} campaigns');
+    for (var c in bannerModel!.campaigns!) {
+      print('Campaign Image URL: ${c.imageFullUrl}');
+    }
+  }
+
+  return bannerModel;
+}
+
+  
 
   Future<BannerModel?> _getTaxiBannerList() async {
     BannerModel? bannerModel;

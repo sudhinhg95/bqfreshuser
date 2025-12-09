@@ -5,6 +5,7 @@ import 'package:sixam_mart/features/banner/domain/models/promotional_banner_mode
 
 abstract class BannerServiceInterface {
   Future<BannerModel?> getBannerList({required DataSourceEnum source});
+  Future<BannerModel?> getPopUpBannerList({required DataSourceEnum source});
   Future<BannerModel?> getTaxiBannerList();
   Future<BannerModel?> getFeaturedBannerList();
   Future<ParcelOtherBannerModel?> getParcelOtherBannerList({required DataSourceEnum source});

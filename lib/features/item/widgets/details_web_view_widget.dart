@@ -94,29 +94,7 @@ class DetailsWebViewWidget extends StatelessWidget {
                       children: [
                         ItemTitleViewWidget(item: itemController.item, inStock: Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! && stock! <= 0),
 
-                        (itemController.item!.description != null && itemController.item!.description!.isNotEmpty) ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: Dimensions.paddingSizeSmall),
-                            Text('description'.tr, style: robotoMedium),
-                            const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-                            Text(
-                              itemController.item!.description!,
-                              style: robotoRegular,
-                              maxLines: itemController.isReadMore ? 10 : 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            itemController.item!.description!.length > 150 ? InkWell(
-                              onTap: () => itemController.changeReadMore(),
-                              child: Text(
-                                itemController.isReadMore ? "read_less".tr : "read_more".tr,
-                                style: robotoRegular.copyWith(color: Theme.of(context).primaryColor),
-                              ),
-                            ) : const SizedBox(),
-
-                            const SizedBox(height: Dimensions.paddingSizeLarge),
-                          ],
-                        ) : const SizedBox(),
+                        // Description removed from web/desktop item details view per request.
 
                         (itemController.item!.nutritionsName != null && itemController.item!.nutritionsName!.isNotEmpty) ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,8 +243,8 @@ class DetailsWebViewWidget extends StatelessWidget {
                               return CustomButton(
                                 width: 300,
                                 isLoading: cartController.isLoading,
-                                buttonText: (Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! && stock! <= 0) ? 'out_of_stock'.tr
-                                    : itemController.item!.availableDateStarts != null ? 'order_now'.tr : itemController.cartIndex != -1 ? 'update_in_cart'.tr : 'add_to_cart'.tr,
+                // Hide visible out_of_stock label; keep disabled state via onPressed
+                buttonText: itemController.item!.availableDateStarts != null ? 'order_now'.tr : itemController.cartIndex != -1 ? 'update_in_cart'.tr : 'add_to_cart'.tr,
                                 onPressed: (!Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! || stock! > 0) ?  () async {
                                   if(itemController.item!.availableDateStarts != null) {
                                     Get.toNamed(RouteHelper.getCheckoutRoute('campaign'), arguments: CheckoutScreen(

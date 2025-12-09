@@ -70,7 +70,7 @@ dependencies:
   dropdown_button2: ^2.3.9
   custom_info_window: ^1.0.1
   image_network: ^2.6.0
-
+  permission_handler: ^11.4.0
 
 dependency_overrides:
   collection: ^1.19.1

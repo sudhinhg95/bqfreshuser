@@ -21,6 +21,7 @@ class BannerModel {
         banners!.add(Banner.fromJson(v));
       });
     }
+    
   }
 
   Map<String, dynamic> toJson() {
@@ -39,6 +40,7 @@ class Banner {
   int? id;
   String? title;
   String? type;
+  String? image;
   String? imageFullUrl;
   String? link;
   Store? store;
@@ -58,6 +60,7 @@ class Banner {
     id = json['id'];
     title = json['title'];
     type = json['type'];
+    image = json['image'];
     imageFullUrl = json['image_full_url'];
     link = json['link'];
     store = json['store'] != null ? Store.fromJson(json['store']) : null;

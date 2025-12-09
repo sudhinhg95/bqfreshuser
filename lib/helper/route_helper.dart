@@ -50,6 +50,7 @@ import 'package:sixam_mart/features/flash_sale/screens/flash_sale_details_screen
 import 'package:sixam_mart/features/item/screens/item_campaign_screen.dart';
 import 'package:sixam_mart/features/item/screens/item_details_screen.dart';
 import 'package:sixam_mart/features/item/screens/popular_item_screen.dart';
+import 'package:sixam_mart/features/item/screens/latest_item_screen.dart';
 import 'package:sixam_mart/features/verification/screens/forget_pass_screen.dart';
 import 'package:sixam_mart/features/verification/screens/new_pass_screen.dart';
 import 'package:sixam_mart/features/verification/screens/verification_screen.dart';
@@ -114,6 +115,7 @@ class RouteHelper {
   static const String categories = '/categories';
   static const String categoryItem = '/category-item';
   static const String popularItems = '/popular-items';
+  static const String latestItems = '/latest-items';
   static const String itemCampaign = '/item-campaign';
   static const String support = '/help-and-support';
   static const String rateReview = '/rate-and-review';
@@ -231,6 +233,7 @@ class RouteHelper {
     return '$categoryItem?id=$id&name=$data';
   }
   static String getPopularItemRoute(bool isPopular, bool isSpecial) => '$popularItems?page=${isPopular ? 'popular' : 'reviewed'}&special=${isSpecial.toString()}';
+  static String getLatestItemRoute() => latestItems;
   static String getItemCampaignRoute({bool isJustForYou = false}) => itemCampaign + (isJustForYou ? '?just-for-you=${isJustForYou.toString()}' : '');
   static String getSupportRoute() => support;
   static String getReviewRoute() => rateReview;
@@ -461,7 +464,8 @@ class RouteHelper {
       String data = utf8.decode(decode);
       return getRoute(CategoryItemScreen(categoryID: Get.parameters['id'], categoryName: data));
     }),
-    GetPage(name: popularItems, page: () => getRoute(PopularItemScreen(isPopular: Get.parameters['page'] == 'popular', isSpecial: Get.parameters['special'] == 'true'))),
+  GetPage(name: popularItems, page: () => getRoute(PopularItemScreen(isPopular: Get.parameters['page'] == 'popular', isSpecial: Get.parameters['special'] == 'true'))),
+  GetPage(name: latestItems, page: () => getRoute(const LatestItemScreen())),
     GetPage(name: itemCampaign, page: () => getRoute(ItemCampaignScreen(isJustForYou: Get.parameters['just-for-you'] == 'true'))),
     GetPage(name: support, page: () => const SupportScreen()),
     GetPage(name: update, page: () => UpdateScreen(isUpdate: Get.parameters['update'] == 'true')),
@@ -596,15 +600,24 @@ class RouteHelper {
   ];
 
   static Widget getRoute(Widget navigateTo, {AccessLocationScreen? locationScreen, bool byPuss = false}) {
+    final configModel = Get.find<SplashController>().configModel;
+    
+    // On web, allow app to work without config for development
+    if (GetPlatform.isWeb && configModel == null) {
+      return navigateTo;
+    }
+    
     double? minimumVersion = 0;
     if(GetPlatform.isAndroid) {
-      minimumVersion = Get.find<SplashController>().configModel!.appMinimumVersionAndroid;
+      minimumVersion = configModel?.appMinimumVersionAndroid ?? 0;
     }else if(GetPlatform.isIOS) {
-      minimumVersion = Get.find<SplashController>().configModel!.appMinimumVersionIos;
+      minimumVersion = configModel?.appMinimumVersionIos ?? 0;
     }
+    // On web, allow app to work without location for development
+    bool requireLocation = !GetPlatform.isWeb && !byPuss;
     return (AppConstants.appVersion < minimumVersion! && !GetPlatform.isWeb)  ? const UpdateScreen(isUpdate: true)
-        : Get.find<SplashController>().configModel!.maintenanceMode! ? const UpdateScreen(isUpdate: false)
-        : (AddressHelper.getUserAddressFromSharedPref() == null && !byPuss)
+        : (configModel?.maintenanceMode ?? false) ? const UpdateScreen(isUpdate: false)
+        : (AddressHelper.getUserAddressFromSharedPref() == null && requireLocation)
         ? AccessLocationScreen(fromSignUp: false, fromHome: false, route: Get.currentRoute) : navigateTo;
   }
 

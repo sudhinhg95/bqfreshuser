@@ -12,6 +12,19 @@ firebase.initializeApp({
   measurementId: "G-L1GNL2YV61"
 });
 
+
+// firebase.initializeApp({
+//     apiKey: "AIzaSyxxxxxxx",
+//     authDomain: "bqfresh-68d58.firebaseapp.com",
+//     projectId: "bqfresh-68d58",
+//     storageBucket: "bqfresh-68d58.appspot.com",
+//     messagingSenderId: "1234567890",
+//     appId: "1:1234567890:web:abcdef123456",
+// });
+
+
+
+
 const messaging = firebase.messaging();
 
 messaging.setBackgroundMessageHandler(function (payload) {

@@ -30,6 +30,8 @@ import 'package:sixam_mart/helper/route_helper.dart';
 import 'package:sixam_mart/common/widgets/custom_loader.dart';
 import 'package:sixam_mart/common/widgets/custom_snackbar.dart';
 import 'package:sixam_mart/helper/taxi_helper.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class LocationController extends GetxController implements GetxService {
   final LocationServiceInterface locationServiceInterface;
@@ -515,16 +517,32 @@ class LocationController extends GetxController implements GetxService {
   }
 
   Future<bool> checkInternet() async {
-    if(kIsWeb) {
+    if (kIsWeb) {
       return true;
     }
-    final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-    bool isConnected = connectivityResult.contains(ConnectivityResult.wifi) || connectivityResult.contains(ConnectivityResult.mobile);
-    if(!isConnected) {
-      Get.offAll(()=> const NoInternetScreen());
+
+    final connectivityResult = await Connectivity().checkConnectivity();
+    bool isConnected = connectivityResult != ConnectivityResult.none;
+
+    if (!isConnected) {
+      Get.offAll(() => const NoInternetScreen());
       return false;
     }
-    return true;
+
+    try {
+      final response = await http.get(Uri.parse('https://www.google.com'))
+          .timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        Get.offAll(() => const NoInternetScreen());
+        return false;
+      }
+    } on SocketException catch (_) {
+      Get.offAll(() => const NoInternetScreen());
+      return false;
+    }
   }
+
 
 }

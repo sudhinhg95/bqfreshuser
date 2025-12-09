@@ -77,8 +77,10 @@ class ItemRepository implements ItemRepositoryInterface {
   }
 
   @override
-  Future getList({int? offset, String? type, bool isPopularItem = false, bool isReviewedItem = false, bool isFeaturedCategoryItems = false, bool isRecommendedItems = false, bool isCommonConditions = false, bool isDiscountedItems = false, DataSourceEnum? source}) async {
-    if(isPopularItem) {
+  Future getList({int? offset, String? type, bool isLatestItem = false, bool isPopularItem = false, bool isReviewedItem = false, bool isFeaturedCategoryItems = false, bool isRecommendedItems = false, bool isCommonConditions = false, bool isDiscountedItems = false, DataSourceEnum? source}) async {
+     if(isLatestItem) {
+      return await _getLatestItemList(type!, source: source ?? DataSourceEnum.client);
+    } else if(isPopularItem) {
       return await _getPopularItemList(type!, source: source ?? DataSourceEnum.client);
     } else if(isReviewedItem) {
       return await _getReviewedItemList(type!, source: source ?? DataSourceEnum.client);
@@ -91,6 +93,80 @@ class ItemRepository implements ItemRepositoryInterface {
     } else if(isDiscountedItems) {
       return await _getDiscountedItemList(type!, source: source ?? DataSourceEnum.client);
     }
+  }
+
+
+  Future<List<Item>?> _getLatestItemList(String type, {required DataSourceEnum source}) async {
+    List<Item>? latestItemList;
+    final module = Get.find<SplashController>().module;
+    final moduleId = module?.id;
+    // do not bail out when module is not yet available; allow client fetch so UI can show latest items
+    String cacheId = '${AppConstants.storeItemUri}?type=$type-${moduleId ?? 0}';
+
+    switch(source) {
+
+      case DataSourceEnum.client:
+        try {
+          Response response = await apiClient.getData('${AppConstants.storeItemUri}?type=$type');
+          if (response.statusCode == 200 && response.body != null) {
+            latestItemList = [];
+            print("Latest Items Response Body:");
+            print(response.body);
+            final itemModel = ItemModel.fromJson(response.body);
+            if (itemModel.items != null && itemModel.items!.isNotEmpty) {
+              latestItemList.addAll(itemModel.items!);
+            } else {
+              // Fallback: some APIs return items under different keys (data, products, etc.)
+              try {
+                final body = response.body;
+                List<dynamic>? candidates;
+                if (body is Map<String, dynamic>) {
+                  if (body['items'] is List) candidates = body['items'];
+                  else if (body['products'] is List) candidates = body['products'];
+                  else if (body['data'] is Map && body['data']['items'] is List) candidates = body['data']['items'];
+                  else {
+                    // scan for the first list that looks like items
+                    for (var v in body.values) {
+                      if (v is List && v.isNotEmpty && v[0] is Map && v[0].containsKey('id')) {
+                        candidates = v;
+                        break;
+                      }
+                    }
+                  }
+                }
+                if (candidates != null && candidates.isNotEmpty) {
+                  for (var v in candidates) {
+                    try {
+                      latestItemList.add(Item.fromJson(Map<String, dynamic>.from(v)));
+                    } catch (_) {}
+                  }
+                }
+              } catch (e) {
+                print('Error in fallback parsing latest items: $e');
+              }
+            }
+            LocalClient.organize(DataSourceEnum.client, cacheId, jsonEncode(response.body), apiClient.getHeader());
+          }
+        } catch (e) {
+          print('Error fetching latest items: $e');
+        }
+
+      case DataSourceEnum.local:
+        try {
+          String? cacheResponseData = await LocalClient.organize(DataSourceEnum.local, cacheId, null, null);
+          if(cacheResponseData != null) {
+            latestItemList = [];
+            final itemModel = ItemModel.fromJson(jsonDecode(cacheResponseData));
+            if (itemModel.items != null && itemModel.items!.isNotEmpty) {
+              latestItemList.addAll(itemModel.items!);
+            }
+          }
+        } catch (e) {
+          print('Error loading latest items from cache: $e');
+        }
+    }
+
+    return latestItemList;
   }
 
   Future<List<Item>?> _getPopularItemList(String type, {required DataSourceEnum source}) async {

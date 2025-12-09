@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sixam_mart/features/location/domain/models/prediction_model.dart';
+import 'package:http/http.dart' as http;
 import 'package:sixam_mart/features/address/domain/models/address_model.dart';
 import 'package:sixam_mart/features/location/domain/models/zone_response_model.dart';
 import 'package:sixam_mart/features/location/domain/repositories/location_repository_interface.dart';
@@ -128,7 +129,43 @@ class LocationService implements LocationServiceInterface{
       predictionList = [];
       response.body['suggestions'].forEach((prediction) => predictionList.add(PredictionModel.fromJson(prediction)));
     } else {
-      showCustomSnackBar(response.body['error_message'] ?? response.bodyString);
+      // Backend failed (likely Google API key issue). Fallback to OpenStreetMap Nominatim
+      try {
+        final uri = Uri.parse('https://nominatim.openstreetmap.org/search')
+            .replace(queryParameters: {
+          'q': text,
+          'format': 'json',
+          'addressdetails': '1',
+          'limit': '10'
+        });
+        final nomResp = await http.get(uri, headers: {'User-Agent': 'BQFresh/1.0 (dev)'}).timeout(const Duration(seconds: 10));
+        if (nomResp.statusCode == 200) {
+          final List<dynamic> data = jsonDecode(nomResp.body);
+          for (final item in data) {
+            // Map Nominatim item to PredictionModel JSON shape expected by fromJson
+            final displayName = item['display_name'] ?? '';
+            final placeId = item['place_id']?.toString() ?? item['osm_id']?.toString() ?? displayName;
+            final structured = {
+              'mainText': {'text': item['namedetails'] != null ? (item['namedetails']['name'] ?? displayName) : displayName},
+              'secondaryText': {'text': item['type'] ?? ''}
+            };
+            final wrapped = {
+              'placePrediction': {
+                'text': {'text': displayName},
+                'placeId': placeId,
+                'place': displayName,
+                'types': [item['type'] ?? ''],
+                'structuredFormat': structured,
+              }
+            };
+            predictionList.add(PredictionModel.fromJson(wrapped));
+          }
+        } else {
+          showCustomSnackBar('location_service_failed'.tr);
+        }
+      } catch (e) {
+        showCustomSnackBar('location_service_failed'.tr);
+      }
     }
     return predictionList;
   }

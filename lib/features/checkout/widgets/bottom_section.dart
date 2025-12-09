@@ -187,18 +187,18 @@ class BottomSection extends StatelessWidget {
             ]) : const SizedBox(),
 
             storeId == null ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${'vat_tax'.tr} ${taxIncluded ? 'tax_included'.tr : ''} ($taxPercent%)', style: robotoRegular),
+              Text('${taxIncluded ? 'Vat Included'.tr : ''} ($taxPercent%)', style: robotoRegular),
               Text((taxIncluded ? '' : '(+) ') + PriceConverter.convertPrice(tax), style: robotoRegular, textDirection: TextDirection.ltr),
             ]) : const SizedBox(),
-            SizedBox(height: storeId == null ? Dimensions.paddingSizeSmall : 0),
+            // SizedBox(height: storeId == null ? Dimensions.paddingSizeSmall : 0),
 
-            (!takeAway && Get.find<SplashController>().configModel!.dmTipsStatus == 1) ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('delivery_man_tips'.tr, style: robotoRegular),
-                Text('(+) ${PriceConverter.convertPrice(checkoutController.tips)}', style: robotoRegular, textDirection: TextDirection.ltr),
-              ],
-            ) : const SizedBox.shrink(),
+            // (!takeAway && Get.find<SplashController>().configModel!.dmTipsStatus == 1) ? Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Text('delivery_man_tips'.tr, style: robotoRegular),
+            //     Text('(+) ${PriceConverter.convertPrice(checkoutController.tips)}', style: robotoRegular, textDirection: TextDirection.ltr),
+            //   ],
+            // ) : const SizedBox.shrink(),
             SizedBox(height: !takeAway && Get.find<SplashController>().configModel!.dmTipsStatus == 1 ? Dimensions.paddingSizeSmall : 0.0),
 
             (checkoutController.store!.extraPackagingStatus! && Get.find<CartController>().needExtraPackage) ? Row(
@@ -252,7 +252,7 @@ class BottomSection extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
-              child: Divider(thickness: 1, color: Theme.of(context).hintColor.withOpacity( 0.5)),
+              child: Divider(thickness: 3, color: Theme.of(context).hintColor.withOpacity( 0.5)),
             ),
           ],
         ),

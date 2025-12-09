@@ -4,6 +4,7 @@ import 'package:sixam_mart/features/banner/domain/models/others_banner_model.dar
 import 'package:sixam_mart/features/banner/domain/models/promotional_banner_model.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/features/banner/domain/services/banner_service_interface.dart';
 
 class BannerController extends GetxController implements GetxService {
@@ -12,6 +13,9 @@ class BannerController extends GetxController implements GetxService {
 
   List<String?>? _bannerImageList;
   List<String?>? get bannerImageList => _bannerImageList;
+
+    List<String?>? _bannerPopUpImageList;
+  List<String?>? get popupBannerImageList => _bannerPopUpImageList;
   
   List<String?>? _taxiBannerImageList;
   List<String?>? get taxiBannerImageList => _taxiBannerImageList;
@@ -21,6 +25,9 @@ class BannerController extends GetxController implements GetxService {
   
   List<dynamic>? _bannerDataList;
   List<dynamic>? get bannerDataList => _bannerDataList;
+
+  List<dynamic>? _bannerPopUpDataList;
+  List<dynamic>? get popupBannerDataList => _bannerPopUpDataList;
   
   List<dynamic>? _taxiBannerDataList;
   List<dynamic>? get taxiBannerDataList => _taxiBannerDataList;
@@ -76,6 +83,11 @@ class BannerController extends GetxController implements GetxService {
   void clearBanner() {
     _bannerImageList = null;
   }
+  
+  void clearPopupBanner() {
+    _bannerPopUpImageList = null;
+    _bannerPopUpDataList = null;
+  }
 
   Future<void> getBannerList(bool reload, {DataSourceEnum dataSource = DataSourceEnum.local, bool fromRecall = false}) async {
     if(_bannerImageList == null || reload || fromRecall) {
@@ -96,7 +108,90 @@ class BannerController extends GetxController implements GetxService {
     }
   }
 
+  Future<BannerModel?> getPopUpBannerList(bool reload, {DataSourceEnum dataSource = DataSourceEnum.local, bool fromRecall = false}) async {
+  if (_bannerPopUpImageList == null || reload || fromRecall) {
+    if (reload) _bannerPopUpImageList = null;
+
+    BannerModel? bannerModel;
+    if (dataSource == DataSourceEnum.local) {
+      bannerModel = await bannerServiceInterface.getPopUpBannerList(source: DataSourceEnum.local);
+    
+      await _preparePopUpBanner(bannerModel);
+      getPopUpBannerList(false, dataSource: DataSourceEnum.client, fromRecall: true);
+    } else {
+      bannerModel = await bannerServiceInterface.getPopUpBannerList(source: DataSourceEnum.client);
+      _preparePopUpBanner(bannerModel);
+    }
+    return bannerModel; // <- return here
+  }
+  return null; // or return previously fetched model
+}
+
+_preparePopUpBanner(BannerModel? bannerModel) async {
+  try {
+    if (bannerModel != null) {
+      _bannerPopUpImageList = [];
+      _bannerPopUpDataList = [];
+
+      // Use a set to avoid duplicate URLs
+      final seen = <String>{};
+
+      // Include campaigns first (if any) so popup shows campaign images first
+      for (var campaign in bannerModel.campaigns ?? []) {
+        // prefer full url; campaigns may not provide a raw image filename, so we only use imageFullUrl
+        String? url = campaign.imageFullUrl;
+        if (url != null && url.isNotEmpty && !seen.contains(url)) {
+          _bannerPopUpImageList!.add(url);
+          seen.add(url);
+        }
+        _bannerPopUpDataList!.add(campaign);
+      }
+
+      // Then include normal banners
+      for (var banner in bannerModel.banners ?? []) {
+        String? url = banner.imageFullUrl;
+        print('🔔 Popup Prepare: Banner imageFullUrl = $url');
+        print('🔔 Popup Prepare: Banner image = ${banner.image}');
+        // If server returned only filename in 'image', construct a few likely URLs
+        if ((url == null || url.isEmpty) && (banner.image != null && banner.image!.isNotEmpty)) {
+          final filename = banner.image!.trim();
+          // common storage locations used by Laravel apps — try them in order
+          final candidates = [
+            '${AppConstants.baseUrl}/storage/app/public/store/cover/$filename',
+            '${AppConstants.baseUrl}/storage/app/public/banner/$filename',
+            '${AppConstants.baseUrl}/storage/app/public/$filename',
+            '${AppConstants.baseUrl}/storage/$filename',
+          ];
+          for (final candidate in candidates) {
+            if (!seen.contains(candidate)) {
+              _bannerPopUpImageList!.add(candidate);
+              seen.add(candidate);
+              print('🔔 Popup Prepare: Added candidate banner URL to list: $candidate');
+            }
+          }
+        } else {
+          if (url != null && url.isNotEmpty && !seen.contains(url)) {
+            _bannerPopUpImageList!.add(url);
+            seen.add(url);
+            print('🔔 Popup Prepare: Added banner URL to list: $url');
+          } else {
+            print('🔔 Popup Prepare: Skipped banner (url null/empty or duplicate)');
+          }
+        }
+        _bannerPopUpDataList!.add(banner);
+      }
+      print('🔔 Popup Prepare: Final banner list length: ${_bannerPopUpImageList?.length ?? 0}');
+    }
+    update();
+  } catch (e, stack) {
+    print("Error in _prepareBanner: $e");
+    print(stack);
+  }
+}
+
+
   _prepareBanner(BannerModel? bannerModel) async{
+  
     if (bannerModel != null) {
       _bannerImageList = [];
       _bannerDataList = [];
@@ -127,6 +222,8 @@ class BannerController extends GetxController implements GetxService {
         }
       }
     }
+
+
     update();
   }
 
@@ -198,6 +295,26 @@ class BannerController extends GetxController implements GetxService {
     if(notify) {
       update();
     }
+  }
+
+  /// Return the first non-empty banner image URL from the prepared banner list
+  /// or null if none is available. This is a safe helper for UI popups that
+  /// need a single banner image.
+  String? getFirstBannerImage() {
+    if (_bannerImageList == null || _bannerImageList!.isEmpty) return null;
+    for (final img in _bannerImageList!) {
+      if (img != null && img.trim().isNotEmpty) return img.trim();
+    }
+    return null;
+  }
+  
+  /// Return the first image from the popup banner list, if any.
+  String? getFirstPopupBannerImage() {
+    if (_bannerPopUpImageList == null || _bannerPopUpImageList!.isEmpty) return null;
+    for (final img in _bannerPopUpImageList!) {
+      if (img != null && img.trim().isNotEmpty) return img.trim();
+    }
+    return null;
   }
   
 }

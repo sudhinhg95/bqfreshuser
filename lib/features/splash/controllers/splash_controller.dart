@@ -77,6 +77,9 @@ class SplashController extends GetxController implements GetxService {
   bool _showReferBottomSheet = false;
   bool get showReferBottomSheet => _showReferBottomSheet;
 
+  bool _popupBannerShown = false;
+  bool get popupBannerShown => _popupBannerShown;
+
   DateTime get currentTime => DateTime.now();
 
   void selectModuleIndex(int index) {
@@ -374,6 +377,27 @@ class SplashController extends GetxController implements GetxService {
 
   void getReferBottomSheetStatus(){
     _showReferBottomSheet = splashServiceInterface.getReferBottomSheetStatus();
+    update();
+  }
+
+  void savePopupBannerStatus(bool data) {
+    splashServiceInterface.savePopupBannerStatus(data);
+    _popupBannerShown = data;
+    update();
+  }
+
+  void getPopupBannerStatus(){
+    _popupBannerShown = splashServiceInterface.getPopupBannerStatus();
+    update();
+  }
+
+  /// Mark the popup as shown for the current app session only.
+  /// This does NOT persist the value to SharedPreferences so the popup
+  /// will be shown again after a full app restart, but won't re-appear
+  /// when navigating back to Home within the same session.
+  void markPopupShownInSession() {
+    _popupBannerShown = true;
+    update();
   }
 
   var hoverStates = <bool>[];

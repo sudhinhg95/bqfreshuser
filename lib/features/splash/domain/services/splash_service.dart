@@ -121,4 +121,14 @@ class SplashService implements SplashServiceInterface {
     return await splashRepositoryInterface.saveReferBottomSheetStatus(data);
   }
 
+  @override
+  bool getPopupBannerStatus() {
+    return splashRepositoryInterface.getPopupBannerStatus();
+  }
+
+  @override
+  Future<void> savePopupBannerStatus(bool data) async {
+    return await splashRepositoryInterface.savePopupBannerStatus(data);
+  }
+
 }

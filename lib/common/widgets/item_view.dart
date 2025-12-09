@@ -56,13 +56,11 @@ class _ItemsViewState extends State<ItemsView> {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisSpacing: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtremeLarge : widget.stores != null ? Dimensions.paddingSizeLarge : Dimensions.paddingSizeLarge,
           mainAxisSpacing: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtremeLarge : widget.stores != null && widget.isStore ? Dimensions.paddingSizeLarge : Dimensions.paddingSizeSmall,
-          // childAspectRatio: ResponsiveHelper.isDesktop(context) && widget.isStore ? (1/0.6)
-          //     : ResponsiveHelper.isMobile(context) ? widget.stores != null && widget.isStore ? 2 : 3.8
-          //     : 3.3,
-          mainAxisExtent: ResponsiveHelper.isDesktop(context) && widget.isStore ? 220
-              : ResponsiveHelper.isMobile(context) ? widget.stores != null && widget.isStore ? 200 : 122
-              : 122,
-          crossAxisCount: ResponsiveHelper.isMobile(context) ? 1 : ResponsiveHelper.isDesktop(context) && widget.stores != null  ? 3 : 3,
+          // For item listings we want a 2-column layout on mobile with larger cards.
+      mainAxisExtent: ResponsiveHelper.isDesktop(context) && widget.isStore ? 220
+        : ResponsiveHelper.isMobile(context) ? (widget.isStore ? 200 : 270)
+        : 220,
+          crossAxisCount: ResponsiveHelper.isMobile(context) ? (widget.isStore ? 1 : 2) : ResponsiveHelper.isDesktop(context) && widget.stores != null  ? 3 : 3,
         ),
         physics: widget.isScrollable ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
         shrinkWrap: widget.isScrollable ? false : true,

@@ -12,6 +12,7 @@ import 'package:sixam_mart/features/home/widgets/views/popular_store_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/item_that_you_love_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/just_for_you_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/most_popular_item_view.dart';
+import 'package:sixam_mart/features/home/widgets/views/latest_item_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/new_on_mart_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/middle_section_banner_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/special_offer_view.dart';
@@ -19,6 +20,7 @@ import 'package:sixam_mart/features/home/widgets/views/promotional_banner_view.d
 import 'package:sixam_mart/features/home/widgets/views/visit_again_view.dart';
 import 'package:sixam_mart/features/home/widgets/banner_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/category_view.dart';
+
 
 class ShopHomeScreen extends StatelessWidget {
   const ShopHomeScreen({super.key});
@@ -47,12 +49,14 @@ class ShopHomeScreen extends StatelessWidget {
       ),
 
       const CategoryView(),
-      isLoggedIn ? const VisitAgainView() : const SizedBox(),
-      const MostPopularItemView(isFood: false, isShop: true),
+      // isLoggedIn ? const VisitAgainView() : const SizedBox(),
+  // Latest items (shown below Most Popular)
+  const MostPopularItemView(isFood: false, isShop: true),
+  const LatestItemView(isFood: false, isShop: true),
       const FlashSaleViewWidget(),
       const MiddleSectionBannerView(),
       const HighlightWidget(),
-      const PopularStoreView(),
+      // const PopularStoreView(),
       const BrandsViewWidget(),
       const SpecialOfferView(isFood: false, isShop: true),
       const ProductWithCategoriesView(fromShop: true),
@@ -61,7 +65,7 @@ class ShopHomeScreen extends StatelessWidget {
       const FeaturedCategoriesView(),
       // const StoreWiseBannerView(),
       const ItemThatYouLoveView(forShop: true,),
-      const NewOnMartView(isShop: true,isPharmacy: false),
+      // const NewOnMartView(isShop: true,isPharmacy: false),
       const PromotionalBannerView(),
     ]);
   }

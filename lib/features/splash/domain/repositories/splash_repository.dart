@@ -279,6 +279,20 @@ class SplashRepository implements SplashRepositoryInterface {
   }
 
   @override
+  bool getPopupBannerStatus() {
+    return sharedPreferences.getBool(AppConstants.popupBannerShown) ?? false;
+  }
+
+  @override
+  Future<void> savePopupBannerStatus(bool data) async {
+    try {
+      await sharedPreferences.setBool(AppConstants.popupBannerShown, data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
   Future add(value) {
     throw UnimplementedError();
   }

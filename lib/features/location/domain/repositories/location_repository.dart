@@ -16,10 +16,10 @@ class LocationRepository implements LocationRepositoryInterface {
   Future<String> getAddressFromGeocode(LatLng latLng) async {
     Response response = await apiClient.getData('${AppConstants.geocodeUri}?lat=${latLng.latitude}&lng=${latLng.longitude}', handleError: false);
     String address = 'Unknown Location Found';
-    if(response.statusCode == 200 && response.body['status'] == 'OK') {
+    if (response.statusCode == 200 && response.body['status'] == 'OK') {
       address = response.body['results'][0]['formatted_address'].toString();
-    }else {
-      showCustomSnackBar(response.body['error_message'] ?? response.bodyString);
+    } else {
+       //showCustomSnackBar(response.body['error_message'] ?? response.bodyString);
     }
     return address;
   }

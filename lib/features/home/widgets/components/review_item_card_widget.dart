@@ -82,10 +82,12 @@ class ReviewItemCard extends StatelessWidget {
                     padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
                     child: Column(
                         crossAxisAlignment: isFeatured ? CrossAxisAlignment.start : CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text(
-                        item!.storeName!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                        style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
-                      ),
+                      // Show item description instead of store name (single-line)
+                      if (item!.description != null && item!.description!.isNotEmpty)
+                        Text(
+                          item!.description!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
+                        ),
 
                       Text(item!.name!, maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoBold),
 
@@ -185,10 +187,12 @@ class ReviewItemCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                                 const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
-                              Text(
-                                item!.storeName!, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
-                              ),
+                              // Show item description instead of store name (single-line)
+                              if (item!.description != null && item!.description!.isNotEmpty)
+                                Text(
+                                  item!.description!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                  style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
+                                ),
 
                               Text(item!.name!, maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoBold),
 

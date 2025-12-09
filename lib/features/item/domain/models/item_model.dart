@@ -2,6 +2,22 @@ import 'package:get/get.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/item/domain/models/basic_medicine_model.dart';
 
+// Helper to safely parse a dynamic value into an int when JSON may contain
+// integers or doubles (e.g. -3.5) or stringified numbers.
+int? _parseInt(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is double) return v.toInt();
+  return int.tryParse(v.toString());
+}
+
+double? _parseDouble(dynamic v) {
+  if (v == null) return null;
+  if (v is double) return v;
+  if (v is int) return v.toDouble();
+  return double.tryParse(v.toString());
+}
+
 class ItemModel {
   int? totalSize;
   String? limit;
@@ -12,38 +28,31 @@ class ItemModel {
   ItemModel({this.totalSize, this.limit, this.offset, this.items, this.categories});
 
   ItemModel.fromJson(Map<String, dynamic> json) {
-    totalSize = json['total_size'];
-    limit = json['limit'].toString();
-    offset = (json['offset'] != null && json['offset'].toString().trim().isNotEmpty) ? int.parse(json['offset'].toString()) : null;
+    totalSize = _parseInt(json['total_size']);
+    limit = json['limit']?.toString();
+    offset = (json['offset'] != null && json['offset'].toString().trim().isNotEmpty) ? _parseInt(json['offset']) : null;
     if (json['products'] != null) {
       items = [];
       json['products'].forEach((v) {
-        items!.add(Item.fromJson(v));
-        // if (v['module_type'] == null ||
-        //     !Get.find<SplashController>().getModuleConfig(v['module_type']).newVariation! ||
-        //     v['variations'] == null ||
-        //     v['variations'].isEmpty ||
-        //     (v['food_variations'] != null && v['food_variations'].isNotEmpty)) {
-        //   items!.add(Item.fromJson(v));
-        // }
+        items!.add(Item.fromJson(Map<String, dynamic>.from(v)));
       });
     }
     if (json['items'] != null) {
-      items = [];
+      items = items ?? [];
       json['items'].forEach((v) {
         if (v['module_type'] == null ||
             !Get.find<SplashController>().getModuleConfig(v['module_type']).newVariation! ||
             v['variations'] == null ||
             v['variations'].isEmpty ||
             (v['food_variations'] != null && v['food_variations'].isNotEmpty)) {
-          items!.add(Item.fromJson(v));
+          items!.add(Item.fromJson(Map<String, dynamic>.from(v)));
         }
       });
     }
     if (json['categories'] != null) {
       categories = <Categories>[];
       json['categories'].forEach((v) {
-        categories!.add(Categories.fromJson(v));
+        categories!.add(Categories.fromJson(Map<String, dynamic>.from(v)));
       });
     }
   }
@@ -146,77 +155,76 @@ class Item {
   });
 
   Item.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = _parseInt(json['id']);
     name = json['name'];
     description = json['description'];
     imageFullUrl = json['image_full_url'];
-    if(json['images_full_url'] != null){
+    if (json['images_full_url'] != null) {
       imagesFullUrl = [];
       json['images_full_url'].forEach((v) {
-        if(v != null) {
-          imagesFullUrl!.add(v.toString());
-        }
+        if (v != null) imagesFullUrl!.add(v.toString());
       });
     }
-    categoryId = json['category_id'];
+    categoryId = _parseInt(json['category_id']);
     if (json['category_ids'] != null) {
       categoryIds = [];
       json['category_ids'].forEach((v) {
-        categoryIds!.add(CategoryIds.fromJson(v));
+        categoryIds!.add(CategoryIds.fromJson(Map<String, dynamic>.from(v)));
       });
     }
     variations = [];
     if (json['variations'] != null) {
       json['variations'].forEach((v) {
-        variations!.add(Variation.fromJson(v));
+        variations!.add(Variation.fromJson(Map<String, dynamic>.from(v)));
       });
     }
     foodVariations = [];
     if (json['food_variations'] != null && json['food_variations'].isNotEmpty) {
       json['food_variations'].forEach((v) {
-        foodVariations!.add(FoodVariation.fromJson(v));
+        foodVariations!.add(FoodVariation.fromJson(Map<String, dynamic>.from(v)));
       });
     }
     if (json['add_ons'] != null) {
       addOns = [];
       if (json['add_ons'].length > 0 && json['add_ons'][0] != '[') {
         json['add_ons'].forEach((v) {
-          addOns!.add(AddOns.fromJson(v));
+          addOns!.add(AddOns.fromJson(Map<String, dynamic>.from(v)));
         });
       } else if (json['addons'] != null) {
         json['addons'].forEach((v) {
-          addOns!.add(AddOns.fromJson(v));
+          addOns!.add(AddOns.fromJson(Map<String, dynamic>.from(v)));
         });
       }
     }
     if (json['choice_options'] != null) {
       choiceOptions = [];
       json['choice_options'].forEach((v) {
-        choiceOptions!.add(ChoiceOptions.fromJson(v));
+        choiceOptions!.add(ChoiceOptions.fromJson(Map<String, dynamic>.from(v)));
       });
     }
-    price = json['price'].toDouble();
-    tax = json['tax']?.toDouble();
-    discount = json['discount'].toDouble();
+
+    price = _parseDouble(json['price']);
+    tax = _parseDouble(json['tax']);
+    discount = _parseDouble(json['discount']);
     discountType = json['discount_type'];
     availableTimeStarts = json['available_time_starts'];
     availableTimeEnds = json['available_time_ends'];
-    storeId = json['store_id'];
+    storeId = _parseInt(json['store_id']);
     storeName = json['store_name'];
-    zoneId = json['zone_id'];
-    storeDiscount = json['store_discount'].toDouble();
+    zoneId = _parseInt(json['zone_id']);
+    storeDiscount = _parseDouble(json['store_discount']);
     scheduleOrder = json['schedule_order'];
-    avgRating = json['avg_rating'].toDouble();
-    ratingCount = json['rating_count'];
-    moduleId = json['module_id'];
+    avgRating = _parseDouble(json['avg_rating']);
+    ratingCount = _parseInt(json['rating_count']);
+    moduleId = _parseInt(json['module_id']);
     moduleType = json['module_type'];
-    veg = json['veg'] != null ? int.parse(json['veg'].toString()) : 0;
-    stock = json['stock'];
+    veg = _parseInt(json['veg']) ?? 0;
+    stock = _parseInt(json['stock']);
     unitType = json['unit_type'];
     availableDateStarts = json['available_date_starts'];
-    organic = json['organic'];
-    quantityLimit = json['maximum_cart_quantity'];
-    flashSale = json['flash_sale'];
+    organic = _parseInt(json['organic']);
+    quantityLimit = _parseInt(json['maximum_cart_quantity']);
+    flashSale = _parseInt(json['flash_sale']);
     isStoreHalalActive = json['halal_tag_status'] == 1;
     isHalalItem = json['is_halal'] == 1;
     isPrescriptionRequired = json['is_prescription_required'] == 1;
@@ -287,8 +295,8 @@ class CategoryIds {
   CategoryIds({this.id, this.position});
 
   CategoryIds.fromJson(Map<String, dynamic> json) {
-    id = int.tryParse(json['id'].toString())??0;
-    position = int.tryParse(json['position'].toString())??0;
+    id = _parseInt(json['id']) ?? 0;
+    position = _parseInt(json['position']) ?? 0;
   }
 
   Map<String, dynamic> toJson() {
@@ -308,8 +316,8 @@ class Variation {
 
   Variation.fromJson(Map<String, dynamic> json) {
     type = json['type'];
-    price = json['price']?.toDouble();
-    stock = int.parse(json['stock'] != null ? json['stock'].toString() : '0');
+    price = _parseDouble(json['price']);
+    stock = _parseInt(json['stock']) ?? 0;
   }
 
   Map<String, dynamic> toJson() {
@@ -333,9 +341,9 @@ class AddOns {
   });
 
   AddOns.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = _parseInt(json['id']);
     name = json['name'];
-    price = json['price'].toDouble();
+    price = _parseDouble(json['price']);
   }
 
   Map<String, dynamic> toJson() {
@@ -357,7 +365,7 @@ class ChoiceOptions {
   ChoiceOptions.fromJson(Map<String, dynamic> json) {
     name = json['name'];
     title = json['title'];
-    options = json['options'].cast<String>();
+    options = json['options']?.cast<String>();
   }
 
   Map<String, dynamic> toJson() {
@@ -383,13 +391,13 @@ class FoodVariation {
     if (json['max'] != null) {
       name = json['name'];
       multiSelect = json['type'] == 'multi';
-      min = multiSelect! ? int.parse(json['min'].toString()) : 0;
-      max = multiSelect! ? int.parse(json['max'].toString()) : 0;
+      min = multiSelect! ? _parseInt(json['min']) : 0;
+      max = multiSelect! ? _parseInt(json['max']) : 0;
       required = json['required'] == 'on';
       if (json['values'] != null) {
         variationValues = [];
         json['values'].forEach((v) {
-          variationValues!.add(VariationValue.fromJson(v));
+          variationValues!.add(VariationValue.fromJson(Map<String, dynamic>.from(v)));
         });
       }
     }
@@ -418,7 +426,7 @@ class VariationValue {
 
   VariationValue.fromJson(Map<String, dynamic> json) {
     level = json['label'];
-    optionPrice = double.parse(json['optionPrice'].toString());
+    optionPrice = _parseDouble(json['optionPrice']);
     isSelected = json['isSelected'];
   }
 

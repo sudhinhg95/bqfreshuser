@@ -192,27 +192,17 @@ class _ItemBottomSheetState extends State<ItemBottomSheet> {
                                 widget.item!.name!, style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge),
                                 maxLines: 2, overflow: TextOverflow.ellipsis,
                               ),
-                              InkWell(
-                                onTap: () {
-                                  if(widget.inStorePage) {
-                                    Get.back();
-                                  }else {
-                                    Get.back();
-                                    Get.find<CartController>().forcefullySetModule(widget.item!.moduleId!);
-                                    Get.toNamed(
-                                      RouteHelper.getStoreRoute(id: widget.item!.storeId, page: 'item'),
-                                    );
-                                    Get.offNamed(RouteHelper.getStoreRoute(id: widget.item!.storeId, page: 'item'));
-                                  }
-                                },
-                                child: Padding(
+                              // Show item description instead of the store name
+                              if (widget.item!.description != null && widget.item!.description!.isNotEmpty)
+                                Padding(
                                   padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
                                   child: Text(
-                                    widget.item!.storeName!,
+                                    widget.item!.description!,
                                     style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              ),
                               !widget.isCampaign ? RatingBar(rating: widget.item!.avgRating, size: 15, ratingCount: widget.item!.ratingCount) : const SizedBox(),
                               Text(
                                 '${PriceConverter.convertPrice(startingPrice, discount: initialDiscount, discountType: discountType)}'
@@ -457,9 +447,9 @@ class _ItemBottomSheetState extends State<ItemBottomSheet> {
                                 /*buttonText: isCampaign ? 'order_now'.tr : isExistInCart ? 'already_added_in_cart'.tr : fromCart
                                           ? 'update_in_cart'.tr : 'add_to_cart'.tr,*/
                                 isLoading: cartController.isLoading,
-                                buttonText: (Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! && stock! <= 0)
-                                    ? 'out_of_stock'.tr : widget.isCampaign ? 'order_now'.tr
-                                    : (widget.cart != null || itemController.cartIndex != -1) ? 'update_in_cart'.tr : 'add_to_cart'.tr,
+                // Do not display 'out_of_stock' label; keep button disabled when out of stock
+                buttonText: widget.isCampaign ? 'order_now'.tr
+                  : (widget.cart != null || itemController.cartIndex != -1) ? 'update_in_cart'.tr : 'add_to_cart'.tr,
                                 onPressed: (Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! && stock! <= 0) ? null : () async {
                                   String? invalid;
                                   if(_newVariation) {

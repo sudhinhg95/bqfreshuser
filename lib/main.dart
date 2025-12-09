@@ -71,7 +71,23 @@ Future<void> main() async {
     await Firebase.initializeApp();
   }*/
 
-  await Firebase.initializeApp();
+  // Initialize Firebase with explicit options on Web to avoid firebase_core_web requiring non-null options
+  if (GetPlatform.isWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDFN-73p8zKVZbA0i5DtO215XzAb-xuGSE",
+        authDomain: "ammart-8885e.firebaseapp.com",
+        databaseURL: "https://ammart-8885e-default-rtdb.firebaseio.com",
+        projectId: "ammart-8885e",
+        storageBucket: "ammart-8885e.appspot.com",
+        messagingSenderId: "1000163153346",
+        appId: "1:1000163153346:web:4f702a4b5adbd5c906b25b",
+        measurementId: "G-L1GNL2YV61",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
 
   Map<String, Map<String, String>> languages = await di.init();
 
@@ -120,7 +136,8 @@ class _MyAppState extends State<MyApp> {
   void _route() async {
     if(GetPlatform.isWeb) {
        Get.find<SplashController>().initSharedData();
-      if(AddressHelper.getUserAddressFromSharedPref() != null && AddressHelper.getUserAddressFromSharedPref()!.zoneIds == null) {
+      final address = AddressHelper.getUserAddressFromSharedPref();
+      if(address != null && address.zoneIds == null) {
         Get.find<AuthController>().clearSharedAddress();
       }
 
@@ -151,7 +168,18 @@ class _MyAppState extends State<MyApp> {
     return GetBuilder<ThemeController>(builder: (themeController) {
       return GetBuilder<LocalizationController>(builder: (localizeController) {
         return GetBuilder<SplashController>(builder: (splashController) {
-          return (GetPlatform.isWeb && splashController.configModel == null) ? const SizedBox() : GetMaterialApp(
+          // Allow app to load even without config for development (web)
+          // Show loading indicator if config is still loading
+          if (GetPlatform.isWeb && splashController.configModel == null && splashController.isLoading) {
+            return MaterialApp(
+              home: Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          }
+          return GetMaterialApp(
             title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
             navigatorKey: Get.key,

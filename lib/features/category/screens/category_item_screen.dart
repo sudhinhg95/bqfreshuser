@@ -35,7 +35,8 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 2, initialIndex: 0, vsync: this);
+    // Only show the Items tab; hide the Stores tab per request
+    _tabController = TabController(length: 1, initialIndex: 0, vsync: this);
     Get.find<CategoryController>().getSubCategoryList(widget.categoryID);
 
     Get.find<CategoryController>().getCategoryStoreList(
@@ -256,7 +257,6 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                       labelStyle: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
                       tabs: [
                         Tab(text: 'item'.tr),
-                        Tab(text: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'restaurants'.tr : 'stores'.tr),
                       ],
                     ),
                   )),
@@ -266,28 +266,21 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                     child: NotificationListener(
                       onNotification: (dynamic scrollNotification) {
                         if (scrollNotification is ScrollEndNotification) {
-                          if((_tabController!.index == 1 && !catController.isStore) || _tabController!.index == 0 && catController.isStore) {
-                            catController.setRestaurant(_tabController!.index == 1);
-                            if(catController.isSearching) {
-                              catController.searchData(
-                                catController.searchText, catController.subCategoryIndex == 0 ? widget.categoryID
-                                  : catController.subCategoryList![catController.subCategoryIndex].id.toString(), catController.type,
-                              );
-                            }else {
-                              if(_tabController!.index == 1) {
-                                catController.getCategoryStoreList(
-                                  catController.subCategoryIndex == 0 ? widget.categoryID
-                                      : catController.subCategoryList![catController.subCategoryIndex].id.toString(),
-                                  1, catController.type, false,
-                                );
-                              }else {
-                                catController.getCategoryItemList(
-                                  catController.subCategoryIndex == 0 ? widget.categoryID
-                                      : catController.subCategoryList![catController.subCategoryIndex].id.toString(),
-                                  1, catController.type, false,
-                                );
-                              }
-                            }
+                          // Only items tab exists: ensure controller is in item mode and load items
+                          if (catController.isStore) {
+                            catController.setRestaurant(false);
+                          }
+                          if(catController.isSearching) {
+                            catController.searchData(
+                              catController.searchText, catController.subCategoryIndex == 0 ? widget.categoryID
+                                : catController.subCategoryList![catController.subCategoryIndex].id.toString(), catController.type,
+                            );
+                          } else {
+                            catController.getCategoryItemList(
+                              catController.subCategoryIndex == 0 ? widget.categoryID
+                                  : catController.subCategoryList![catController.subCategoryIndex].id.toString(),
+                              1, catController.type, false,
+                            );
                           }
                         }
                         return false;
@@ -299,13 +292,6 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                             controller: scrollController,
                             child: ItemsView(
                               isStore: false, items: item, stores: null, noDataText: 'no_category_item_found'.tr,
-                            ),
-                          ),
-                          SingleChildScrollView(
-                            controller: storeScrollController,
-                            child: ItemsView(
-                              isStore: true, items: null, stores: stores,
-                              noDataText: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'no_category_restaurant_found'.tr : 'no_category_store_found'.tr,
                             ),
                           ),
                         ],
@@ -372,7 +358,6 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                   labelStyle: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
                   tabs: [
                     Tab(text: 'item'.tr),
-                    Tab(text: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'restaurants'.tr : 'stores'.tr),
                   ],
                 ),
               )),
@@ -414,13 +399,6 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                       controller: scrollController,
                       child: ItemsView(
                         isStore: false, items: item, stores: null, noDataText: 'no_category_item_found'.tr,
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      controller: storeScrollController,
-                      child: ItemsView(
-                        isStore: true, items: null, stores: stores,
-                        noDataText: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'no_category_restaurant_found'.tr : 'no_category_store_found'.tr,
                       ),
                     ),
                   ],

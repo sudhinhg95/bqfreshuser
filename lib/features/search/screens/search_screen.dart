@@ -43,7 +43,8 @@ class SearchScreenState extends State<SearchScreen> with TickerProviderStateMixi
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, initialIndex: 0, vsync: this);
+    // Only a single tab (items) is needed — remove stores tab from item listing
+    _tabController = TabController(length: 1, initialIndex: 0, vsync: this);
     _isLoggedIn = AuthHelper.isLoggedIn();
     Get.find<search.SearchController>().setSearchMode(true, canUpdate: false);
     Get.find<search.SearchController>().getPopularCategories();
@@ -152,7 +153,6 @@ class SearchScreenState extends State<SearchScreen> with TickerProviderStateMixi
                                   indicatorSize: TabBarIndicatorSize.tab,
                                   tabs: [
                                     Tab(text: 'item'.tr),
-                                    Tab(text: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText! ? 'restaurants'.tr : 'stores'.tr),
                                   ],
                                 ),
                               ),

@@ -79,7 +79,12 @@ import 'package:sixam_mart/util/app_constants.dart';
     if (AddressHelper.getUserAddressFromSharedPref() != null) {
       Get.offNamed(RouteHelper.getInitialRoute(fromSplash: true));
     } else {
-      Get.find<LocationController>().navigateToLocationScreen('splash', offNamed: true);
+      // On web, allow app to work without location for development
+      if (GetPlatform.isWeb) {
+        Get.offNamed(RouteHelper.getInitialRoute(fromSplash: true));
+      } else {
+        Get.find<LocationController>().navigateToLocationScreen('splash', offNamed: true);
+      }
     }
   }
 

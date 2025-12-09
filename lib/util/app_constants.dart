@@ -14,6 +14,8 @@ class AppConstants {
   static const bool useReactWebsite = false;
 
   static const String baseUrl = 'https://admin.bqfresh.com';
+  // static const String baseUrl = 'http://localhost/admin.bqfresh.com';
+
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';
   static const String storeItemUri = '/api/v1/items/latest';
@@ -147,6 +149,7 @@ class AppConstants {
   static const String firebaseAuthVerify = '/api/v1/auth/firebase-verify-token';
   static const String personalInformationUri = '/api/v1/auth/update-info';
   static const String firebaseResetPassword = '/api/v1/auth/firebase-reset-password';
+  static const String popupBannerUri = '/api/v1/other-banners/pop-up-banners'; // example
 
   ///Subscription
   static const String businessPlanUri = '/api/v1/vendor/business_plan';
@@ -199,6 +202,7 @@ class AppConstants {
   static const String getPopularTaxiSuggestionUri = '/api/v1/rental/vehicle/popular-suggestion/';
   static const String getProviderBannerUri = '/api/v1/rental/banners';
 
+
   /// Shared Key
   static const String theme = '6ammart_theme';
   static const String token = '6ammart_token';
@@ -224,6 +228,7 @@ class AppConstants {
   static const String guestId = '6ammart_guest_id';
   static const String guestNumber = '6ammart_guest_number';
   static const String referBottomSheet = '6ammart_reffer_bottomsheet_show';
+  static const String popupBannerShown = '6ammart_popup_banner_shown';
   static const String dmRegisterSuccess = '6ammart_dm_registration_success';
   static const String isRestaurantRegister = '6ammart_store_registration';
 
@@ -324,5 +329,9 @@ class AppConstants {
 
   //taxi seats..
   static List<String> seats = ['1-4', '5-8', '9-13', '14+'];
+
+  /// UI toggles
+  /// Set to true to hide "New" tags across the app (useful for BQ Fresh customization)
+  static const bool hideNewTag = true;
 
 }

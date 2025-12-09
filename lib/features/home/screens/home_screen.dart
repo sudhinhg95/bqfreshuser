@@ -43,6 +43,9 @@ import 'package:sixam_mart/common/widgets/paginated_list_view.dart';
 import 'package:sixam_mart/common/widgets/web_menu_bar.dart';
 import 'package:sixam_mart/features/home/screens/web_new_home_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:video_player/video_player.dart';
+import 'package:sixam_mart/common/enums/data_source_enum.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/home/widgets/module_view.dart';
 import 'package:sixam_mart/features/parcel/screens/parcel_category_screen.dart';
@@ -59,8 +62,11 @@ class HomeScreen extends StatefulWidget {
     if(AuthHelper.isLoggedIn()) {
       Get.find<StoreController>().getVisitAgainStoreList(fromModule: fromModule);
     }
-    if(Get.find<SplashController>().module != null && !Get.find<SplashController>().configModel!.moduleConfig!.module!.isParcel! && !Get.find<SplashController>().configModel!.moduleConfig!.module!.isTaxi!) {
+    final configModel = Get.find<SplashController>().configModel;
+    final module = Get.find<SplashController>().module;
+    if(module != null && configModel != null && configModel.moduleConfig != null && configModel.moduleConfig!.module != null && !configModel.moduleConfig!.module!.isParcel! && !configModel.moduleConfig!.module!.isTaxi!) {
       Get.find<BannerController>().getBannerList(reload);
+      Get.find<BannerController>().getPopUpBannerList(reload);
       Get.find<StoreController>().getRecommendedStoreList();
       if(Get.find<SplashController>().module!.moduleType.toString() == AppConstants.grocery) {
         Get.find<FlashSaleController>().getFlashSale(reload, false);
@@ -73,9 +79,10 @@ class HomeScreen extends StatefulWidget {
       Get.find<BannerController>().getPromotionalBannerList(reload);
       Get.find<ItemController>().getDiscountedItemList(reload, false, 'all');
       Get.find<CategoryController>().getCategoryList(reload);
-      Get.find<StoreController>().getPopularStoreList(reload, 'all', false);
+      // Get.find<StoreController>().getPopularStoreList(reload, 'all', false);
       Get.find<CampaignController>().getBasicCampaignList(reload);
       Get.find<CampaignController>().getItemCampaignList(reload);
+      Get.find<ItemController>().getLatestItemList(reload, 'all', false);
       Get.find<ItemController>().getPopularItemList(reload, 'all', false);
       Get.find<StoreController>().getLatestStoreList(reload, 'all', false);
       Get.find<StoreController>().getTopOfferStoreList(reload, false);
@@ -123,19 +130,87 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    HomeScreen.loadData(false).then((value) {
-      Get.find<SplashController>().getReferBottomSheetStatus();
+    print('🔔 Popup: initState called');
+    // Do NOT read a persisted popup flag here. We want the popup to show
+    // on every cold app start, but not when navigating back to Home during
+    // the same session. The controller maintains a session-only flag.
+    
+    // Schedule popup independently of loadData completion
+    // Use both postFrameCallback and direct delay to ensure it runs
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('🔔 Popup: PostFrameCallback executed, scheduling popup in 2 seconds');
+      // show popup after a short delay so UI has time to settle
+      Future.delayed(const Duration(seconds: 2), () {
+        print('🔔 Popup: 2 second delay completed, considering _showPopupBanner');
+        if (mounted) {
+          try {
+            final splashController = Get.find<SplashController>();
+            if (!(splashController.popupBannerShown)) {
+              print('🔔 Popup: popupBannerShown is false, calling _showPopupBanner');
+              _showPopupBanner();
+            } else {
+              print('🔔 Popup: popupBannerShown is true; skipping popup');
+            }
+          } catch (e) {
+            print('🔔 Popup: Error checking popup status, defaulting to show -> $e');
+            _showPopupBanner();
+          }
+        } else {
+          print('🔔 Popup: Widget not mounted, cannot show popup');
+        }
+      });
+    });
+    
+    // Also try direct delay as backup
+    Future.delayed(const Duration(seconds: 3), () {
+      print('🔔 Popup: Backup delay (3s) executed, checking if popup was shown');
+      if (mounted) {
+        try {
+          final splashController = Get.find<SplashController>();
+          if (splashController.popupBannerShown) {
+            print('🔔 Popup: Backup - popupBannerShown is true; skipping backup popup');
+            return;
+          }
+        } catch (e) {
+          print('🔔 Popup: Backup - could not read popup status: $e');
+        }
 
-      if((Get.find<ProfileController>().userInfoModel?.isValidForDiscount??false) && Get.find<SplashController>().showReferBottomSheet) {
-        _showReferBottomSheet();
+        final bannerController = Get.find<BannerController>();
+        final banners = bannerController.popupBannerImageList;
+        print('🔔 Popup: Backup check - banners count: ${banners?.length ?? 0}');
+        if (banners == null || banners.isEmpty) {
+          print('🔔 Popup: Backup - No banners, attempting to call _showPopupBanner again');
+          _showPopupBanner();
+        }
       }
     });
+    
+    try {
+      HomeScreen.loadData(false).then((value) {
+        try {
+          Get.find<SplashController>().getReferBottomSheetStatus();
+
+          if((Get.find<ProfileController>().userInfoModel?.isValidForDiscount??false) && Get.find<SplashController>().showReferBottomSheet) {
+            _showReferBottomSheet();
+          }
+        } catch (e) {
+          print('Error in HomeScreen initState callback: $e');
+        }
+      }).catchError((e) {
+        print('Error loading HomeScreen data: $e');
+      });
+    } catch (e) {
+      print('Error in HomeScreen initState: $e');
+    }
 
     if(!ResponsiveHelper.isWeb()) {
-      Get.find<LocationController>().getZone(
-          AddressHelper.getUserAddressFromSharedPref()!.latitude,
-          AddressHelper.getUserAddressFromSharedPref()!.longitude, false, updateInAddress: true
-      );
+      final address = AddressHelper.getUserAddressFromSharedPref();
+      if(address != null && address.latitude != null && address.longitude != null) {
+        Get.find<LocationController>().getZone(
+            address.latitude,
+            address.longitude, false, updateInAddress: true
+        );
+      }
     }
 
     _scrollController.addListener(() {
@@ -158,6 +233,383 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
     _scrollController.dispose();
   }
+
+  
+  void _showPopupBanner() async {
+    try {
+      print('🔔 Popup: Starting _showPopupBanner function');
+      if (!mounted) {
+        print('🔔 Popup: Widget not mounted, returning');
+        return;
+      }
+      
+      final bannerController = Get.find<BannerController>();
+      print('🔔 Popup: Fetching popup banners from API...');
+      // Fetch banners from the server (client) first so popup shows all images
+      await bannerController.getPopUpBannerList(true, dataSource: DataSourceEnum.client);
+
+      if (!mounted) {
+        print('🔔 Popup: Widget not mounted after API call, returning');
+        return;
+      }
+
+      final List<String?>? banners = bannerController.popupBannerImageList;
+      print('🔔 Popup: Banner list received: ${banners?.length ?? 0} banners');
+      print('🔔 Popup: Banner URLs: $banners');
+
+      if (banners == null || banners.isEmpty) {
+        print('🔔 Popup: No popup banners configured; skipping popup');
+        return;
+      }
+
+      // Normalize to non-null strings (only use popup list — do not fallback to main banners)
+      final List<String> validBanners = banners.map((b) => (b ?? '').toString()).where((s) => s.isNotEmpty).toList();
+      if (validBanners.isEmpty) {
+        print('🔔 Popup: Popup banner list contains no valid URLs; skipping popup');
+        return;
+      }
+      
+      print('🔔 Popup: Showing dialog with ${validBanners.length} valid banners');
+
+  print('🔔 Popup: Showing dialog with ${banners?.length ?? 0} banners');
+
+      // Auto-slide PageView: create a controller and a timer, cancel after dialog closes
+      final pageController = PageController(initialPage: 0);
+      int currentIndex = 0;
+      Timer? imageTimer;
+      // Prepare video controllers for any video URLs (do NOT autoplay)
+      final videoControllers = List<VideoPlayerController?>.filled(validBanners.length, null);
+      final List<Future> initFutures = [];
+      final videoExt = RegExp(r'\.(mp4|webm|mov|m4v)(\?|\#|$)', caseSensitive: false);
+      for (int i = 0; i < validBanners.length; i++) {
+        final url = validBanners[i];
+        if (videoExt.hasMatch(url) && !url.startsWith('assets/')) {
+          try {
+            final controller = VideoPlayerController.network(url);
+            videoControllers[i] = controller;
+            controller.setLooping(false); // do not loop; advance after finish
+            controller.setVolume(0); // muted by default
+            initFutures.add(controller.initialize().then((_) {
+              // add listener to detect when playback finishes
+              controller.addListener(() {
+                  final value = controller.value;
+                  if (!value.isInitialized) return;
+                  // If video is playing, cancel any auto-advance timer
+                  if (value.isPlaying) {
+                    imageTimer?.cancel();
+                  } else {
+                    // Not playing: determine if it finished or simply paused
+                    final duration = value.duration ?? Duration.zero;
+                    final position = value.position;
+                    if (position >= duration && duration > Duration.zero) {
+                      // playback finished, advance immediately (if still on same page)
+                      if (currentIndex == i && mounted) {
+                        final next = (currentIndex + 1) % validBanners.length;
+                        try {
+                          pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                        } catch (_) {}
+                      }
+                    } else {
+                      // paused mid-playback (or not started): start a short auto-advance timer
+                      imageTimer?.cancel();
+                      imageTimer = Timer(const Duration(seconds: 3), () {
+                        if (!mounted) return;
+                        // only advance if still paused and still on this page
+                        final nowVal = controller.value;
+                        if (!nowVal.isPlaying && currentIndex == i) {
+                          final next = (currentIndex + 1) % validBanners.length;
+                          try {
+                            pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                          } catch (_) {}
+                        }
+                      });
+                    }
+                  }
+                });
+            }));
+          } catch (e) {
+            print('🔔 Popup: Failed to create VideoPlayerController for $url -> $e');
+            videoControllers[i] = null;
+          }
+        }
+      }
+      // Wait (best-effort) for initializations so play button can appear immediately
+      if (initFutures.isNotEmpty) {
+        try {
+          await Future.wait(initFutures);
+        } catch (_) {}
+      }
+      // Start initial auto-advance timer depending on the first page state:
+      if (validBanners.isNotEmpty) {
+        final vc0 = videoControllers[currentIndex];
+        if (vc0 != null) {
+          // video present on initial page
+          try {
+            if (vc0.value.isPlaying) {
+              imageTimer?.cancel();
+            } else {
+              // paused by default -> start image timer to advance after 3s
+              imageTimer?.cancel();
+              imageTimer = Timer(const Duration(seconds: 3), () {
+                if (!mounted) return;
+                if (!vc0.value.isPlaying && currentIndex == 0) {
+                  final next = (currentIndex + 1) % validBanners.length;
+                  try { pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut); } catch (_) {}
+                }
+              });
+            }
+          } catch (_) {
+            // ignore
+          }
+        } else {
+          // initial page is an image -> start image timer
+          imageTimer?.cancel();
+          imageTimer = Timer(const Duration(seconds: 3), () {
+            if (!mounted) return;
+            final next = (currentIndex + 1) % validBanners.length;
+            try { pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut); } catch (_) {}
+          });
+        }
+      }
+
+      if (!mounted) {
+        print('🔔 Popup: Widget not mounted before showing dialog');
+        return;
+      }
+
+      print('🔔 Popup: About to show dialog');
+      await showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) {
+          print('🔔 Popup: Dialog builder called');
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                children: [
+                  SizedBox(
+                    height: 300,
+                    width: double.infinity,
+                    child: StatefulBuilder(builder: (context, setState) {
+                      // helper to start a 3s timer for images (cancels any existing)
+                      void startImageTimer() {
+                        imageTimer?.cancel();
+                        imageTimer = Timer(const Duration(seconds: 3), () {
+                          if (!mounted) return;
+                          final next = (currentIndex + 1) % validBanners.length;
+                          try {
+                            pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                          } catch (_) {}
+                        });
+                      }
+
+                      return PageView.builder(
+                        controller: pageController,
+                        itemCount: validBanners.length,
+                        onPageChanged: (index) {
+                          // cancel any timers and pause other videos
+                          currentIndex = index;
+                          imageTimer?.cancel();
+                          for (int j = 0; j < videoControllers.length; j++) {
+                            final vc = videoControllers[j];
+                            if (vc != null && j != index) {
+                              try { vc.pause(); vc.seekTo(Duration.zero); } catch (_) {}
+                            }
+                          }
+                          // If new page is a video, start timer only when it's paused; if image, start timer immediately
+                          final vc = videoControllers[index];
+                          if (vc != null) {
+                            try {
+                              if (vc.value.isPlaying) {
+                                imageTimer?.cancel();
+                              } else {
+                                startImageTimer();
+                              }
+                            } catch (_) {
+                              startImageTimer();
+                            }
+                          } else {
+                            startImageTimer();
+                          }
+                        },
+                        itemBuilder: (context, index) {
+                          final bannerUrl = validBanners[index];
+                          final vController = videoControllers[index];
+                          // If we have a prepared video controller, render the VideoPlayer with play/pause overlay
+                          if (vController != null && vController.value.isInitialized) {
+                            final isPlaying = vController.value.isPlaying;
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                AspectRatio(
+                                  aspectRatio: vController.value.aspectRatio > 0 ? vController.value.aspectRatio : (16/9),
+                                  child: VideoPlayer(vController),
+                                ),
+                                // Play/pause button overlay
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        if (vController.value.isPlaying) {
+                                          try { await vController.pause(); } catch (_) {}
+                                          // start auto-advance timer when paused
+                                          imageTimer?.cancel();
+                                          imageTimer = Timer(const Duration(seconds: 3), () {
+                                            if (!mounted) return;
+                                            if (!vController.value.isPlaying && currentIndex == index) {
+                                              final next = (currentIndex + 1) % validBanners.length;
+                                              try { pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut); } catch (_) {}
+                                            }
+                                          });
+                                        } else {
+                                          try { await vController.play(); } catch (_) {}
+                                          // cancel any auto-advance while playing
+                                          imageTimer?.cancel();
+                                        }
+                                        setState(() {});
+                                      },
+                                      child: Center(
+                                        child: Container(
+                                          decoration: BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
+                                          padding: const EdgeInsets.all(12),
+                                          child: Icon(
+                                            isPlaying ? Icons.pause : Icons.play_arrow,
+                                            color: Colors.white,
+                                            size: 32,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+                          // Not a video (or failed to init) — show image with fallback
+                          // start image timer only for first build of this page
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (currentIndex == index && (videoControllers[index] == null)) {
+                              imageTimer?.cancel();
+                              imageTimer = Timer(const Duration(seconds: 3), () {
+                                if (!mounted) return;
+                                final next = (currentIndex + 1) % validBanners.length;
+                                try {
+                                  pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                                } catch (_) {}
+                              });
+                            }
+                          });
+                          return Image.network(
+                            bannerUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (_, __, ___) => Image.asset(
+                              "assets/image/no_coupon.png",
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: InkWell(
+                      onTap: () => Get.back(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.close, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+      // After the dialog closes, mark popup as shown for this session so
+      // it won't re-appear when navigating within the app. Do NOT persist
+      // this value so the popup will show again on the next cold app start.
+      try {
+        Get.find<SplashController>().markPopupShownInSession();
+        print('🔔 Popup: Marked popupBannerShown in session');
+      } catch (e) {
+        print('🔔 Popup: Failed to mark popup session status: $e');
+      }
+
+  // When dialog closes, stop any timers and dispose controller and video controllers
+  imageTimer?.cancel();
+      pageController.dispose();
+      try {
+        for (final vc in videoControllers) {
+          if (vc != null) {
+            try { vc.pause(); } catch (_) {}
+            try { vc.dispose(); } catch (_) {}
+          }
+        }
+      } catch (_) {}
+    } catch (e, stackTrace) {
+      print('Error showing popup banner: $e');
+      print('Stack trace: $stackTrace');
+      // Don't crash the app if popup fails
+    }
+  }
+
+
+
+// void _showPopupBanner() {
+//   showDialog(
+//     context: context,
+//     barrierDismissible: true,
+//     builder: (_) {
+//       return Dialog(
+//         shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(16),
+//         ),
+//         child: ClipRRect(
+//           borderRadius: BorderRadius.circular(16),
+//           child: Stack(
+//             children: [
+//               Image.network(
+//                 "http://localhost:63882/assets/image/no_coupon.png",  // ← CHANGE THIS
+//                 fit: BoxFit.cover,
+//                 width: double.infinity,
+//               ),
+
+//               Positioned(
+//                 top: 8,
+//                 right: 8,
+//                 child: InkWell(
+//                   onTap: () => Get.back(),
+//                   child: Container(
+//                     decoration: BoxDecoration(
+//                       color: Colors.black54,
+//                       shape: BoxShape.circle,
+//                     ),
+//                     padding: EdgeInsets.all(6),
+//                     child: Icon(Icons.close, color: Colors.white, size: 20),
+//                   ),
+//                 ),
+//               ),
+//             ],
+//           ),
+//         ),
+//       );
+//     },
+//   );
+// }
 
   void _showReferBottomSheet() {
     ResponsiveHelper.isDesktop(context) ? Get.dialog(
@@ -222,15 +674,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (Get.find<SplashController>().module != null && !isTaxi) {
                   await Get.find<LocationController>().syncZoneData();
                   await Get.find<BannerController>().getBannerList(true);
+                  await Get.find<BannerController>().getPopUpBannerList(true);
                   if (isGrocery) {
                     await Get.find<FlashSaleController>().getFlashSale(true, true);
                   }
                   await Get.find<BannerController>().getPromotionalBannerList(true);
                   await Get.find<ItemController>().getDiscountedItemList(true, false, 'all');
                   await Get.find<CategoryController>().getCategoryList(true);
-                  await Get.find<StoreController>().getPopularStoreList(true, 'all', false);
+                  // await Get.find<StoreController>().getPopularStoreList(true, 'all', false);
                   await Get.find<CampaignController>().getItemCampaignList(true);
                   Get.find<CampaignController>().getBasicCampaignList(true);
+                  await Get.find<ItemController>().getLatestItemList(true, 'all', false);
                   await Get.find<ItemController>().getPopularItemList(true, 'all', false);
                   await Get.find<StoreController>().getLatestStoreList(true, 'all', false);
                   await Get.find<StoreController>().getTopOfferStoreList(true, false);
@@ -297,9 +751,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               horizontal: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeSmall : 0,
                             ),
                             child: GetBuilder<LocationController>(builder: (locationController) {
+                              final address = AddressHelper.getUserAddressFromSharedPref();
                               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Text(
-                                  AuthHelper.isLoggedIn() ? AddressHelper.getUserAddressFromSharedPref()!.addressType!.tr : 'your_location'.tr,
+                                  AuthHelper.isLoggedIn() && address?.addressType != null ? address!.addressType!.tr : 'your_location'.tr,
                                   style: robotoMedium.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color, fontSize: Dimensions.fontSizeDefault),
                                   maxLines: 1, overflow: TextOverflow.ellipsis,
                                 ),
@@ -307,7 +762,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Row(children: [
                                   Flexible(
                                     child: Text(
-                                      AddressHelper.getUserAddressFromSharedPref()!.address!,
+                                      address?.address ?? 'Tap to select location',
                                       style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
                                       maxLines: 1, overflow: TextOverflow.ellipsis,
                                     ),
@@ -392,6 +847,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     )),
                   ),
 
+                  // Store header (title + nearby count + filters): hidden but preserved in the tree.
+                  // Change `offstage: true` to `false` to make it visible again.
                   !showMobileModule && !isTaxi ? SliverPersistentHeader(
                     key: _headerKey,
                     pinned: true,
@@ -400,31 +857,40 @@ class _HomeScreenState extends State<HomeScreen> {
                       callback: (val) {
                         searchBgShow = val;
                       },
-                      child: const AllStoreFilterWidget(),
+                      child: const Offstage(
+                        offstage: true,
+                        child: AllStoreFilterWidget(),
+                      ),
                     ),
                   ) : const SliverToBoxAdapter(),
 
-                  SliverToBoxAdapter(child: !showMobileModule && !isTaxi ? Center(child: GetBuilder<StoreController>(builder: (storeController) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: ResponsiveHelper.isDesktop(context) ? 0 : 100),
-                      child: PaginatedListView(
-                        scrollController: _scrollController,
-                        totalSize: storeController.storeModel?.totalSize,
-                        offset: storeController.storeModel?.offset,
-                        onPaginate: (int? offset) async => await storeController.getStoreList(offset!, false),
-                        itemView: ItemsView(
-                          isStore: true,
-                          items: null,
-                          isFoodOrGrocery: (isFood || isGrocery),
-                          stores: storeController.storeModel?.stores,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeSmall,
-                            vertical: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeDefault,
+                  // Stores section: intentionally hidden but kept in the widget tree.
+                  // To re-enable visible stores, set `offstage: false` below or remove the Offstage wrapper.
+                  SliverToBoxAdapter(child: !showMobileModule && !isTaxi ? Center(child: Offstage(
+                    // Hidden by default per user request. Keeps state and code intact.
+                    offstage: true,
+                    child: GetBuilder<StoreController>(builder: (storeController) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: ResponsiveHelper.isDesktop(context) ? 0 : 100),
+                        child: PaginatedListView(
+                          scrollController: _scrollController,
+                          totalSize: storeController.storeModel?.totalSize,
+                          offset: storeController.storeModel?.offset,
+                          onPaginate: (int? offset) async => await storeController.getStoreList(offset!, false),
+                          itemView: ItemsView(
+                            isStore: true,
+                            items: null,
+                            isFoodOrGrocery: (isFood || isGrocery),
+                            stores: storeController.storeModel?.stores,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeSmall,
+                              vertical: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeDefault,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  }),) : const SizedBox()),
+                      );
+                    }),
+                  )) : const SizedBox()),
 
                 ],
               ),
