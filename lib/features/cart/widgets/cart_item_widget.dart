@@ -121,21 +121,12 @@ class CartItemWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
-                        ((Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && cart.item!.unitType != null && !Get.find<SplashController>().getModuleConfig(cart.item!.moduleType).newVariation!)
-                            || (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!))
-                            ? !Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! ? CustomAssetImageWidget(
+                        // Hide UOM (unitType) in cart; only show veg/non-veg icon when enabled
+                        (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg!
+                            && Get.find<SplashController>().configModel!.toggleVegNonVeg!)
+                            ? CustomAssetImageWidget(
                           cart.item!.veg == 0 ? Images.nonVegImage : Images.vegImage,
                           height: 11, width: 11,
-                        ) : Container(
-                          padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall, horizontal: Dimensions.paddingSizeSmall),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                            color: Theme.of(context).primaryColor.withOpacity( 0.1),
-                          ),
-                          child: Text(
-                            cart.item!.unitType ?? '',
-                            style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).primaryColor),
-                          ),
                         ) : const SizedBox(),
 
                         SizedBox(width: cart.item!.isStoreHalalActive! && cart.item!.isHalalItem! ? Dimensions.paddingSizeExtraSmall : 0),

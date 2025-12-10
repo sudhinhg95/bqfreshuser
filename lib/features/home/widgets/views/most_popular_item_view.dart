@@ -39,7 +39,8 @@ class MostPopularItemView extends StatelessWidget {
               ),
 
               SizedBox(
-                height: 285, width: Get.width,
+                // Increased to match LatestItemView and avoid bottom overflow.
+                height: 246, width: Get.width,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),

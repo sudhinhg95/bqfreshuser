@@ -256,6 +256,33 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                             style:robotoBold.copyWith(color: Theme.of(context).primaryColor, fontSize: Dimensions.fontSizeLarge),
                           ),
                         ]),
+                        const SizedBox(height: Dimensions.paddingSizeSmall),
+
+                        // Long description section after total amount, above update-to-cart controls
+                        if (itemController.item?.longDescription != null
+                            && itemController.item!.longDescription!.trim().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'description'.tr,
+                                  style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault),
+                                ),
+                                const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+                                Text(
+                                  itemController.item!.longDescription!.trim(),
+                                  style: robotoMedium.copyWith(
+                                    fontSize: Dimensions.fontSizeSmall,
+                                    // Slightly darker than disabledColor for better readability
+                                    color: Theme.of(context).textTheme.bodyLarge!.color?.withOpacity(0.8),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
                         const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
                         itemController.item!.isPrescriptionRequired! ? Container(

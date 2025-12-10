@@ -57,21 +57,25 @@ class HomeScreen extends StatefulWidget {
   static Future<void> loadData(bool reload, {bool fromModule = false}) async {
     Get.find<LocationController>().syncZoneData();
     Get.find<FlashSaleController>().setEmptyFlashSale(fromModule: fromModule);
-    // print('------------call from home');
-    // await Get.find<CartController>().getCartDataOnline();
     if(AuthHelper.isLoggedIn()) {
       Get.find<StoreController>().getVisitAgainStoreList(fromModule: fromModule);
     }
-    final configModel = Get.find<SplashController>().configModel;
-    final module = Get.find<SplashController>().module;
-    if(module != null && configModel != null && configModel.moduleConfig != null && configModel.moduleConfig!.module != null && !configModel.moduleConfig!.module!.isParcel! && !configModel.moduleConfig!.module!.isTaxi!) {
+
+    final splashController = Get.find<SplashController>();
+    final configModel = splashController.configModel;
+    final module = splashController.module;
+    final moduleConfig = configModel?.moduleConfig?.module;
+    final isParcelModule = moduleConfig?.isParcel ?? false;
+    final isTaxiModule = moduleConfig?.isTaxi ?? false;
+
+    if(module != null && moduleConfig != null && !isParcelModule && !isTaxiModule) {
       Get.find<BannerController>().getBannerList(reload);
       Get.find<BannerController>().getPopUpBannerList(reload);
       Get.find<StoreController>().getRecommendedStoreList();
-      if(Get.find<SplashController>().module!.moduleType.toString() == AppConstants.grocery) {
+      if(module.moduleType.toString() == AppConstants.grocery) {
         Get.find<FlashSaleController>().getFlashSale(reload, false);
       }
-      if(Get.find<SplashController>().module!.moduleType.toString() == AppConstants.ecommerce) {
+      if(module.moduleType.toString() == AppConstants.ecommerce) {
         Get.find<ItemController>().getFeaturedCategoriesItemList(false, false);
         Get.find<FlashSaleController>().getFlashSale(reload, false);
         Get.find<BrandsController>().getBrandList();
@@ -97,18 +101,18 @@ class HomeScreen extends StatefulWidget {
       Get.find<NotificationController>().getNotificationList(reload);
       Get.find<CouponController>().getCouponList();
     }
-    Get.find<SplashController>().getModules();
-    if(Get.find<SplashController>().module == null && Get.find<SplashController>().configModel!.module == null) {
+    splashController.getModules();
+    if(splashController.module == null && splashController.configModel?.module == null) {
       Get.find<BannerController>().getFeaturedBanner();
       Get.find<StoreController>().getFeaturedStoreList();
       if(AuthHelper.isLoggedIn()) {
         Get.find<AddressController>().getAddressList();
       }
     }
-    if(Get.find<SplashController>().module != null && Get.find<SplashController>().configModel!.moduleConfig!.module!.isParcel!) {
+    if(splashController.module != null && isParcelModule) {
       Get.find<ParcelController>().getParcelCategoryList();
     }
-    if(Get.find<SplashController>().module != null && Get.find<SplashController>().module!.moduleType.toString() == AppConstants.pharmacy) {
+    if(splashController.module != null && module?.moduleType.toString() == AppConstants.pharmacy) {
       Get.find<ItemController>().getBasicMedicine(reload, false);
       Get.find<StoreController>().getFeaturedStoreList();
       await Get.find<ItemController>().getCommonConditions(false);
@@ -269,9 +273,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
       
-      print('🔔 Popup: Showing dialog with ${validBanners.length} valid banners');
-
-  print('🔔 Popup: Showing dialog with ${banners?.length ?? 0} banners');
+        print('🔔 Popup: Showing dialog with ${validBanners.length} valid banners');
+        print('🔔 Popup: Showing dialog with ${banners.length} banners');
 
       // Auto-slide PageView: create a controller and a timer, cancel after dialog closes
       final pageController = PageController(initialPage: 0);
@@ -285,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final url = validBanners[i];
         if (videoExt.hasMatch(url) && !url.startsWith('assets/')) {
           try {
-            final controller = VideoPlayerController.network(url);
+            final controller = VideoPlayerController.networkUrl(Uri.parse(url));
             videoControllers[i] = controller;
             controller.setLooping(false); // do not loop; advance after finish
             controller.setVolume(0); // muted by default
@@ -299,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     imageTimer?.cancel();
                   } else {
                     // Not playing: determine if it finished or simply paused
-                    final duration = value.duration ?? Duration.zero;
+                    final duration = value.duration;
                     final position = value.position;
                     if (position >= duration && duration > Duration.zero) {
                       // playback finished, advance immediately (if still on same page)
@@ -392,7 +395,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Stack(
                 children: [
                   SizedBox(
-                    height: 300,
+                    // About 40% taller than previous height for a larger banner.
+                    height: 500,
                     width: double.infinity,
                     child: StatefulBuilder(builder: (context, setState) {
                       // helper to start a 3s timer for images (cancels any existing)
@@ -475,7 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       },
                                       child: Center(
                                         child: Container(
-                                          decoration: BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
+                                          decoration: const BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
                                           padding: const EdgeInsets.all(12),
                                           child: Icon(
                                             isPlaying ? Icons.pause : Icons.play_arrow,
@@ -524,12 +528,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: InkWell(
                       onTap: () => Get.back(),
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black54,
                           shape: BoxShape.circle,
                         ),
-                        padding: EdgeInsets.all(6),
-                        child: Icon(Icons.close, color: Colors.white, size: 20),
+                        padding: const EdgeInsets.all(6),
+                        child: const Icon(Icons.close, color: Colors.white, size: 20),
                       ),
                     ),
                   ),

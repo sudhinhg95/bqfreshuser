@@ -36,8 +36,8 @@ class ItemCard extends StatelessWidget {
       isItem: true,
       child: Stack(children: [
         Container(
-          // slightly wider card so image appears larger and layout remains balanced
-          width: 240,
+          // Slightly smaller width so home cards look more compact.
+          width: 200,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
             color: Theme.of(context).cardColor,
@@ -49,30 +49,34 @@ class ItemCard extends StatelessWidget {
                 builder: (isHovered) {
                   return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-                    Expanded(
-                      flex: 5,
+                    // Image section – fixed height similar to listing `ItemWidget` image.
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: isPopularItem ? Dimensions.paddingSizeExtraSmall : 0,
+                        left: isPopularItem ? Dimensions.paddingSizeExtraSmall : 0,
+                        right: isPopularItem ? Dimensions.paddingSizeExtraSmall : 0,
+                      ),
                       child: Stack(children: [
-                        Padding(
-                          padding: EdgeInsets.only(top: isPopularItem ? Dimensions.paddingSizeExtraSmall : 0, left: isPopularItem ? Dimensions.paddingSizeExtraSmall : 0, right: isPopularItem ? Dimensions.paddingSizeExtraSmall : 0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(Dimensions.radiusLarge),
-                              topRight: const Radius.circular(Dimensions.radiusLarge),
-                              bottomLeft: Radius.circular(isPopularItem ? Dimensions.radiusLarge : 0),
-                              bottomRight: Radius.circular(isPopularItem ? Dimensions.radiusLarge : 0),
-                            ),
-                            child: CustomImage(
-                              isHovered: isHovered,
-                              placeholder: Images.placeholder,
-                              image: '${item.imageFullUrl}',
-                              fit: BoxFit.cover, width: double.infinity, height: double.infinity,
-                            ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(Dimensions.radiusLarge),
+                            topRight: const Radius.circular(Dimensions.radiusLarge),
+                            bottomLeft: Radius.circular(isPopularItem ? Dimensions.radiusLarge : 0),
+                            bottomRight: Radius.circular(isPopularItem ? Dimensions.radiusLarge : 0),
+                          ),
+                          child: CustomImage(
+                            isHovered: isHovered,
+                            placeholder: Images.placeholder,
+                            image: '${item.imageFullUrl}',
+                            // Match listing cards: same fit and similar height
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            // Align with listing card image height on mobile
+                            height: 120,
                           ),
                         ),
 
-                        AddFavouriteView(
-                          item: item,
-                        ),
+                        AddFavouriteView(item: item),
 
                         item.isStoreHalalActive! && item.isHalalItem! ? const Positioned(
                           top: 40, right: 15,
@@ -90,105 +94,113 @@ class ItemCard extends StatelessWidget {
 
                         OrganicTag(item: item, placeInImage: false),
 
-                        // Stock badge intentionally hidden across listing cards per request.
-                        const SizedBox.shrink(),
-
-                        isShop ? const SizedBox() : Positioned(
-                          bottom: 10, right: 20,
-                          child: CartCountView(
-                            item: item,
-                            index: index,
-                          ),
-                        ),
-
-                        Get.find<ItemController>().isAvailable(item) ? const SizedBox() : NotAvailableWidget(radius: Dimensions.radiusLarge, isAllSideRound: isPopularItem),
-
+                        // Availability badge if item is not available.
+                        Get.find<ItemController>().isAvailable(item)
+                            ? const SizedBox()
+                            : NotAvailableWidget(radius: Dimensions.radiusLarge, isAllSideRound: isPopularItem),
                       ]),
                     ),
 
-                    Expanded(
-                      flex: 5,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: Dimensions.paddingSizeSmall, right: isShop ? 0 : Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeSmall, bottom: isShop ? 0 : Dimensions.paddingSizeSmall),
-                        child: Stack(clipBehavior: Clip.none, children: [
-
-                          Align(
-                            alignment: isPopularItem ? Alignment.center : Alignment.centerLeft,
-                            child: Column(
-                                crossAxisAlignment: isPopularItem ? CrossAxisAlignment.center : CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                              // Always show item name here. Do not show store/vendor name for items.
-                              Text(item.name ?? '', style: isPopularItem ? robotoBold.copyWith(fontSize: Dimensions.fontSizeDefault) : robotoBold.copyWith(fontSize: Dimensions.fontSizeDefault), maxLines: 1, overflow: TextOverflow.ellipsis),
-
-                              // Description below the item name (single line truncated)
-                              if (item.description != null && item.description!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: Text(
-                                    item.description!,
-                                    style: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeExtraSmall),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-
-                              item.ratingCount! > 0 ? Row(mainAxisAlignment: isPopularItem ? MainAxisAlignment.center : MainAxisAlignment.start, children: [
-                                Icon(Icons.star, size: 14, color: Theme.of(context).primaryColor),
-                                const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                                Text(item.avgRating!.toStringAsFixed(1), style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall)),
-                                const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                                Text("(${item.ratingCount})", style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor)),
-                              ]) : const SizedBox(),
-
-                              // showUnitOrRattings(context);
-                              // For food/shop modules show unit when available; otherwise already shown ratings above.
-                              (Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item.unitType != null) ? Text(
-                                '(${ item.unitType ?? ''})',
-                                style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).hintColor),
-                              ) : const SizedBox(),
-
-                              discount != null && discount > 0  ? Text(
-                                PriceConverter.convertPrice(Get.find<ItemController>().getStartingPrice(item)),
-                                style: robotoMedium.copyWith(
-                                  fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).disabledColor,
-                                  decoration: TextDecoration.lineThrough,
-                                ), textDirection: TextDirection.ltr,
-                              ) : const SizedBox(),
-                              // SizedBox(height: item.discount != null && item.discount! > 0 ? Dimensions.paddingSizeExtraSmall : 0),
-
-                              Text(
-                                PriceConverter.convertPrice(
-                                  Get.find<ItemController>().getStartingPrice(item), discount: discount,
-                                  discountType: discountType,
-                                ),
-                                textDirection: TextDirection.ltr, style: robotoMedium,
-                              ),
-
-                              const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-
-                            ]),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: Dimensions.paddingSizeSmall,
+                        right: Dimensions.paddingSizeSmall,
+                        top: Dimensions.paddingSizeSmall,
+                        // smaller bottom padding to reduce vertical height
+                        bottom: Dimensions.paddingSizeExtraSmall,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          // Item name
+                          Text(
+                            item.name ?? '',
+                            style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
 
-                          isShop ? Positioned(
-                            bottom: 0, right: 0,
-                            child: CartCountView(
-                              item: item,
-                              index: index,
-                              child: Container(
-                                height: 35, width: 38,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).primaryColor,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(Dimensions.radiusLarge),
-                                    bottomRight: Radius.circular(Dimensions.radiusLarge),
-                                  ),
-                                ),
-                                child: Icon(isPopularItemCart ? Icons.add_shopping_cart : Icons.add, color: Theme.of(context).cardColor, size: 20),
+                          const SizedBox(height: 4),
+
+                          // Single-line description below name (same as listing card)
+                          if (item.description != null && item.description!.isNotEmpty)
+                            Text(
+                              item.description!,
+                              style: robotoRegular.copyWith(
+                                fontSize: Dimensions.fontSizeSmall,
+                                color: Theme.of(context).disabledColor,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ) : const SizedBox(),
-                        ]),
+
+                          const SizedBox(height: 6),
+
+                          Row(children: [
+                            // Price with smaller currency text and normal-sized amount,
+                            // mirroring the main listing `ItemWidget`.
+                            Expanded(
+                              child: Builder(builder: (_) {
+                                final String fullPrice = PriceConverter.convertPrice(
+                                  Get.find<ItemController>().getStartingPrice(item),
+                                  discount: discount,
+                                  discountType: discountType,
+                                );
+                                final bool isRightSide = Get.find<SplashController>()
+                                        .configModel!
+                                        .currencySymbolDirection ==
+                                    'right';
+
+                                String currencyPart = '';
+                                String amountPart = fullPrice;
+                                final parts = fullPrice.split(' ');
+                                if (parts.length >= 2) {
+                                  if (isRightSide) {
+                                    currencyPart = parts.last;
+                                    amountPart = fullPrice
+                                        .substring(0, fullPrice.length - currencyPart.length)
+                                        .trimRight();
+                                  } else {
+                                    currencyPart = parts.first;
+                                    amountPart = fullPrice
+                                        .substring(currencyPart.length)
+                                        .trimLeft();
+                                  }
+                                }
+
+                                return RichText(
+                                  textDirection: TextDirection.ltr,
+                                  text: TextSpan(
+                                    children: [
+                                      if (currencyPart.isNotEmpty)
+                                        TextSpan(
+                                          text: '$currencyPart ',
+                                          style: robotoMedium.copyWith(
+                                            // Match listing card: smaller and description-colored currency label
+                                            fontSize: Dimensions.fontSizeExtraSmall,
+                                            color: Theme.of(context).disabledColor,
+                                          ),
+                                        ),
+                                      TextSpan(
+                                        text: amountPart,
+                                        style: robotoMedium.copyWith(
+                                          fontSize: Dimensions.fontSizeDefault,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge!
+                                              .color,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ),
+
+                            CartCountView(item: item, index: index),
+                          ]),
+                        ],
                       ),
                     ),
                   ]);

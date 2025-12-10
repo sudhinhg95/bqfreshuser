@@ -37,72 +37,140 @@ class _ItemsViewState extends State<ItemsView> {
   Widget build(BuildContext context) {
     bool isNull = true;
     int length = 0;
-    if(widget.isStore) {
+
+    if (widget.isStore) {
       isNull = widget.stores == null;
-      if(!isNull) {
+      if (!isNull) {
         length = widget.stores!.length;
       }
-    }else {
+    } else {
       isNull = widget.items == null;
-      if(!isNull) {
+      if (!isNull) {
         length = widget.items!.length;
       }
     }
 
     return Column(children: [
 
-      !isNull ? length > 0 ? GridView.builder(
-        key: UniqueKey(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisSpacing: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtremeLarge : widget.stores != null ? Dimensions.paddingSizeLarge : Dimensions.paddingSizeLarge,
-          mainAxisSpacing: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtremeLarge : widget.stores != null && widget.isStore ? Dimensions.paddingSizeLarge : Dimensions.paddingSizeSmall,
-          // For item listings we want a 2-column layout on mobile with larger cards.
-      mainAxisExtent: ResponsiveHelper.isDesktop(context) && widget.isStore ? 220
-        : ResponsiveHelper.isMobile(context) ? (widget.isStore ? 200 : 270)
-        : 220,
-          crossAxisCount: ResponsiveHelper.isMobile(context) ? (widget.isStore ? 1 : 2) : ResponsiveHelper.isDesktop(context) && widget.stores != null  ? 3 : 3,
-        ),
-        physics: widget.isScrollable ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
-        shrinkWrap: widget.isScrollable ? false : true,
-        itemCount: length,
-        padding: widget.padding,
-        itemBuilder: (context, index) {
-          return widget.stores != null && widget.isStore ?  widget.isFoodOrGrocery! && widget.isStore
-              ? StoreCardWidget(store: widget.stores![index])
-              : StoreCardWithDistance(store: widget.stores![index]!, fromAllStore: true)
-              : ItemWidget(
-            isStore: widget.isStore, item: widget.isStore ? null : widget.items![index], isFeatured: widget.isFeatured,
-            store: widget.isStore ? widget.stores![index] : null, index: index, length: length, isCampaign: widget.isCampaign,
-            inStore: widget.inStorePage,
-          );
-        },
-      ) : NoDataScreen(
-        text: widget.noDataText ?? (widget.isStore ? Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText!
-            ? 'no_restaurant_available'.tr : 'no_store_available'.tr : 'no_item_available'.tr),
-      ) : GridView.builder(
-        key: UniqueKey(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisSpacing: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtremeLarge : widget.stores != null ? Dimensions.paddingSizeLarge : Dimensions.paddingSizeLarge,
-          mainAxisSpacing: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeLarge : widget.stores != null ? Dimensions.paddingSizeLarge : Dimensions.paddingSizeSmall,
-          // childAspectRatio: ResponsiveHelper.isDesktop(context) && widget.isStore ? (1/0.6)
-          //     : ResponsiveHelper.isMobile(context) ? widget.isStore ? 2 : 3.8
-          //     : 3,
-          mainAxisExtent: ResponsiveHelper.isDesktop(context) && widget.isStore ? 220
-              : ResponsiveHelper.isMobile(context) ? widget.isStore ? 200 : 110
-              : 110,
-          crossAxisCount: ResponsiveHelper.isMobile(context) ? 1 : ResponsiveHelper.isDesktop(context) ? 3 : 3,
-        ),
-        physics: widget.isScrollable ? const BouncingScrollPhysics() : const NeverScrollableScrollPhysics(),
-        shrinkWrap: widget.isScrollable ? false : true,
-        itemCount: widget.shimmerLength,
-        padding: widget.padding,
-        itemBuilder: (context, index) {
-          return widget.isStore ? widget.isFoodOrGrocery!
-              ? const StoreCardShimmer()
-              : const NewOnShimmerView()
-              : ItemShimmer(isEnabled: isNull, isStore: widget.isStore, hasDivider: index != widget.shimmerLength-1);
-        },
-      ),
+      !isNull
+          ? length > 0
+              ? GridView.builder(
+                  key: UniqueKey(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    // Reduced horizontal gap between item cards on mobile lists
+                    crossAxisSpacing: ResponsiveHelper.isDesktop(context)
+                        ? Dimensions.paddingSizeExtremeLarge
+                        : widget.stores != null
+                            ? Dimensions.paddingSizeLarge
+                            : Dimensions.paddingSizeSmall,
+                    mainAxisSpacing: ResponsiveHelper.isDesktop(context)
+                        ? Dimensions.paddingSizeExtremeLarge
+                        : widget.stores != null && widget.isStore
+                            ? Dimensions.paddingSizeLarge
+                            : Dimensions.paddingSizeSmall,
+                    // Card height per grid item; tuned so the tile
+                    // closely wraps the compact item card without overflow.
+                    mainAxisExtent:
+                      ResponsiveHelper.isDesktop(context) && widget.isStore
+                        ? 220
+                        : ResponsiveHelper.isMobile(context)
+                          ? (widget.isStore ? 190 : 210)
+                          : 220,
+                    crossAxisCount: ResponsiveHelper.isMobile(context)
+                        ? (widget.isStore ? 1 : 2)
+                        : ResponsiveHelper.isDesktop(context) &&
+                                widget.stores != null
+                            ? 3
+                            : 3,
+                  ),
+                  physics: widget.isScrollable
+                      ? const BouncingScrollPhysics()
+                      : const NeverScrollableScrollPhysics(),
+                  shrinkWrap: widget.isScrollable ? false : true,
+                  itemCount: length,
+                  padding: widget.padding,
+                  itemBuilder: (context, index) {
+                    return widget.stores != null && widget.isStore
+                        ? widget.isFoodOrGrocery! && widget.isStore
+                            ? StoreCardWidget(store: widget.stores![index])
+                            : StoreCardWithDistance(
+                                store: widget.stores![index]!,
+                                fromAllStore: true,
+                              )
+                        : ItemWidget(
+                            isStore: widget.isStore,
+                            item: widget.isStore ? null : widget.items![index],
+                            isFeatured: widget.isFeatured,
+                            store:
+                                widget.isStore ? widget.stores![index] : null,
+                            index: index,
+                            length: length,
+                            isCampaign: widget.isCampaign,
+                            inStore: widget.inStorePage,
+                          );
+                  },
+                )
+              : NoDataScreen(
+                  text: widget.noDataText ??
+                      (widget.isStore
+                          ? Get
+                                  .find<SplashController>()
+                                  .configModel!
+                                  .moduleConfig!
+                                  .module!
+                                  .showRestaurantText!
+                              ? 'no_restaurant_available'.tr
+                              : 'no_store_available'.tr
+                          : 'no_item_available'.tr),
+                )
+          : GridView.builder(
+              key: UniqueKey(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisSpacing: ResponsiveHelper.isDesktop(context)
+                    ? Dimensions.paddingSizeExtremeLarge
+                    : widget.stores != null
+                        ? Dimensions.paddingSizeLarge
+                        : Dimensions.paddingSizeLarge,
+                mainAxisSpacing: ResponsiveHelper.isDesktop(context)
+                    ? Dimensions.paddingSizeLarge
+                    : widget.stores != null
+                        ? Dimensions.paddingSizeLarge
+                        : Dimensions.paddingSizeSmall,
+                // childAspectRatio: ResponsiveHelper.isDesktop(context) && widget.isStore ? (1/0.6)
+                //     : ResponsiveHelper.isMobile(context) ? widget.isStore ? 2 : 3.8
+                //     : 3,
+                mainAxisExtent:
+                    ResponsiveHelper.isDesktop(context) && widget.isStore
+                        ? 220
+                        : ResponsiveHelper.isMobile(context)
+                            ? widget.isStore
+                                ? 200
+                                : 110
+                            : 110,
+                crossAxisCount: ResponsiveHelper.isMobile(context)
+                    ? 1
+                    : ResponsiveHelper.isDesktop(context)
+                        ? 3
+                        : 3,
+              ),
+              physics: widget.isScrollable
+                  ? const BouncingScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
+              shrinkWrap: widget.isScrollable ? false : true,
+              itemCount: widget.shimmerLength,
+              padding: widget.padding,
+              itemBuilder: (context, index) {
+                return widget.isStore
+                    ? widget.isFoodOrGrocery!
+                        ? const StoreCardShimmer()
+                        : const NewOnShimmerView()
+                    : ItemShimmer(
+                        isEnabled: isNull,
+                        isStore: widget.isStore,
+                        hasDivider: index != widget.shimmerLength - 1,
+                      );
+              },
+            ),
 
     ]);
   }

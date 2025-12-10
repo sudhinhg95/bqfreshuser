@@ -8,7 +8,6 @@ import 'package:sixam_mart/common/widgets/item_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/common/widgets/menu_drawer.dart';
-import 'package:sixam_mart/common/widgets/web_page_title_widget.dart';
 
 class PopularItemScreen extends StatefulWidget {
   final bool isPopular;
@@ -62,10 +61,6 @@ class _PopularItemScreenState extends State<PopularItemScreen> {
           endDrawer: const MenuDrawer(),endDrawerEnableOpenDragGesture: false,
           body: SingleChildScrollView(child: FooterView(child: Column(
             children: [
-              WebScreenTitleWidget(
-                title: widget.isPopular ? isShop ? 'most_popular_products'.tr : 'most_popular_items'.tr : widget.isSpecial ? 'special_offer'.tr : 'best_reviewed_item'.tr,
-              ),
-
               SizedBox(
                 width: Dimensions.webMaxWidth,
                 child: ItemsView(

@@ -88,21 +88,12 @@ class OrderItemWidget extends StatelessWidget {
                   style: robotoMedium, textDirection: TextDirection.ltr,
                 )),
 
-                ((Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && orderDetails.itemDetails!.unitType != null)
-                    || (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!))
-                    ? Get.find<SplashController>().getModuleConfig(order.moduleType).newVariation! ? CustomAssetImageWidget(
+                // Hide UOM (unitType) in order item rows; only show veg/non-veg when enabled
+                (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg!
+                    && Get.find<SplashController>().configModel!.toggleVegNonVeg!)
+                    ? CustomAssetImageWidget(
                   orderDetails.itemDetails!.veg == 0 ? Images.nonVegImage : Images.vegImage,
                   height: 11, width: 11,
-                ) : Container(
-                  padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall, horizontal: Dimensions.paddingSizeSmall),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                    color: Theme.of(context).primaryColor.withOpacity( 0.1),
-                  ),
-                  child: Text(
-                    orderDetails.itemDetails!.unitType ?? '',
-                    style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).primaryColor),
-                  ),
                 ) : const SizedBox(),
 
                 SizedBox(width: orderDetails.itemDetails!.isStoreHalalActive! && orderDetails.itemDetails!.isHalalItem! ? Dimensions.paddingSizeExtraSmall : 0),

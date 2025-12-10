@@ -59,7 +59,8 @@ class ItemWidget extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          margin: ResponsiveHelper.isDesktop(context) ? null : const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall),
+          // Further reduce bottom margin so rows sit closer together.
+          margin: ResponsiveHelper.isDesktop(context) ? null : const EdgeInsets.only(bottom: 2),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
             color: Theme.of(context).cardColor,
@@ -95,7 +96,11 @@ class ItemWidget extends StatelessWidget {
               }
             },
             radius: Dimensions.radiusDefault,
-            padding: ResponsiveHelper.isDesktop(context) ? EdgeInsets.all(fromCartSuggestion ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeSmall) : const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
+            // Remove horizontal padding on mobile so the image can extend
+            // fully to the card edges; keep padding on desktop layouts.
+            padding: ResponsiveHelper.isDesktop(context)
+              ? EdgeInsets.all(fromCartSuggestion ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeSmall)
+              : const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall),
             child: TextHover(
               builder: (hovered) {
                 return Column(
@@ -107,7 +112,8 @@ class ItemWidget extends StatelessWidget {
                       child: CustomImage(
                         isHovered: hovered,
                         image: '${isStore ? store != null ? store!.logoFullUrl : '' : item!.imageFullUrl}',
-                        height: imageHeight ?? (desktop ? 180 : 140),
+                        // Slightly smaller image height to make the card more compact.
+                        height: imageHeight ?? (desktop ? 160 : 120),
                         width: double.infinity,
                         fit: BoxFit.cover,
                       ),
@@ -131,19 +137,61 @@ class ItemWidget extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ) : const SizedBox(),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Row(children: [
-                          // Price takes remaining space, cart control stays fixed at end so it doesn't shift layout
-                          Expanded(child: Text(
-                            PriceConverter.convertPrice(item!.price, discount: discount, discountType: discountType),
-                            style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault), textDirection: TextDirection.ltr,
-                          )),
+                          // Price with smaller currency text (e.g. BHD) and normal-sized amount
+                          Expanded(child: Builder(builder: (_) {
+                            final String fullPrice = PriceConverter.convertPrice(
+                              item!.price,
+                              discount: discount,
+                              discountType: discountType,
+                            );
+                            final bool isRightSide = Get.find<SplashController>().configModel!.currencySymbolDirection == 'right';
+
+                            String currencyPart = '';
+                            String amountPart = fullPrice;
+                            final parts = fullPrice.split(' ');
+                            if (parts.length >= 2) {
+                              if (isRightSide) {
+                                currencyPart = parts.last;
+                                amountPart = fullPrice.substring(0, fullPrice.length - currencyPart.length).trimRight();
+                              } else {
+                                currencyPart = parts.first;
+                                amountPart = fullPrice.substring(currencyPart.length).trimLeft();
+                              }
+                            }
+
+                            return RichText(
+                              textDirection: TextDirection.ltr,
+                              text: TextSpan(
+                                children: [
+                                  if (currencyPart.isNotEmpty)
+                                    TextSpan(
+                                      text: '$currencyPart ',
+                                      style: robotoMedium.copyWith(
+                                        // Slightly smaller and same color as description text
+                                        fontSize: Dimensions.fontSizeExtraSmall,
+                                        color: Theme.of(context).disabledColor,
+                                      ),
+                                    ),
+                                  TextSpan(
+                                    text: amountPart,
+                                    style: robotoMedium.copyWith(
+                                      fontSize: Dimensions.fontSizeDefault,
+                                      color: Theme.of(context).textTheme.bodyLarge!.color,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          })),
                           // Plus / add button (fixed width inside CartCountView)
                           CartCountView(item: item!, index: index),
                         ]),
                       ]),
                     ),
-                    const SizedBox(height: Dimensions.paddingSizeSmall),
+                    // Minimal bottom spacer to almost remove extra empty space.
+                    const SizedBox(height: 2),
                   ],
                 );
               }

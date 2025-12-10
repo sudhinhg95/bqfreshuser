@@ -269,18 +269,16 @@ class _ItemBottomSheetState extends State<ItemBottomSheet> {
 
                               Text('description'.tr, style: robotoBold.copyWith(fontSize: Dimensions.fontSizeLarge)),
 
-                              ((Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && widget.item!.unitType != null)
-                            || (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!)) ? Container(
+                              // Hide UOM (unitType) in bottom sheet header; optionally show veg/non-veg only
+                              (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg!
+                                  && Get.find<SplashController>().configModel!.toggleVegNonVeg!) ? Container(
                                 padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall, horizontal: Dimensions.paddingSizeSmall),
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(Dimensions.radiusExtraLarge),
                                     color: Theme.of(context).cardColor,
                                     boxShadow: [BoxShadow(color: Theme.of(context).primaryColor.withOpacity( 0.2), blurRadius: 5)]
                                 ),
-                                child: Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! ? Text(
-                                  widget.item!.unitType ?? '',
-                                  style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).primaryColor),
-                                ) : Row(children: [
+                                child: Row(children: [
                                   Image.asset(widget.item!.veg == 1 ? Images.vegLogo : Images.nonVegLogo, height: 20, width: 20),
                                   const SizedBox(width: Dimensions.paddingSizeSmall),
 

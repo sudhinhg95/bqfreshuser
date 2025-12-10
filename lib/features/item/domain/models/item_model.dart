@@ -76,6 +76,7 @@ class Item {
   int? id;
   String? name;
   String? description;
+  String? longDescription;
   String? imageFullUrl;
   List<String>? imagesFullUrl;
   int? categoryId;
@@ -117,6 +118,7 @@ class Item {
     this.id,
     this.name,
     this.description,
+    this.longDescription,
     this.imageFullUrl,
     this.imagesFullUrl,
     this.categoryId,
@@ -158,6 +160,8 @@ class Item {
     id = _parseInt(json['id']);
     name = json['name'];
     description = json['description'];
+    // Support both `longdescription` and `long_description` JSON keys.
+    longDescription = json['longdescription'] ?? json['long_description'];
     imageFullUrl = json['image_full_url'];
     if (json['images_full_url'] != null) {
       imagesFullUrl = [];
@@ -238,6 +242,7 @@ class Item {
     data['id'] = id;
     data['name'] = name;
     data['description'] = description;
+    data['longdescription'] = longDescription;
     data['image_full_url'] = imageFullUrl;
     data['images_full_url'] = imagesFullUrl;
     data['category_id'] = categoryId;

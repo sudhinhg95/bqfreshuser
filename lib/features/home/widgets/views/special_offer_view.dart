@@ -37,7 +37,8 @@ class SpecialOfferView extends StatelessWidget {
             ),
 
             SizedBox(
-              height: 285, width: Get.width,
+              // Slightly taller to prevent bottom overflow but still tight.
+              height: 246, width: Get.width,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -79,7 +80,8 @@ class ItemShimmerView extends StatelessWidget {
           ),
 
           SizedBox(
-            height: 285, width: Get.width,
+            // Keep shimmer height consistent with actual Special Offer cards.
+            height: 246, width: Get.width,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
@@ -93,7 +95,8 @@ class ItemShimmerView extends StatelessWidget {
                     enabled: true,
                     child: Container(
                       padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
-                      height: 285, width: 200,
+                      // Slightly shorter card to reflect smaller Special Offer items.
+                      height: 250, width: 200,
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
@@ -101,7 +104,8 @@ class ItemShimmerView extends StatelessWidget {
                       child: Column(children: [
 
                         Container(
-                          height: 150, width: double.infinity,
+                          // Match image height of real item cards (approximate).
+                          height: 110, width: double.infinity,
                           decoration: BoxDecoration(
                             color: Theme.of(context).shadowColor,
                             borderRadius: BorderRadius.circular(Dimensions.radiusLarge),

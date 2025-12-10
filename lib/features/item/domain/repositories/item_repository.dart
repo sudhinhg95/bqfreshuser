@@ -121,8 +121,9 @@ class ItemRepository implements ItemRepositoryInterface {
                 final body = response.body;
                 List<dynamic>? candidates;
                 if (body is Map<String, dynamic>) {
-                  if (body['items'] is List) candidates = body['items'];
-                  else if (body['products'] is List) candidates = body['products'];
+                  if (body['items'] is List) {
+                    candidates = body['items'];
+                  } else if (body['products'] is List) candidates = body['products'];
                   else if (body['data'] is Map && body['data']['items'] is List) candidates = body['data']['items'];
                   else {
                     // scan for the first list that looks like items

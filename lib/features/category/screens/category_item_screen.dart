@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:sixam_mart/common/widgets/footer_view.dart';
 import 'package:sixam_mart/features/category/controllers/category_controller.dart';
-import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/features/store/domain/models/store_model.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
@@ -244,22 +243,7 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                     ),
                   )) : const SizedBox(),
 
-                  Center(child: Container(
-                    width: Dimensions.webMaxWidth,
-                    color: Theme.of(context).cardColor,
-                    child: TabBar(
-                      controller: _tabController,
-                      indicatorColor: Theme.of(context).primaryColor,
-                      indicatorWeight: 3,
-                      labelColor: Theme.of(context).primaryColor,
-                      unselectedLabelColor: Theme.of(context).disabledColor,
-                      unselectedLabelStyle: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
-                      labelStyle: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
-                      tabs: [
-                        Tab(text: 'item'.tr),
-                      ],
-                    ),
-                  )),
+                  const SizedBox(),
 
                   SizedBox(
                     height: 600,
@@ -345,22 +329,7 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
                 ),
               )) : const SizedBox(),
 
-              Center(child: Container(
-                width: Dimensions.webMaxWidth,
-                color: Theme.of(context).cardColor,
-                child: TabBar(
-                  controller: _tabController,
-                  indicatorColor: Theme.of(context).primaryColor,
-                  indicatorWeight: 3,
-                  labelColor: Theme.of(context).primaryColor,
-                  unselectedLabelColor: Theme.of(context).disabledColor,
-                  unselectedLabelStyle: robotoRegular.copyWith(color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeSmall),
-                  labelStyle: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),
-                  tabs: [
-                    Tab(text: 'item'.tr),
-                  ],
-                ),
-              )),
+              const SizedBox(),
 
 
               Expanded(child: NotificationListener(

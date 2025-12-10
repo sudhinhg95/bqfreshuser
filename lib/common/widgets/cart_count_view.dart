@@ -16,12 +16,13 @@ class CartCountView extends StatelessWidget {
     return GetBuilder<CartController>(builder: (cartController) {
       int cartQty = cartController.cartQuantity(item.id!);
       int cartIndex = cartController.isExistInCart(item.id, cartController.cartVariant(item.id!), false, null);
-      // Prepare the inline counter widget (fixed width) and the small single-add
-      // button. Wrap both into a fixed-size slot so toggling doesn't change
-      // surrounding layout.
-  // Reduced slot size to make the add button smaller and fit within compact cards
-  final double slotWidth = 84;
-  final double slotHeight = 30;
+        // Prepare the inline counter widget (fixed width) and the small single-add
+        // button. Wrap both into a fixed-size slot so toggling doesn't change
+        // surrounding layout.
+        // Slightly larger slot so the counter is more readable
+        // while still compact inside the item card.
+        const double slotWidth = 70;
+        const double slotHeight = 26;
 
       Widget inlineCounter = Container(
         width: slotWidth,
@@ -46,19 +47,19 @@ class CartCountView extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Theme.of(context).primaryColor),
               ),
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(3),
               child: Icon(
-                Icons.remove, size: 14, color: Theme.of(context).primaryColor,
+                Icons.remove, size: 12, color: Theme.of(context).primaryColor,
               ),
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             child: cartController.isLoading && cartController.directAddCartItemIndex == index
-                ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Theme.of(context).cardColor))
+              ? SizedBox(height: 15, width: 15, child: CircularProgressIndicator(color: Theme.of(context).cardColor, strokeWidth: 2))
                 : Text(cartQty.toString(),
-              style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).cardColor),
+              style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).cardColor),
             ),
           ),
 
@@ -73,9 +74,9 @@ class CartCountView extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Theme.of(context).primaryColor),
               ),
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(3),
               child: Icon(
-                Icons.add, size: 14, color: Theme.of(context).primaryColor,
+                Icons.add, size: 12, color: Theme.of(context).primaryColor,
               ),
             ),
           ),
@@ -87,19 +88,20 @@ class CartCountView extends StatelessWidget {
           Get.find<ItemController>().itemDirectlyAddToCart(item, context);
         },
         child: Container(
-          height: 22, width: 22,
+          height: 19, width: 19,
           decoration: BoxDecoration(
             shape: BoxShape.circle, color: Theme.of(context).cardColor,
             boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, spreadRadius: 1)],
           ),
-          child: Icon(Icons.add, size: 16, color: Theme.of(context).primaryColor),
+          child: Icon(Icons.add, size: 14, color: Theme.of(context).primaryColor),
         ),
       );
 
       return SizedBox(
         width: slotWidth,
         height: slotHeight,
-        child: Center(
+        child: Align(
+          alignment: Alignment.centerRight,
           child: cartQty != 0 ? inlineCounter : singleAdd,
         ),
       );

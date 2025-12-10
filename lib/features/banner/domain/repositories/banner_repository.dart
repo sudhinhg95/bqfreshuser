@@ -68,7 +68,7 @@ Future<BannerModel?> _getPopUpBannerList() async {
       const Duration(seconds: 10),
       onTimeout: () {
         print('🔔 Popup API: Request timed out after 10 seconds');
-        return Response(statusCode: 408, statusText: 'Timeout', body: null);
+        return const Response(statusCode: 408, statusText: 'Timeout', body: null);
       },
     );
     print('🔔 Popup API: Response Status: ${response.statusCode}');
@@ -85,10 +85,10 @@ Future<BannerModel?> _getPopUpBannerList() async {
           print('🔔 Popup API: Found banners/campaigns key, parsing directly');
           bannerModel = BannerModel.fromJson(body);
           // Debug: Check if banners were parsed
-          if (bannerModel?.banners != null) {
-            print('🔔 Popup API: Parsed ${bannerModel!.banners!.length} banners');
-            for (var i = 0; i < bannerModel!.banners!.length; i++) {
-              final b = bannerModel!.banners![i];
+          if (bannerModel.banners != null) {
+            print('🔔 Popup API: Parsed ${bannerModel.banners!.length} banners');
+            for (var i = 0; i < bannerModel.banners!.length; i++) {
+              final b = bannerModel.banners![i];
               print('🔔 Popup API: Banner $i - imageFullUrl: ${b.imageFullUrl}, image: ${b.image}');
               // If imageFullUrl is null but we have image_full_url in raw data, fix it
               if (b.imageFullUrl == null && body['banners'] is List) {
@@ -130,18 +130,21 @@ Future<BannerModel?> _getPopUpBannerList() async {
   }
 
   // Optional: print just the image URLs for easier debugging
-  if (bannerModel?.banners != null) {
-    print('🔔 Popup API: Found ${bannerModel!.banners!.length} banners in model');
-    for (var b in bannerModel!.banners!) {
+  final banners = bannerModel?.banners;
+  if (banners != null) {
+    print('🔔 Popup API: Found ${banners.length} banners in model');
+    for (var b in banners) {
       print('🔔 Popup API: Banner ID: ${b.id}, Title: ${b.title}');
       print('🔔 Popup API: Banner imageFullUrl: ${b.imageFullUrl}');
       print('🔔 Popup API: Banner image: ${b.image}');
       print('🔔 Popup API: Banner type: ${b.type}');
     }
   }
-  if (bannerModel?.campaigns != null) {
-    print('Popup Banner: Found ${bannerModel!.campaigns!.length} campaigns');
-    for (var c in bannerModel!.campaigns!) {
+
+  final campaigns = bannerModel?.campaigns;
+  if (campaigns != null) {
+    print('Popup Banner: Found ${campaigns.length} campaigns');
+    for (var c in campaigns) {
       print('Campaign Image URL: ${c.imageFullUrl}');
     }
   }

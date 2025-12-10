@@ -9,7 +9,6 @@ import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
-import 'package:sixam_mart/helper/route_helper.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/util/styles.dart';
@@ -72,10 +71,11 @@ class ItemTitleViewWidget extends StatelessWidget {
 
                   const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
-                  ((Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item!.unitType != null)
-                  || (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!)) ? Text(
-                    Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! ? '(${item!.unitType})'
-                        : item!.veg == 0 ? '(${'non_veg'.tr})' : '(${'veg'.tr})',
+                  // Hide UOM (unitType) label; only show veg/non-veg when enabled
+                  (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg!
+                      && Get.find<SplashController>().configModel!.toggleVegNonVeg!)
+                      ? Text(
+                    item!.veg == 0 ? '(${'non_veg'.tr})' : '(${'veg'.tr})',
                     style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).disabledColor),
                   ) : const SizedBox(),
                 ],
@@ -143,7 +143,11 @@ class ItemTitleViewWidget extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
               child: Text(
                 item!.description!.trim(),
-                style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
+                style: robotoRegular.copyWith(
+                  fontSize: Dimensions.fontSizeSmall,
+                  // Slightly darker than disabledColor for better readability
+                  color: Theme.of(context).textTheme.bodyLarge!.color?.withOpacity(0.8),
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -244,7 +248,11 @@ class ItemTitleViewWidget extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
                 child: Text(
                   item!.description!.trim(),
-                  style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
+                  style: robotoRegular.copyWith(
+                    fontSize: Dimensions.fontSizeSmall,
+                    // Slightly darker color for better readability
+                    color: Theme.of(context).textTheme.bodyLarge!.color?.withOpacity(0.8),
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -281,16 +289,16 @@ class ItemTitleViewWidget extends StatelessWidget {
 
               Column(children: [
 
-                ((Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item!.unitType != null)
-                || (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!)) ? Container(
+                // Hide UOM (unitType) chip; show only veg/non-veg when enabled
+                (Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg!
+                  && Get.find<SplashController>().configModel!.toggleVegNonVeg!) ? Container(
                   padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall, horizontal: Dimensions.paddingSizeSmall),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
                     color: Theme.of(context).primaryColor.withOpacity( 0.1),
                   ),
                   child: Text(
-                    Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! ? item!.unitType ?? ''
-                        : item!.veg == 0 ? 'non_veg'.tr : 'veg'.tr,
+                    item!.veg == 0 ? 'non_veg'.tr : 'veg'.tr,
                     style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).primaryColor),
                   ),
                 ) : const SizedBox(),

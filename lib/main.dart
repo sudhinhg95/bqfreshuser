@@ -171,7 +171,7 @@ class _MyAppState extends State<MyApp> {
           // Allow app to load even without config for development (web)
           // Show loading indicator if config is still loading
           if (GetPlatform.isWeb && splashController.configModel == null && splashController.isLoading) {
-            return MaterialApp(
+            return const MaterialApp(
               home: Scaffold(
                 body: Center(
                   child: CircularProgressIndicator(),

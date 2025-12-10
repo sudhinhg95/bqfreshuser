@@ -615,7 +615,7 @@ class RouteHelper {
     }
     // On web, allow app to work without location for development
     bool requireLocation = !GetPlatform.isWeb && !byPuss;
-    return (AppConstants.appVersion < minimumVersion! && !GetPlatform.isWeb)  ? const UpdateScreen(isUpdate: true)
+    return (AppConstants.appVersion < minimumVersion && !GetPlatform.isWeb)  ? const UpdateScreen(isUpdate: true)
         : (configModel?.maintenanceMode ?? false) ? const UpdateScreen(isUpdate: false)
         : (AddressHelper.getUserAddressFromSharedPref() == null && requireLocation)
         ? AccessLocationScreen(fromSignUp: false, fromHome: false, route: Get.currentRoute) : navigateTo;

@@ -13,7 +13,7 @@ import 'package:sixam_mart/common/widgets/title_widget.dart';
 class LatestItemView extends StatelessWidget {
   final bool isFood;
   final bool isShop;
-  const LatestItemView({Key? key, required this.isFood, required this.isShop}) : super(key: key);
+  const LatestItemView({super.key, required this.isFood, required this.isShop});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,8 @@ class LatestItemView extends StatelessWidget {
                       ),
 
                       SizedBox(
-                        height: 285,
+                        // Increased a bit more to clear 7px bottom overflow.
+                        height: 246,
                         width: Get.width,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,

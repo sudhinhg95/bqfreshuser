@@ -521,8 +521,8 @@ class LocationController extends GetxController implements GetxService {
       return true;
     }
 
-    final connectivityResult = await Connectivity().checkConnectivity();
-    bool isConnected = connectivityResult != ConnectivityResult.none;
+    final List<ConnectivityResult> results = await Connectivity().checkConnectivity();
+    final bool isConnected = !results.contains(ConnectivityResult.none);
 
     if (!isConnected) {
       Get.offAll(() => const NoInternetScreen());

@@ -35,7 +35,8 @@ class _BestReviewItemViewState extends State<BestReviewItemView> {
         ),
 
         SizedBox(
-          height: 285, width: Get.width,
+          // Increased to align with other item carousels and clear overflow.
+          height: 246, width: Get.width,
           child: ListView.builder(
             controller: scrollController,
             scrollDirection: Axis.horizontal,
@@ -94,7 +95,7 @@ class BestReviewItemShimmer extends StatelessWidget {
         ),
 
         SizedBox(
-          height: 285, width: Get.width,
+          height: 236, width: Get.width,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
