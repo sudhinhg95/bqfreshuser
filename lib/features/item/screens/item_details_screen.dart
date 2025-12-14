@@ -57,6 +57,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
             CartModel? cartModel;
             OnlineCart? cart;
             double priceWithAddons = 0;
+            String? variationLabel;
             int? cartId = cartController.getCartId(itemController.cartIndex);
             if(itemController.item != null && itemController.variationIndex != null){
               List<String> variationList = [];
@@ -72,6 +73,18 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                 } else {
                   variationType = '$variationType-$variation';
                 }
+              }
+
+              // Human-readable label for selected variation (e.g. "Filter 1kg")
+              if (itemController.item!.choiceOptions!.isNotEmpty) {
+                List<String> labelParts = [];
+                for (int index = 0; index < itemController.item!.choiceOptions!.length; index++) {
+                  String optionText = itemController.item!.choiceOptions![index].options![itemController.variationIndex![index]].trim();
+                  if(optionText.isNotEmpty) {
+                    labelParts.add(optionText);
+                  }
+                }
+                variationLabel = labelParts.join(' ');
               }
 
               double? price = itemController.item!.price;
@@ -196,66 +209,156 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                         ),
                         itemController.item!.choiceOptions!.isNotEmpty ? const SizedBox(height: Dimensions.paddingSizeLarge) : const SizedBox(),
 
-                        // Quantity
+                        // Quantity + all variation lines for this item in cart
                         GetBuilder<CartController>(
                           builder: (cartController) {
-                            return Row(children: [
-                              Text('quantity'.tr, style:robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge)),
-                              const Expanded(child: SizedBox()),
-                              Container(
-                                decoration: BoxDecoration(color: Theme.of(context).disabledColor, borderRadius: BorderRadius.circular(5)),
-                                child: Row(children: [
-                                  InkWell(
-                                    onTap: cartController.isLoading ? null : () {
-                                      if(itemController.cartIndex != -1) {
-                                        if(cartController.cartList[itemController.cartIndex].quantity! > 1) {
-                                          cartController.setQuantity(false, itemController.cartIndex, stock, cartController.cartList[itemController.cartIndex].quantity);
-                                        }
-                                      }else {
-                                        if(itemController.quantity! > 1) {
-                                          itemController.setQuantity(false, stock, itemController.item!.quantityLimit);
-                                        }
-                                      }
-                                    },
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-                                      child: Icon(Icons.remove, size: 20),
-                                    ),
-                                  ),
+                            final int quantity = itemController.cartIndex != -1
+                                ? cartController.cartList[itemController.cartIndex].quantity ?? 0
+                                : itemController.quantity ?? 0;
 
-                                  Text(
-                                    itemController.cartIndex != -1 ? cartController.cartList[itemController.cartIndex].quantity.toString()
-                                        : itemController.quantity.toString(),
-                                    style:robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraLarge),
-                                  ),
+                            // Find all cart lines for this item (all variations)
+                            List<Widget> variationLines = [];
+                            for (int cartIndex = 0; cartIndex < cartController.cartList.length; cartIndex++) {
+                              final c = cartController.cartList[cartIndex];
+                              if (c.item == null || c.item!.id != itemController.item!.id) continue;
 
-                                  InkWell(
-                                    onTap: cartController.isLoading ? null : () => itemController.cartIndex != -1
-                                        ? cartController.setQuantity(true, itemController.cartIndex, stock, cartController.cartList[itemController.cartIndex].quantityLimit)
-                                        : itemController.setQuantity(true, stock, itemController.item!.quantityLimit),
-                                    child: const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-                                      child: Icon(Icons.add, size: 20),
-                                    ),
+                              // Build readable label from variation type if present
+                              String label = '';
+                              if (c.variation != null && c.variation!.isNotEmpty && itemController.item!.choiceOptions != null) {
+                                final type = c.variation![0].type ?? '';
+                                final parts = type.split('-');
+                                List<String> labelParts = [];
+                                for (int i = 0; i < parts.length && i < itemController.item!.choiceOptions!.length; i++) {
+                                  final options = itemController.item!.choiceOptions![i].options!;
+                                  for (final opt in options) {
+                                    final sanitized = opt.replaceAll(' ', '');
+                                    if (sanitized == parts[i]) {
+                                      labelParts.add(opt.trim());
+                                      break;
+                                    }
+                                  }
+                                }
+                                label = labelParts.isNotEmpty ? labelParts.join(' ') : type;
+                              } else {
+                                label = itemController.item!.name ?? '';
+                              }
+
+                              variationLines.add(
+                                Padding(
+                                  padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${label.isNotEmpty ? label : ''} × ${c.quantity ?? 0}',
+                                          style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: Dimensions.paddingSizeSmall),
+                                      Text(
+                                        PriceConverter.convertPrice(_getItemDetailsDiscountPrice(cart: c)),
+                                        textDirection: TextDirection.ltr,
+                                        style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                      ),
+                                      const SizedBox(width: Dimensions.paddingSizeSmall),
+                                      InkWell(
+                                        onTap: cartController.isLoading ? null : () {
+                                          cartController.removeFromCart(cartIndex, item: c.item);
+                                        },
+                                        child: Icon(Icons.delete_outline, size: 18, color: Theme.of(context).colorScheme.error),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(children: [
+                                  Text('quantity'.tr, style:robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge)),
+                                  const Expanded(child: SizedBox()),
+                                  Container(
+                                    decoration: BoxDecoration(color: Theme.of(context).disabledColor, borderRadius: BorderRadius.circular(5)),
+                                    child: Row(children: [
+                                      InkWell(
+                                        onTap: cartController.isLoading ? null : () {
+                                          if(itemController.cartIndex != -1) {
+                                            if(cartController.cartList[itemController.cartIndex].quantity! > 1) {
+                                              cartController.setQuantity(false, itemController.cartIndex, stock, cartController.cartList[itemController.cartIndex].quantity);
+                                            }
+                                          }else {
+                                            if(itemController.quantity! > 1) {
+                                              itemController.setQuantity(false, stock, itemController.item!.quantityLimit);
+                                            }
+                                          }
+                                        },
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
+                                          child: Icon(Icons.remove, size: 20),
+                                        ),
+                                      ),
+
+                                      Text(
+                                        quantity.toString(),
+                                        style:robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraLarge),
+                                      ),
+
+                                      InkWell(
+                                        onTap: cartController.isLoading ? null : () => itemController.cartIndex != -1
+                                            ? cartController.setQuantity(true, itemController.cartIndex, stock, cartController.cartList[itemController.cartIndex].quantityLimit)
+                                            : itemController.setQuantity(true, stock, itemController.item!.quantityLimit),
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
+                                          child: Icon(Icons.add, size: 20),
+                                        ),
+                                      ),
+                                    ]),
                                   ),
                                 ]),
-                              ),
-                            ]);
+
+                                const SizedBox(height: Dimensions.paddingSizeSmall),
+
+                                // Show all variation lines for this item (not just the one currently selected)
+                                ...variationLines,
+                              ],
+                            );
                           }
                         ),
                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
-                        Row(children: [
-                          Text('${'total_amount'.tr}:', style:robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge)),
-                          const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+                        GetBuilder<CartController>(
+                          builder: (cartController) {
+                            double totalAmount;
 
-                          Text(
-                            PriceConverter.convertPrice(itemController.cartIndex != -1
-                                ? _getItemDetailsDiscountPrice(cart: Get.find<CartController>().cartList[itemController.cartIndex])
-                                : priceWithAddons), textDirection: TextDirection.ltr,
-                            style:robotoBold.copyWith(color: Theme.of(context).primaryColor, fontSize: Dimensions.fontSizeLarge),
-                          ),
-                        ]),
+                            final sameItemCarts = cartController.cartList
+                                .where((c) => c.item != null && c.item!.id == itemController.item!.id)
+                                .toList();
+
+                            if (sameItemCarts.isNotEmpty) {
+                              totalAmount = 0;
+                              for (final c in sameItemCarts) {
+                                totalAmount += _getItemDetailsDiscountPrice(cart: c);
+                              }
+                            } else {
+                              totalAmount = priceWithAddons;
+                            }
+
+                            return Row(children: [
+                              Text('${'total_amount'.tr}:', style:robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge)),
+                              const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+
+                              Text(
+                                PriceConverter.convertPrice(totalAmount),
+                                textDirection: TextDirection.ltr,
+                                style:robotoBold.copyWith(color: Theme.of(context).primaryColor, fontSize: Dimensions.fontSizeLarge),
+                              ),
+                            ]);
+                          },
+                        ),
                         const SizedBox(height: Dimensions.paddingSizeSmall),
 
                         // Long description section after total amount, above update-to-cart controls

@@ -49,6 +49,8 @@ import 'package:sixam_mart/common/enums/data_source_enum.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/home/widgets/module_view.dart';
 import 'package:sixam_mart/features/parcel/screens/parcel_category_screen.dart';
+import 'package:sixam_mart/features/item/domain/models/basic_campaign_model.dart';
+import 'package:sixam_mart/features/banner/domain/models/banner_model.dart' as banner_models;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -258,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       final List<String?>? banners = bannerController.popupBannerImageList;
+      final List<dynamic>? bannerData = bannerController.popupBannerDataList;
       print('🔔 Popup: Banner list received: ${banners?.length ?? 0} banners');
       print('🔔 Popup: Banner URLs: $banners');
 
@@ -266,8 +269,33 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
-      // Normalize to non-null strings (only use popup list — do not fallback to main banners)
-      final List<String> validBanners = banners.map((b) => (b ?? '').toString()).where((s) => s.isNotEmpty).toList();
+      // Normalize to non-null strings and build parallel title list
+      // (only use popup list — do not fallback to main banners)
+      final List<String> validBanners = <String>[];
+      final List<String?> bannerTitles = <String?>[];
+      for (int i = 0; i < banners.length; i++) {
+        final raw = banners[i];
+        if (raw == null) {
+          continue;
+        }
+        final url = raw.toString();
+        if (url.isEmpty) {
+          continue;
+        }
+
+        validBanners.add(url);
+
+        String? title;
+        if (bannerData != null && i < bannerData.length) {
+          final data = bannerData[i];
+          if (data is BasicCampaignModel) {
+            title = data.title;
+          } else if (data is banner_models.Banner) {
+            title = data.title;
+          }
+        }
+        bannerTitles.add(title);
+      }
       if (validBanners.isEmpty) {
         print('🔔 Popup: Popup banner list contains no valid URLs; skipping popup');
         return;
@@ -395,8 +423,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Stack(
                 children: [
                   SizedBox(
-                    // About 40% taller than previous height for a larger banner.
-                    height: 500,
+                    // Increased height (~20% more) for a larger banner.
+                    height: 700,
                     width: double.infinity,
                     child: StatefulBuilder(builder: (context, setState) {
                       // helper to start a 3s timer for images (cancels any existing)
@@ -485,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             isPlaying ? Icons.pause : Icons.play_arrow,
                                             color: Colors.white,
                                             size: 32,
-                                          ),
+                                          ), 
                                         ),
                                       ),
                                     ),
@@ -510,32 +538,72 @@ class _HomeScreenState extends State<HomeScreen> {
                           });
                           return Image.network(
                             bannerUrl,
+                            // Ensure the image cleanly fills the popup area
+                            // without overflow.
                             fit: BoxFit.cover,
                             width: double.infinity,
+                            height: double.infinity,
                             errorBuilder: (_, __, ___) => Image.asset(
                               "assets/image/no_coupon.png",
                               fit: BoxFit.cover,
                               width: double.infinity,
+                              height: double.infinity,
                             ),
                           );
                         },
                       );
                     }),
                   ),
+                  // Banner title + close button overlay at the top of the popup
                   Positioned(
-                    top: 8,
-                    right: 8,
-                    child: InkWell(
-                      onTap: () => Get.back(),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    child: Builder(builder: (context) {
+                      String? title;
+                      if (currentIndex >= 0 && currentIndex < bannerTitles.length) {
+                        title = bannerTitles[currentIndex];
+                      }
+                      if (title == null || title.trim().isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        color: Colors.black54,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: robotoMedium.copyWith(
+                                  fontSize: Dimensions.fontSizeLarge,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () => Get.back(),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.red,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        padding: const EdgeInsets.all(6),
-                        child: const Icon(Icons.close, color: Colors.white, size: 20),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -757,8 +825,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: GetBuilder<LocationController>(builder: (locationController) {
                               final address = AddressHelper.getUserAddressFromSharedPref();
                               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                // Always show a neutral location label instead of
+                                // the raw address type (e.g. "Others").
                                 Text(
-                                  AuthHelper.isLoggedIn() && address?.addressType != null ? address!.addressType!.tr : 'your_location'.tr,
+                                  'your_location'.tr,
                                   style: robotoMedium.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color, fontSize: Dimensions.fontSizeDefault),
                                   maxLines: 1, overflow: TextOverflow.ellipsis,
                                 ),

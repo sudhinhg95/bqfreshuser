@@ -38,6 +38,7 @@ import 'package:sixam_mart/features/store/widgets/store_description_view_widget.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/store/widgets/store_details_screen_shimmer_widget.dart';
+import 'package:sixam_mart/common/widgets/card_design/item_card.dart';
 
 import '../widgets/bottom_cart_widget.dart';
 
@@ -646,22 +647,29 @@ class _StoreScreenState extends State<StoreScreen> {
                       const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
                       SizedBox(
-                        height: ResponsiveHelper.isDesktop(context) ? 150 : 130,
+                        // Match LatestItemView height so cards look identical
+                        height: 246,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: storeController.recommendedItemModel!.items!.length,
                           physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
                           itemBuilder: (context, index) {
+                            final item = storeController.recommendedItemModel!.items![index];
                             return Padding(
-                              padding: ResponsiveHelper.isDesktop(context) ? const EdgeInsets.symmetric(vertical: 20) : const EdgeInsets.symmetric(vertical: 10) ,
-                              child: Container(
-                                width: ResponsiveHelper.isDesktop(context) ? 500 : 300,
-                                padding: const EdgeInsets.only(right: Dimensions.paddingSizeSmall, left: Dimensions.paddingSizeExtraSmall),
-                                margin: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
-                                child: ItemWidget(
-                                  isStore: false, item: storeController.recommendedItemModel!.items![index],
-                                  store: null, index: index, length: null, isCampaign: false, inStore: true,
-                                ),
+                              padding: const EdgeInsets.only(
+                                top: Dimensions.paddingSizeDefault,
+                                bottom: Dimensions.paddingSizeDefault,
+                                right: Dimensions.paddingSizeDefault,
+                              ),
+                              child: ItemCard(
+                                // Use same compact card design as home Latest Items
+                                isPopularItem: true,
+                                isPopularItemCart: true,
+                                item: item,
+                                isShop: true,
+                                isFood: false,
+                                index: index,
                               ),
                             );
                           },

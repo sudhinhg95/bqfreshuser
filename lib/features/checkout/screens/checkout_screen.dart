@@ -581,42 +581,72 @@ class CheckoutScreenState extends State<CheckoutScreen> {
 
   List<DropdownItem<int>> _getDropdownAddressList({required BuildContext context, required List<AddressModel>? addressList, required Store? store}) {
     List<DropdownItem<int>> dropDownAddressList = [];
+    // Build the dropdown from the same filtered address list used in
+    // `_getAddressList`, preferring the user's Home address and never
+    // falling back to a store location as the primary entry.
+    final List<AddressModel> effectiveAddresses = _getAddressList(
+      addressList: addressList,
+      store: store,
+    );
 
-    dropDownAddressList.add(DropdownItem<int>(value: 0, child: SizedBox(
-      width: context.width > Dimensions.webMaxWidth ? Dimensions.webMaxWidth - 50 : context.width - 50,
-      child: AddressWidget(
-        address: AddressHelper.getUserAddressFromSharedPref(),
-        fromAddress: false, fromCheckout: true,
-      ),
-    )));
+    for (int index = 0; index < effectiveAddresses.length; index++) {
+      final addr = effectiveAddresses[index];
+      final type = addr.addressType;
+      // On checkout, show "Your location" for any address that is not
+      // explicitly tagged as home or office.
+      final bool useYourLocation =
+          type == null || type.isEmpty || (type != 'home' && type != 'office');
+      final String? overrideKey = useYourLocation ? 'your_location' : null;
 
-    if(addressList != null && store != null) {
-      for(int index=0; index<addressList.length; index++) {
-        if(addressList[index].zoneIds!.contains(store.zoneId)) {
-
-          dropDownAddressList.add(DropdownItem<int>(value: index + 1, child: SizedBox(
-            width: context.width > Dimensions.webMaxWidth ? Dimensions.webMaxWidth-50 : context.width-50,
+      dropDownAddressList.add(
+        DropdownItem<int>(
+          value: index,
+          child: SizedBox(
+            width: context.width > Dimensions.webMaxWidth
+                ? Dimensions.webMaxWidth - 50
+                : context.width - 50,
             child: AddressWidget(
-              address: addressList[index],
-              fromAddress: false, fromCheckout: true,
+              address: addr,
+              fromAddress: false,
+              fromCheckout: true,
+              overrideAddressTypeKey: overrideKey,
             ),
-          )));
-        }
-      }
+          ),
+        ),
+      );
     }
     return dropDownAddressList;
   }
 
   List<AddressModel> _getAddressList({required List<AddressModel>? addressList, required Store? store}) {
     List<AddressModel> address = [];
+    // Prefer the user's saved addresses (with "home" first) over the
+    // generic stored location used on the store/home screens.
+    if (addressList != null && store != null) {
+      final List<AddressModel> filtered = addressList
+          .where((a) => a.zoneIds != null && a.zoneIds!.contains(store.zoneId))
+          .toList();
 
-    address.add(AddressHelper.getUserAddressFromSharedPref()!);
-
-    if(addressList != null && store != null) {
-      for(int index=0; index<addressList.length; index++) {
-        if(addressList[index].zoneIds!.contains(store.zoneId)) {
-          address.add(addressList[index]);
+      // Sort so that Home appears first, then Office, then Others.
+      filtered.sort((a, b) {
+        int score(AddressModel m) {
+          if (m.addressType == 'home') return 0;
+          if (m.addressType == 'office') return 1;
+          return 2;
         }
+
+        return score(a).compareTo(score(b));
+      });
+
+      address.addAll(filtered);
+    }
+
+    // As a fallback (e.g. no address list loaded yet), still use the
+    // shared-pref user address if present.
+    if (address.isEmpty) {
+      final saved = AddressHelper.getUserAddressFromSharedPref();
+      if (saved != null) {
+        address.add(saved);
       }
     }
     return address;

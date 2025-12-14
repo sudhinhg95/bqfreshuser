@@ -138,12 +138,13 @@ class ItemCard extends StatelessWidget {
                           const SizedBox(height: 6),
 
                           Row(children: [
-                            // Price with smaller currency text and normal-sized amount,
-                            // mirroring the main listing `ItemWidget`.
+                            // Price with smaller currency text and normal-sized amount.
+                            // Use the same base price as the main listing cards
+                            // so home and listing show identical prices.
                             Expanded(
                               child: Builder(builder: (_) {
                                 final String fullPrice = PriceConverter.convertPrice(
-                                  Get.find<ItemController>().getStartingPrice(item),
+                                  item.price,
                                   discount: discount,
                                   discountType: discountType,
                                 );

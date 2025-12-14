@@ -194,13 +194,21 @@ class CartItemWidget extends StatelessWidget {
 
                       variationText!.isNotEmpty ? Padding(
                         padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
-                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('${'variations'.tr}: ', style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall)),
-                          Flexible(child: Text(
-                            variationText,
-                            style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
-                          )),
-                        ]),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                variationText,
+                                // Darker variation text without the "variations" heading.
+                                style: robotoRegular.copyWith(
+                                  fontSize: Dimensions.fontSizeSmall,
+                                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ) : const SizedBox(),
                     ]),
                   ),

@@ -16,8 +16,11 @@ class AddressWidget extends StatelessWidget {
   final Function? onTap;
   final bool isSelected;
   final bool fromDashBoard;
+  // Optional override for the displayed address type key (e.g. show
+  // 'your_location' instead of the raw addressType like 'others').
+  final String? overrideAddressTypeKey;
   const AddressWidget({super.key, required this.address, required this.fromAddress, this.onRemovePressed, this.onEditPressed,
-    this.onTap, this.fromCheckout = false, this.isSelected = false, this.fromDashBoard = false});
+    this.onTap, this.fromCheckout = false, this.isSelected = false, this.fromDashBoard = false, this.overrideAddressTypeKey});
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +47,19 @@ class AddressWidget extends StatelessWidget {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(mainAxisSize: MainAxisSize.min, children: [
                       Image.asset(
-                        address!.addressType == 'home' ? Images.homeIcon : address!.addressType == 'office' ? Images.workIcon : Images.otherIcon,
-                        color: Theme.of(context).primaryColor, height: ResponsiveHelper.isDesktop(context) ? 25 : 20, width: ResponsiveHelper.isDesktop(context) ? 25 : 20,
+                        (overrideAddressTypeKey ?? address!.addressType) == 'home'
+                            ? Images.homeIcon
+                            : (overrideAddressTypeKey ?? address!.addressType) == 'office'
+                                ? Images.workIcon
+                                : Images.otherIcon,
+                        color: Theme.of(context).primaryColor,
+                        height: ResponsiveHelper.isDesktop(context) ? 25 : 20,
+                        width: ResponsiveHelper.isDesktop(context) ? 25 : 20,
                       ),
                       const SizedBox(width: Dimensions.paddingSizeSmall),
 
                       Text(
-                        address!.addressType!.tr,
+                        (overrideAddressTypeKey ?? address!.addressType)!.tr,
                         style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault),
                       ),
                     ]),
@@ -59,7 +68,8 @@ class AddressWidget extends StatelessWidget {
                     Text(
                       address!.address!,
                       style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ]),
                 ),

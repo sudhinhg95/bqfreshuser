@@ -1,35 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
-import 'package:sixam_mart/features/banner/controllers/banner_controller.dart';
 import 'package:sixam_mart/util/dimensions.dart';
-import 'package:sixam_mart/common/widgets/custom_image.dart';
 
 class WebPromotionalBannerView extends StatelessWidget {
   const WebPromotionalBannerView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<BannerController>(builder: (bannerController) {
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeLarge),
-        child: bannerController.promotionalBanner != null ? Container(
-          height: 235, width: context.width,
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Dimensions.paddingSizeExtraSmall),
-            child: CustomImage(
-              image: '${bannerController.promotionalBanner!.bottomSectionBannerFullUrl}',
-              fit: BoxFit.cover, height: 235, width: double.infinity,
-            ),
-          ),
-        ) : const WebPromotionalBannerShimmerView(),
-      );
-    });
+    // Bottom promotional banner (web) is hidden as per requirement.
+    return const SizedBox();
   }
 }
 

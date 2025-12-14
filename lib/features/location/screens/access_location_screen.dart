@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sixam_mart/common/widgets/address_widget.dart';
 import 'package:sixam_mart/common/widgets/no_internet_screen.dart';
 import 'package:sixam_mart/features/location/controllers/location_controller.dart';
@@ -53,6 +54,13 @@ class _AccessLocationScreenState extends State<AccessLocationScreen> {
   }
 
   void checkInternet() async {
+    // On web, rely on the browser's own network state. A direct
+    // probe to https://www.google.com will often fail due to CORS,
+    // incorrectly triggering the NoInternetScreen.
+    if (kIsWeb) {
+      return;
+    }
+
     final List<ConnectivityResult> results = await Connectivity().checkConnectivity();
     final bool isNetworkAvailable = !results.contains(ConnectivityResult.none);
 

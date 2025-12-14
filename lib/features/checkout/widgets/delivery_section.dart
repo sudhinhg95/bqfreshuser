@@ -129,7 +129,13 @@ class DeliverySection extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(address[index].addressType!.tr, style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall)),
+                                    Text(
+                                      ((address[index].addressType == 'home' || address[index].addressType == 'office')
+                                              ? address[index].addressType!
+                                              : 'your_location')
+                                          .tr,
+                                      style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                    ),
                                     const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
                                     Text(
@@ -184,10 +190,18 @@ class DeliverySection extends StatelessWidget {
                 padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
               ),
               items: addressList,
-              child: AddressWidget(
-                address: address[checkoutController.addressIndex!],
-                fromAddress: false, fromCheckout: true,
-              ),
+              child: Builder(builder: (context) {
+                final selected = address[checkoutController.addressIndex!];
+                final type = selected.addressType;
+                final bool useYourLocation =
+                    type == null || type.isEmpty || (type != 'home' && type != 'office');
+                return AddressWidget(
+                  address: selected,
+                  fromAddress: false,
+                  fromCheckout: true,
+                  overrideAddressTypeKey: useYourLocation ? 'your_location' : null,
+                );
+              }),
             ),
           ),
           const SizedBox(height: Dimensions.paddingSizeLarge),

@@ -142,9 +142,9 @@ _preparePopUpBanner(BannerModel? bannerModel) async {
         String? url = campaign.imageFullUrl;
         if (url != null && url.isNotEmpty && !seen.contains(url)) {
           _bannerPopUpImageList!.add(url);
+          _bannerPopUpDataList!.add(campaign);
           seen.add(url);
         }
-        _bannerPopUpDataList!.add(campaign);
       }
 
       // Then include normal banners
@@ -165,6 +165,7 @@ _preparePopUpBanner(BannerModel? bannerModel) async {
           for (final candidate in candidates) {
             if (!seen.contains(candidate)) {
               _bannerPopUpImageList!.add(candidate);
+              _bannerPopUpDataList!.add(banner);
               seen.add(candidate);
               print('🔔 Popup Prepare: Added candidate banner URL to list: $candidate');
             }
@@ -172,13 +173,13 @@ _preparePopUpBanner(BannerModel? bannerModel) async {
         } else {
           if (url != null && url.isNotEmpty && !seen.contains(url)) {
             _bannerPopUpImageList!.add(url);
+            _bannerPopUpDataList!.add(banner);
             seen.add(url);
             print('🔔 Popup Prepare: Added banner URL to list: $url');
           } else {
             print('🔔 Popup Prepare: Skipped banner (url null/empty or duplicate)');
           }
         }
-        _bannerPopUpDataList!.add(banner);
       }
       print('🔔 Popup Prepare: Final banner list length: ${_bannerPopUpImageList?.length ?? 0}');
     }

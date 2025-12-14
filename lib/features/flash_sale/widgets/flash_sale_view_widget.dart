@@ -137,7 +137,7 @@ class _FlashSaleViewWidgetState extends State<FlashSaleViewWidget> {
           const SizedBox(height: Dimensions.paddingSizeDefault),
           ],
         ),
-      ) : const SizedBox() : const FlashSaleShimmerView();
+      ) : const SizedBox() : const SizedBox();
     });
   }
 }

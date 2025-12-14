@@ -2,7 +2,6 @@ import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sixam_mart/features/cart/controllers/cart_controller.dart';
 import 'package:sixam_mart/features/cart/widgets/extra_packaging_widget.dart';
-import 'package:sixam_mart/features/cart/widgets/not_available_bottom_sheet_widget.dart';
 import 'package:sixam_mart/features/coupon/controllers/coupon_controller.dart';
 import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
@@ -21,7 +20,7 @@ import 'package:sixam_mart/common/widgets/custom_app_bar.dart';
 import 'package:sixam_mart/common/widgets/custom_button.dart';
 import 'package:sixam_mart/common/widgets/custom_snackbar.dart';
 import 'package:sixam_mart/common/widgets/footer_view.dart';
-import 'package:sixam_mart/common/widgets/item_widget.dart';
+import 'package:sixam_mart/common/widgets/card_design/item_card.dart';
 import 'package:sixam_mart/common/widgets/menu_drawer.dart';
 import 'package:sixam_mart/common/widgets/no_data_screen.dart';
 import 'package:sixam_mart/common/widgets/web_constrained_box.dart';
@@ -372,44 +371,8 @@ class _CartScreenState extends State<CartScreen> {
               ]),
             ) : const SizedBox(),
 
-            ResponsiveHelper.isDesktop(context) ? const SizedBox() : Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                border: Border.all(color: Theme.of(context).primaryColor, width: 0.5),
-              ),
-              padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-              margin: ResponsiveHelper.isDesktop(context) ? const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault, vertical: Dimensions.paddingSizeSmall) : EdgeInsets.zero,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  InkWell(
-                    onTap: (){
-                      if(ResponsiveHelper.isDesktop(context)) {
-                        Get.dialog(const Dialog(child: NotAvailableBottomSheetWidget()));
-                      } else {
-                        showModalBottomSheet(
-                          context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-                          builder: (con) => const NotAvailableBottomSheetWidget(),
-                        );
-                      }
-                    },
-                    child: Row(children: [
-                      Expanded(child: Text('if_any_product_is_not_available'.tr, style: robotoMedium, maxLines: 2, overflow: TextOverflow.ellipsis)),
-                      const Icon(Icons.arrow_forward_ios_sharp, size: 18),
-                    ]),
-                  ),
-
-                  cartController.notAvailableIndex != -1 ? Row(children: [
-                    Text(cartController.notAvailableList[cartController.notAvailableIndex].tr, style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor)),
-
-                    IconButton(
-                      onPressed: ()=> cartController.setAvailableIndex(-1),
-                      icon: const Icon(Icons.clear, size: 18),
-                    )
-                  ]) : const SizedBox(),
-                ],
-              ),
-            ),
+            // "If any product is not available" section (mobile) hidden as per requirement.
+            ResponsiveHelper.isDesktop(context) ? const SizedBox() : const SizedBox(),
             ResponsiveHelper.isDesktop(context) ? const SizedBox() : const SizedBox(height: Dimensions.paddingSizeSmall),
 
             // Total
@@ -489,23 +452,30 @@ class _CartScreenState extends State<CartScreen> {
               ),
 
               SizedBox(
-                height: ResponsiveHelper.isDesktop(context) ? 160 : 130,
+                // Match LatestItemView card height so cart suggestions
+                // look identical to home "Latest Items" section.
+                height: 246,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: suggestedItems.length,
                   physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(left: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeDefault),
+                  padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
                   itemBuilder: (context, index) {
                     return Padding(
-                      padding: ResponsiveHelper.isDesktop(context) ? const EdgeInsets.symmetric(vertical: 20) : const EdgeInsets.symmetric(vertical: 10) ,
-                      child: Container(
-                        width: ResponsiveHelper.isDesktop(context) ? 500 : 300,
-                        padding: const EdgeInsets.only(right: Dimensions.paddingSizeSmall, left: Dimensions.paddingSizeExtraSmall),
-                        margin: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
-                        child: ItemWidget(
-                          isStore: false, item: suggestedItems![index], fromCartSuggestion: true,
-                          store: null, index: index, length: null, isCampaign: false, inStore: true,
-                        ),
+                      padding: const EdgeInsets.only(
+                        top: Dimensions.paddingSizeDefault,
+                        bottom: Dimensions.paddingSizeDefault,
+                        right: Dimensions.paddingSizeDefault,
+                      ),
+                      child: ItemCard(
+                        // Use same compact card design as LatestItemView
+                        // so size and layout are consistent.
+                        isPopularItem: true,
+                        isPopularItemCart: true,
+                        item: suggestedItems![index],
+                        isShop: true,
+                        isFood: false,
+                        index: index,
                       ),
                     );
                   },
@@ -627,46 +597,8 @@ class CheckoutButton extends StatelessWidget {
               ) : const SizedBox(),
               ResponsiveHelper.isDesktop(context) ? const SizedBox(height: Dimensions.paddingSizeSmall) : const SizedBox(),
 
-              !ResponsiveHelper.isDesktop(context) ? const SizedBox() :
-              Container(
-                width: Dimensions.webMaxWidth,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                    color: Theme.of(context).cardColor,
-                    border: Border.all(color: Theme.of(context).primaryColor, width: 0.5)),
-                padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-                //margin: ResponsiveHelper.isDesktop(context) ? const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault, vertical: Dimensions.paddingSizeSmall) : EdgeInsets.zero,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InkWell(
-                      onTap: (){
-                        if(ResponsiveHelper.isDesktop(context)) {
-                          Get.dialog(const Dialog(child: NotAvailableBottomSheetWidget()));
-                        } else {
-                          showModalBottomSheet(
-                            context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-                            builder: (con) => const NotAvailableBottomSheetWidget(),
-                          );
-                        }
-                      },
-                      child: Row(children: [
-                        Expanded(child: Text('if_any_product_is_not_available'.tr, style: robotoMedium, maxLines: 2, overflow: TextOverflow.ellipsis)),
-                        const Icon(Icons.keyboard_arrow_down, size: 18),
-                      ]),
-                    ),
-
-                    cartController.notAvailableIndex != -1 ? Row(children: [
-                      Text(cartController.notAvailableList[cartController.notAvailableIndex].tr, style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor)),
-
-                      IconButton(
-                        onPressed: ()=> cartController.setAvailableIndex(-1),
-                        icon: const Icon(Icons.clear, size: 18),
-                      )
-                    ]) : const SizedBox(),
-                  ],
-                ),
-              ),
+              // "If any product is not available" section (desktop) hidden as per requirement.
+              !ResponsiveHelper.isDesktop(context) ? const SizedBox() : const SizedBox(),
               ResponsiveHelper.isDesktop(context) ? const SizedBox(height: Dimensions.paddingSizeSmall) : const SizedBox(),
 
               SafeArea(

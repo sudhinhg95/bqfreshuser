@@ -47,7 +47,13 @@ class _ItemThatYouLoveViewState extends State<ItemThatYouLoveView> {
 
       List<Item>? recommendItems = itemController.recommendedItemList;
 
-      return recommendItems != null ? recommendItems.isNotEmpty ? Column(children: [
+      // If there are no recommended items (null or empty), do not
+      // show this section at all – avoid the loading shimmer.
+      if (recommendItems == null || recommendItems.isEmpty) {
+        return const SizedBox();
+      }
+
+      return Column(children: [
 
         Padding(
           padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
@@ -120,7 +126,7 @@ class _ItemThatYouLoveViewState extends State<ItemThatYouLoveView> {
             },
           ),
         ),
-      ]) : const SizedBox() : ItemThatYouLoveShimmerView( forShop: widget.forShop);
+      ]);
       }
     );
   }
