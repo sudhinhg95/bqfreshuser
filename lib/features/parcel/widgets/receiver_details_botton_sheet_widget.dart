@@ -93,7 +93,7 @@ class _ReceiverDetailsBottomSheetWidgetState extends State<ReceiverDetailsBottom
           const SizedBox(height: Dimensions.paddingSizeDefault),
 
           MyTextField(
-            hintText: "${'street_number'.tr} (${'optional'.tr})",
+            hintText: "${'Road Number'.tr} (${'optional'.tr})",
             inputType: TextInputType.streetAddress,
             focusNode: _streetNode,
             nextFocus: _houseNode,
@@ -111,7 +111,7 @@ class _ReceiverDetailsBottomSheetWidgetState extends State<ReceiverDetailsBottom
           const SizedBox(height: Dimensions.paddingSizeDefault),
 
           MyTextField(
-            hintText: "${'floor'.tr} (${'optional'.tr})",
+            hintText: "${'Flat/Villa'.tr} (${'optional'.tr})",
             inputType: TextInputType.text,
             focusNode: _floorNode,
             inputAction: TextInputAction.done,

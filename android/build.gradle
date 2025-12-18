@@ -32,6 +32,11 @@ subprojects {
                         languageVersion = JavaLanguageVersion.of(17)
                     }
                 }
+                  packagingOptions {
+                    jniLibs {
+                        useLegacyPackaging = true
+                    }
+                }
 
 
             }

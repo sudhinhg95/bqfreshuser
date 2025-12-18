@@ -28,6 +28,8 @@ class PlaceOrderBodyModel {
   String? _streetNumber;
   String? _house;
   String? _floor;
+  String? _block;
+  String? _area;
   String? _dmTips;
   String? _unavailableItemNote;
   String? _deliveryInstruction;
@@ -66,6 +68,8 @@ class PlaceOrderBodyModel {
     required String streetNumber,
     required String house,
     required String floor,
+    String? block,
+    String? area,
     required String dmTips,
     required String unavailableItemNote,
     required String deliveryInstruction,
@@ -103,6 +107,8 @@ class PlaceOrderBodyModel {
     _streetNumber = streetNumber;
     _house = house;
     _floor = floor;
+    _block = block;
+    _area = area;
     _dmTips = dmTips;
     _unavailableItemNote = unavailableItemNote;
     _deliveryInstruction = deliveryInstruction;
@@ -140,6 +146,8 @@ class PlaceOrderBodyModel {
   String? get streetNumber => _streetNumber;
   String? get house => _house;
   String? get floor => _floor;
+  String? get block => _block;
+  String? get area => _area;
   String? get dmTips => _dmTips;
   String? get unavailableItemNote => _unavailableItemNote;
   String? get deliveryInstruction => _deliveryInstruction;
@@ -184,6 +192,8 @@ class PlaceOrderBodyModel {
     _streetNumber = json['road'];
     _house = json['apartment'];
     _floor = json['floor'];
+    _block = json['block'];
+    _area = json['area'];
     _dmTips = json['dm_tips'];
     _unavailableItemNote = json['unavailable_item_note'];
     _deliveryInstruction = json['delivery_instruction'];
@@ -244,6 +254,8 @@ class PlaceOrderBodyModel {
     data['road'] = _streetNumber.toString();
     data['house'] = _house.toString();
     data['floor'] = _floor.toString();
+    data['block'] = _block.toString();
+    data['area'] = _area.toString();
     data['dm_tips'] = _dmTips.toString();
     data['unavailable_item_note'] = _unavailableItemNote.toString();
     data['delivery_instruction'] = _deliveryInstruction.toString();

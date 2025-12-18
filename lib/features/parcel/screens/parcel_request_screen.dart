@@ -610,6 +610,8 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
             contactPersonNumber: widget.pickedUpAddress.contactPersonNumber ?? '',
             streetNumber: widget.pickedUpAddress.streetNumber ?? '', house: widget.pickedUpAddress.house ?? '',
             floor: widget.pickedUpAddress.floor ?? '',
+            block: widget.pickedUpAddress.block ?? '',
+            area: widget.pickedUpAddress.area ?? '',
             discountAmount: 0, taxAmount: 0, parcelCategoryId: widget.parcelCategory.id.toString(),
             chargePayer: parcelController.payerTypes[parcelController.payerIndex], dmTips: parcelController.tips.toString(),
             cutlery: 0, unavailableItemNote: '',

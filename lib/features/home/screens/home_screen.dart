@@ -418,195 +418,198 @@ class _HomeScreenState extends State<HomeScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Stack(
-                children: [
-                  SizedBox(
-                    // Increased height (~20% more) for a larger banner.
-                    height: 700,
-                    width: double.infinity,
-                    child: StatefulBuilder(builder: (context, setState) {
-                      // helper to start a 3s timer for images (cancels any existing)
-                      void startImageTimer() {
-                        imageTimer?.cancel();
-                        imageTimer = Timer(const Duration(seconds: 3), () {
-                          if (!mounted) return;
-                          final next = (currentIndex + 1) % validBanners.length;
-                          try {
-                            pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
-                          } catch (_) {}
-                        });
-                      }
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                // helper to start a 3s timer for images (cancels any existing)
+                void startImageTimer() {
+                  imageTimer?.cancel();
+                  imageTimer = Timer(const Duration(seconds: 3), () {
+                    if (!mounted) return;
+                    final next = (currentIndex + 1) % validBanners.length;
+                    try {
+                      pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                    } catch (_) {}
+                  });
+                }
 
-                      return PageView.builder(
-                        controller: pageController,
-                        itemCount: validBanners.length,
-                        onPageChanged: (index) {
-                          // cancel any timers and pause other videos
-                          currentIndex = index;
-                          imageTimer?.cancel();
-                          for (int j = 0; j < videoControllers.length; j++) {
-                            final vc = videoControllers[j];
-                            if (vc != null && j != index) {
-                              try { vc.pause(); vc.seekTo(Duration.zero); } catch (_) {}
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        // Increased height (~20% more) for a larger banner.
+                        height: 700,
+                        width: double.infinity,
+                        child: PageView.builder(
+                          controller: pageController,
+                          itemCount: validBanners.length,
+                          onPageChanged: (index) {
+                            // cancel any timers and pause other videos
+                            currentIndex = index;
+                            imageTimer?.cancel();
+                            for (int j = 0; j < videoControllers.length; j++) {
+                              final vc = videoControllers[j];
+                              if (vc != null && j != index) {
+                                try { vc.pause(); vc.seekTo(Duration.zero); } catch (_) {}
+                              }
                             }
-                          }
-                          // If new page is a video, start timer only when it's paused; if image, start timer immediately
-                          final vc = videoControllers[index];
-                          if (vc != null) {
-                            try {
-                              if (vc.value.isPlaying) {
-                                imageTimer?.cancel();
-                              } else {
+                            // If new page is a video, start timer only when it's paused; if image, start timer immediately
+                            final vc = videoControllers[index];
+                            if (vc != null) {
+                              try {
+                                if (vc.value.isPlaying) {
+                                  imageTimer?.cancel();
+                                } else {
+                                  startImageTimer();
+                                }
+                              } catch (_) {
                                 startImageTimer();
                               }
-                            } catch (_) {
+                            } else {
                               startImageTimer();
                             }
-                          } else {
-                            startImageTimer();
-                          }
-                        },
-                        itemBuilder: (context, index) {
-                          final bannerUrl = validBanners[index];
-                          final vController = videoControllers[index];
-                          // If we have a prepared video controller, render the VideoPlayer with play/pause overlay
-                          if (vController != null && vController.value.isInitialized) {
-                            final isPlaying = vController.value.isPlaying;
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                AspectRatio(
-                                  aspectRatio: vController.value.aspectRatio > 0 ? vController.value.aspectRatio : (16/9),
-                                  child: VideoPlayer(vController),
-                                ),
-                                // Play/pause button overlay
-                                Positioned.fill(
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () async {
-                                        if (vController.value.isPlaying) {
-                                          try { await vController.pause(); } catch (_) {}
-                                          // start auto-advance timer when paused
-                                          imageTimer?.cancel();
-                                          imageTimer = Timer(const Duration(seconds: 3), () {
-                                            if (!mounted) return;
-                                            if (!vController.value.isPlaying && currentIndex == index) {
-                                              final next = (currentIndex + 1) % validBanners.length;
-                                              try { pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut); } catch (_) {}
-                                            }
-                                          });
-                                        } else {
-                                          try { await vController.play(); } catch (_) {}
-                                          // cancel any auto-advance while playing
-                                          imageTimer?.cancel();
-                                        }
-                                        setState(() {});
-                                      },
-                                      child: Center(
-                                        child: Container(
-                                          decoration: const BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
-                                          padding: const EdgeInsets.all(12),
-                                          child: Icon(
-                                            isPlaying ? Icons.pause : Icons.play_arrow,
-                                            color: Colors.white,
-                                            size: 32,
-                                          ), 
+
+                            // rebuild title and controls
+                            setState(() {});
+                          },
+                          itemBuilder: (context, index) {
+                            final bannerUrl = validBanners[index];
+                            final vController = videoControllers[index];
+                            // If we have a prepared video controller, render the VideoPlayer with play/pause overlay
+                            if (vController != null && vController.value.isInitialized) {
+                              final isPlaying = vController.value.isPlaying;
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  AspectRatio(
+                                    aspectRatio: vController.value.aspectRatio > 0 ? vController.value.aspectRatio : (16/9),
+                                    child: VideoPlayer(vController),
+                                  ),
+                                  // Play/pause button overlay
+                                  Positioned.fill(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () async {
+                                          if (vController.value.isPlaying) {
+                                            try { await vController.pause(); } catch (_) {}
+                                            // start auto-advance timer when paused
+                                            imageTimer?.cancel();
+                                            imageTimer = Timer(const Duration(seconds: 3), () {
+                                              if (!mounted) return;
+                                              if (!vController.value.isPlaying && currentIndex == index) {
+                                                final next = (currentIndex + 1) % validBanners.length;
+                                                try { pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut); } catch (_) {}
+                                              }
+                                            });
+                                          } else {
+                                            try { await vController.play(); } catch (_) {}
+                                            // cancel any auto-advance while playing
+                                            imageTimer?.cancel();
+                                          }
+                                          setState(() {});
+                                        },
+                                        child: Center(
+                                          child: Container(
+                                            decoration: const BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
+                                            padding: const EdgeInsets.all(12),
+                                            child: Icon(
+                                              isPlaying ? Icons.pause : Icons.play_arrow,
+                                              color: Colors.white,
+                                              size: 32,
+                                            ), 
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
+                                ],
+                              );
+                            }
+                            // Not a video (or failed to init) — show image with fallback
+                            // start image timer only for first build of this page
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (currentIndex == index && (videoControllers[index] == null)) {
+                                imageTimer?.cancel();
+                                imageTimer = Timer(const Duration(seconds: 3), () {
+                                  if (!mounted) return;
+                                  final next = (currentIndex + 1) % validBanners.length;
+                                  try {
+                                    pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                                  } catch (_) {}
+                                });
+                              }
+                            });
+                            return Image.network(
+                              bannerUrl,
+                              // Use contain so full portrait/mobile photos fit in the popup
+                              // without being cropped.
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                "assets/image/no_coupon.png",
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      // Banner title + close button overlay at the top of the popup
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        child: Builder(builder: (context) {
+                          String? title;
+                          if (currentIndex >= 0 && currentIndex < bannerTitles.length) {
+                            title = bannerTitles[currentIndex];
+                          }
+                          if (title == null || title.trim().isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            color: Colors.black54,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: robotoMedium.copyWith(
+                                      fontSize: Dimensions.fontSizeLarge,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () => Get.back(),
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    padding: const EdgeInsets.all(4),
+                                    child: const Icon(
+                                      Icons.close,
+                                      color: Colors.red,
+                                      size: 18,
+                                    ),
+                                  ),
                                 ),
                               ],
-                            );
-                          }
-                          // Not a video (or failed to init) — show image with fallback
-                          // start image timer only for first build of this page
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (currentIndex == index && (videoControllers[index] == null)) {
-                              imageTimer?.cancel();
-                              imageTimer = Timer(const Duration(seconds: 3), () {
-                                if (!mounted) return;
-                                final next = (currentIndex + 1) % validBanners.length;
-                                try {
-                                  pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
-                                } catch (_) {}
-                              });
-                            }
-                          });
-                          return Image.network(
-                            bannerUrl,
-                            // Ensure the image cleanly fills the popup area
-                            // without overflow.
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            errorBuilder: (_, __, ___) => Image.asset(
-                              "assets/image/no_coupon.png",
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
                             ),
                           );
-                        },
-                      );
-                    }),
+                        }),
+                      ),
+                    ],
                   ),
-                  // Banner title + close button overlay at the top of the popup
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    child: Builder(builder: (context) {
-                      String? title;
-                      if (currentIndex >= 0 && currentIndex < bannerTitles.length) {
-                        title = bannerTitles[currentIndex];
-                      }
-                      if (title == null || title.trim().isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        color: Colors.black54,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: robotoMedium.copyWith(
-                                  fontSize: Dimensions.fontSizeLarge,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            InkWell(
-                              onTap: () => Get.back(),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                padding: const EdgeInsets.all(4),
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.red,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           );
         },

@@ -58,7 +58,6 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
           floatingActionButtonLocation: ResponsiveHelper.isDesktop(context) ? FloatingActionButtonLocation.centerFloat : null,
           body: Container(
-            height: context.height,
             decoration: BoxDecoration(image: DecorationImage(
                 image: AssetImage(ResponsiveHelper.isDesktop(context) ? Images.addressCity : Images.city),
                 alignment: ResponsiveHelper.isDesktop(context) ? Alignment.center : Alignment.bottomCenter,

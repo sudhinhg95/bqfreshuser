@@ -210,8 +210,8 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
                         !isDesktop ? CustomTextField(
-                          titleText: 'street_number'.tr,
-                          labelText: 'street_number'.tr,
+                          titleText: 'Road Number'.tr,
+                          labelText: 'Road Number'.tr,
                           inputType: TextInputType.streetAddress,
                           focusNode: streetNode,
                           nextFocus: houseNode,
@@ -223,8 +223,8 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                             children: [
                               isDesktop ? Expanded(
                                 child: CustomTextField(
-                                  labelText: 'street_number'.tr,
-                                  titleText: 'street_number'.tr,
+                                  labelText: 'Road Number'.tr,
+                                  titleText: 'Road Number'.tr,
                                   inputType: TextInputType.streetAddress,
                                   focusNode: streetNode,
                                   nextFocus: houseNode,
@@ -247,8 +247,8 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
 
                               Expanded(
                                 child: CustomTextField(
-                                  labelText: 'floor'.tr,
-                                  titleText: 'floor'.tr,
+                                  labelText: 'Flat/Villa'.tr,
+                                  titleText: 'Flat/Villa'.tr,
                                   inputType: TextInputType.text,
                                   focusNode: floorNode,
                                   nextFocus: nameNode,

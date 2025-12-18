@@ -135,7 +135,7 @@ class ManualLoginWidget extends StatelessWidget {
                 Get.toNamed(RouteHelper.getForgotPassRoute());
               } else {
                 // Prevent showing the generic error screen; guide user to support
-                showCustomSnackBar('please_contact_support'.tr);
+                showCustomSnackBar('please contact support'.tr);
                 Get.toNamed(RouteHelper.getSupportRoute());
               }
             },
@@ -302,14 +302,14 @@ class ManualLoginWidget extends StatelessWidget {
                       Get.back();
                       Get.dialog(const Center(child: ForgetPassScreen(fromDialog: true)));
                     } else {
-                      showCustomSnackBar('please_contact_support'.tr);
+                      showCustomSnackBar('please contact support'.tr);
                       Get.toNamed(RouteHelper.getSupportRoute());
                     }
                   } else {
                     if (isPhoneEnabled || isEmailEnabled) {
                       Get.toNamed(RouteHelper.getForgotPassRoute());
                     } else {
-                      showCustomSnackBar('please_contact_support'.tr);
+                      showCustomSnackBar('please contact support'.tr);
                       Get.toNamed(RouteHelper.getSupportRoute());
                     }
                   }

@@ -66,11 +66,42 @@ class AddressWidget extends StatelessWidget {
                     const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
                     Text(
-                      address!.address!,
+                      address!.address ?? '',
                       style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 2),
+
+                    Builder(builder: (context) {
+                      final parts = <String>[];
+                      if(address!.streetNumber != null && address!.streetNumber!.isNotEmpty) {
+                        parts.add('${'Road Number'.tr}: ${address!.streetNumber!}');
+                      }
+                      if(address!.house != null && address!.house!.isNotEmpty) {
+                        parts.add('${'house'.tr}: ${address!.house!}');
+                      }
+                      if(address!.floor != null && address!.floor!.isNotEmpty) {
+                        parts.add('${'Flat/Villa'.tr}: ${address!.floor!}');
+                      }
+                      if(address!.block != null && address!.block!.isNotEmpty) {
+                        parts.add('${'block'.tr}: ${address!.block!}');
+                      }
+                      if(address!.area != null && address!.area!.isNotEmpty) {
+                        parts.add('${'area'.tr}: ${address!.area!}');
+                      }
+
+                      if(parts.isEmpty) {
+                        return const SizedBox();
+                      }
+
+                      return Text(
+                        parts.join(', '),
+                        style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).disabledColor),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    }),
                   ]),
                 ),
 

@@ -36,12 +36,18 @@ class CategoryView extends StatelessWidget {
                     child: categoryController.categoryList != null ? ListView.builder(
                       controller: scrollController,
                       itemCount: categoryController.categoryList!.length > 10 ? 10 : categoryController.categoryList!.length,
-                      padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeDefault),
+                      // Slightly reduce top padding; keep small left margin
+                      padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeSmall, bottom: Dimensions.paddingSizeSmall),
                       physics: const BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeDefault),
+                          // Slight gap between cards: a bit more than before
+                          padding: const EdgeInsets.only(
+                            bottom: Dimensions.paddingSizeSmall,
+                            top: Dimensions.paddingSizeSmall,
+                            right: Dimensions.paddingSizeSmall,
+                          ),
                           child: InkWell(
                             onTap: () {
                               if(index == 9 && categoryController.categoryList!.length > 10) {
@@ -53,7 +59,8 @@ class CategoryView extends StatelessWidget {
                               }
                             },
                             child: SizedBox(
-                              width: 80,
+                              // Match closer to the image width to avoid extra blank space
+                              width: 75,
                               child: Column(children: [
                                 SizedBox(
                                   height: 75, width: 75,

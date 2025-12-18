@@ -32,24 +32,28 @@ class CategoryView extends StatelessWidget {
                     child: categoryController.categoryList != null ? ListView.builder(
                       controller: scrollController,
                       itemCount: categoryController.categoryList!.length > 15 ? 15 : categoryController.categoryList!.length,
-                      padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeDefault),
+                      // Minimal padding so category cards sit very close together
+                      padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
                       physics: const BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 1, vertical: Dimensions.paddingSizeDefault),
+                          // Tight vertical spacing and no extra horizontal padding
+                          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: Dimensions.paddingSizeExtraSmall),
                           child: InkWell(
                             onTap: () => Get.toNamed(RouteHelper.getCategoryItemRoute(
                               categoryController.categoryList![index].id, categoryController.categoryList![index].name!,
                             )),
                             child: SizedBox(
-                              width: 60,
+                              // Match the visual card width so there is no extra
+                              // empty space between category cards.
+                              width: 50,
                               child: Column(children: [
                                 Container(
                                   height: 50, width: 50,
                                   margin: EdgeInsets.only(
-                                    left: index == 0 ? 0 : Dimensions.paddingSizeExtraSmall,
-                                    right: Dimensions.paddingSizeExtraSmall,
+                                    // Keep only an outer margin; no gap between inner cards
+                                    left: index == 0 ? Dimensions.paddingSizeSmall : 0,
                                   ),
                                   child: Stack(children: [
                                     ClipRRect(
@@ -125,11 +129,17 @@ class PharmacyCategoryView extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+          // Small outer left padding, no extra gaps between cards
+          padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeSmall, bottom: Dimensions.paddingSizeSmall),
           itemCount: categoryController.categoryList!.length,
           itemBuilder: (context, index) {
             return Padding(
-              padding: EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault, right: index == categoryController.categoryList!.length - 1 ? Dimensions.paddingSizeDefault : 0),
+              // No horizontal padding between cards; only vertical spacing
+              padding: EdgeInsets.only(
+                bottom: Dimensions.paddingSizeSmall,
+                top: Dimensions.paddingSizeSmall,
+                right: index == categoryController.categoryList!.length - 1 ? Dimensions.paddingSizeSmall : 0,
+              ),
               child: InkWell(
                 onTap: () => Get.toNamed(RouteHelper.getCategoryItemRoute(
                   categoryController.categoryList![index].id, categoryController.categoryList![index].name!,
@@ -191,11 +201,16 @@ class FoodCategoryView extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+            // Small outer left padding, very tight vertical spacing
+            padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeExtraSmall, bottom: Dimensions.paddingSizeExtraSmall),
             itemCount: categoryController.categoryList!.length,
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
+                // No horizontal padding between cards; only vertical spacing
+                padding: const EdgeInsets.only(
+                  bottom: Dimensions.paddingSizeExtraSmall,
+                  top: Dimensions.paddingSizeExtraSmall,
+                ),
                 child: InkWell(
                   onTap: () => Get.toNamed(RouteHelper.getCategoryItemRoute(
                     categoryController.categoryList![index].id, categoryController.categoryList![index].name!,

@@ -15,6 +15,8 @@ class AddressModel {
   String? streetNumber;
   String? house;
   String? floor;
+  String? block;
+  String? area;
   List<ZoneData>? zoneData;
   List<int>? areaIds;
   String? email;
@@ -34,6 +36,8 @@ class AddressModel {
     this.streetNumber,
     this.house,
     this.floor,
+    this.block,
+    this.area,
     this.zoneData,
     this.areaIds,
     this.email,
@@ -53,7 +57,9 @@ class AddressModel {
     contactPersonName = json['contact_person_name'];
     streetNumber = json['road'];
     house = json['house'];
-    floor = json['floor'] ;
+    floor = json['floor'];
+    block = json['block'];
+    area = json['area'];
     if (json['zone_data'] != null) {
       zoneData = [];
       json['zone_data'].forEach((v) {
@@ -82,6 +88,8 @@ class AddressModel {
     data['road'] = streetNumber;
     data['house'] = house;
     data['floor'] = floor;
+    data['block'] = block;
+    data['area'] = area;
     if (zoneData != null) {
       data['zone_data'] = zoneData!.map((v) => v.toJson()).toList();
     }

@@ -28,7 +28,7 @@ class DetailsWidget extends StatelessWidget {
       ),
 
       Wrap(children: [
-        (address!.streetNumber != null && address!.streetNumber!.isNotEmpty) ? Text('${'street_number'.tr}: ${address!.streetNumber!}, ',
+        (address!.streetNumber != null && address!.streetNumber!.isNotEmpty) ? Text('${'Road Number'.tr}: ${address!.streetNumber!}, ',
           maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
         ) : const SizedBox(),
 
@@ -36,7 +36,7 @@ class DetailsWidget extends StatelessWidget {
           maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
         ) : const SizedBox(),
 
-        (address!.floor != null && address!.floor!.isNotEmpty) ? Text('${'floor'.tr}: ${address!.floor!}',
+        (address!.floor != null && address!.floor!.isNotEmpty) ? Text('${'Flat/Villa'.tr}: ${address!.floor!}',
           maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
         ) : const SizedBox(),
       ]),

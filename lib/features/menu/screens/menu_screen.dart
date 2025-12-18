@@ -126,7 +126,10 @@ class _MenuScreenState extends State<MenuScreen> {
                     padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
                     child: Text(
                       'general'.tr,
-                      style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).primaryColor.withOpacity( 0.5)),
+                      style: robotoBold.copyWith(
+                        fontSize: Dimensions.fontSizeDefault,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
 
@@ -152,7 +155,10 @@ class _MenuScreenState extends State<MenuScreen> {
                     padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
                     child: Text(
                       'promotional_activity'.tr,
-                      style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).primaryColor.withOpacity( 0.5)),
+                      style: robotoBold.copyWith(
+                        fontSize: Dimensions.fontSizeDefault,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
 
@@ -191,7 +197,10 @@ class _MenuScreenState extends State<MenuScreen> {
                     padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
                     child: Text(
                       'earnings'.tr,
-                      style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).primaryColor.withOpacity( 0.5)),
+                      style: robotoBold.copyWith(
+                        fontSize: Dimensions.fontSizeDefault,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
 
@@ -228,7 +237,10 @@ class _MenuScreenState extends State<MenuScreen> {
                     padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
                     child: Text(
                       'help_and_support'.tr,
-                      style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).primaryColor.withOpacity( 0.5)),
+                      style: robotoBold.copyWith(
+                        fontSize: Dimensions.fontSizeDefault,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   ),
 

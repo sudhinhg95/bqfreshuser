@@ -95,6 +95,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       Get.find<CheckoutController>().streetNumberController.text = AddressHelper.getUserAddressFromSharedPref()!.streetNumber ?? '';
       Get.find<CheckoutController>().houseController.text = AddressHelper.getUserAddressFromSharedPref()!.house ?? '';
       Get.find<CheckoutController>().floorController.text = AddressHelper.getUserAddressFromSharedPref()!.floor ?? '';
+      Get.find<CheckoutController>().blockController.text = AddressHelper.getUserAddressFromSharedPref()!.block ?? '';
+      Get.find<CheckoutController>().areaController.text = AddressHelper.getUserAddressFromSharedPref()!.area ?? '';
       Get.find<CheckoutController>().couponController.text = '';
 
       Get.find<CheckoutController>().getDmTipMostTapped();
@@ -544,6 +546,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                 streetNumber: isGuestLogIn ? finalAddress.streetNumber??'' : checkoutController.streetNumberController.text.trim(),
                 house: isGuestLogIn ? finalAddress.house??'' : checkoutController.houseController.text.trim(),
                 floor: isGuestLogIn ? finalAddress.floor??'' : checkoutController.floorController.text.trim(),
+                block: isGuestLogIn ? finalAddress.block??'' : checkoutController.blockController.text.trim(),
+                area: isGuestLogIn ? finalAddress.area??'' : checkoutController.areaController.text.trim(),
                 discountAmount: discount, taxAmount: tax, receiverDetails: null, parcelCategoryId: null,
                 chargePayer: null, dmTips: (checkoutController.orderType == 'take_away' || checkoutController.tipController.text == 'not_now') ? '' : checkoutController.tipController.text.trim(),
                 cutlery: Get.find<CartController>().addCutlery ? 1 : 0,

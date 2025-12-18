@@ -167,7 +167,7 @@ class _ReceiverViewWidgetState extends State<ReceiverViewWidget> {
 
               TextFieldShadow(
                 child: MyTextField(
-                  hintText: "${'street_number'.tr} (${'optional'.tr})",
+                  hintText: "${'Road Number'.tr} (${'optional'.tr})",
                   inputType: TextInputType.streetAddress,
                   focusNode: _streetNode,
                   nextFocus: _houseNode,
@@ -193,7 +193,7 @@ class _ReceiverViewWidgetState extends State<ReceiverViewWidget> {
                 Expanded(
                   child: TextFieldShadow(
                     child: MyTextField(
-                      hintText: "${'floor'.tr} (${'optional'.tr})",
+                      hintText: "${'Flat/Villa'.tr} (${'optional'.tr})",
                       inputType: TextInputType.text,
                       focusNode: _floorNode,
                       inputAction: TextInputAction.done,

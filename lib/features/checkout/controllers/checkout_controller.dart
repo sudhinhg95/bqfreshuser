@@ -39,10 +39,14 @@ class CheckoutController extends GetxController implements GetxService {
   final TextEditingController streetNumberController = TextEditingController();
   final TextEditingController houseController = TextEditingController();
   final TextEditingController floorController = TextEditingController();
+  final TextEditingController blockController = TextEditingController();
+  final TextEditingController areaController = TextEditingController();
   final TextEditingController tipController = TextEditingController();
   final FocusNode streetNode = FocusNode();
   final FocusNode houseNode = FocusNode();
   final FocusNode floorNode = FocusNode();
+  final FocusNode blockNode = FocusNode();
+  final FocusNode areaNode = FocusNode();
 
   String? countryDialCode = Get.find<AuthController>().getUserCountryCode().isNotEmpty ? Get.find<AuthController>().getUserCountryCode()
       : CountryCode.fromCountryCode(Get.find<SplashController>().configModel!.country!).dialCode ?? Get.find<LocalizationController>().locale.countryCode;

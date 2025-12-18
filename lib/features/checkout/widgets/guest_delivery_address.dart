@@ -134,9 +134,13 @@ class GuestDeliveryAddress extends StatelessWidget {
               addressInfo('email'.tr, checkoutController.guestAddress!.email!),
             ])),
             Expanded(flex: 4, child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              addressInfo('street'.tr, checkoutController.guestAddress!.streetNumber!),
+              addressInfo('Road Number'.tr, checkoutController.guestAddress!.streetNumber!),
               addressInfo('house'.tr, checkoutController.guestAddress!.house!),
-              addressInfo('floor'.tr, checkoutController.guestAddress!.floor!),
+              addressInfo('Flat/Villa'.tr, checkoutController.guestAddress!.floor!),
+              if(checkoutController.guestAddress!.block != null && checkoutController.guestAddress!.block!.isNotEmpty)
+                addressInfo('block'.tr, checkoutController.guestAddress!.block!),
+              if(checkoutController.guestAddress!.area != null && checkoutController.guestAddress!.area!.isNotEmpty)
+                addressInfo('area'.tr, checkoutController.guestAddress!.area!),
             ])),
           ])
         ]),

@@ -251,7 +251,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                       Expanded(
                                         child: Text(
                                           '${label.isNotEmpty ? label : ''} × ${c.quantity ?? 0}',
-                                          style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                          style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeDefault),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -260,7 +260,7 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                       Text(
                                         PriceConverter.convertPrice(_getItemDetailsDiscountPrice(cart: c)),
                                         textDirection: TextDirection.ltr,
-                                        style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                        style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault),
                                       ),
                                       const SizedBox(width: Dimensions.paddingSizeSmall),
                                       InkWell(
@@ -321,6 +321,19 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                 ]),
 
                                 const SizedBox(height: Dimensions.paddingSizeSmall),
+
+                                // Heading for the current item selections
+                                if(variationLines.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall),
+                                    child: Text(
+                                      'your_order'.tr.toLowerCase().capitalizeFirst!,
+                                      style: robotoMedium.copyWith(
+                                        fontSize: Dimensions.fontSizeLarge,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                  ),
 
                                 // Show all variation lines for this item (not just the one currently selected)
                                 ...variationLines,

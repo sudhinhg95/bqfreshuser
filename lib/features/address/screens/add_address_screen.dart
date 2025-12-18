@@ -52,6 +52,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   final TextEditingController _streetNumberController = TextEditingController();
   final TextEditingController _houseController = TextEditingController();
   final TextEditingController _floorController = TextEditingController();
+  final TextEditingController _blockController = TextEditingController();
+  final TextEditingController _areaController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final FocusNode _addressNode = FocusNode();
   final FocusNode _levelNode = FocusNode();
@@ -60,6 +62,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   final FocusNode _streetNode = FocusNode();
   final FocusNode _houseNode = FocusNode();
   final FocusNode _floorNode = FocusNode();
+  final FocusNode _blockNode = FocusNode();
+  final FocusNode _areaNode = FocusNode();
   final FocusNode _emailFocus = FocusNode();
   CameraPosition? _cameraPosition;
   late LatLng _initialPosition;
@@ -79,6 +83,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
       _streetNumberController.text = widget.address!.streetNumber ?? '';
       _houseController.text = widget.address!.house ?? '';
       _floorController.text = widget.address!.floor ?? '';
+      _blockController.text = widget.address!.block ?? '';
+      _areaController.text = widget.address!.area ?? '';
 
     }else if(Get.find<ProfileController>().userInfoModel != null && _contactPersonNameController.text.isEmpty) {
       _contactPersonNameController.text = '${Get.find<ProfileController>().userInfoModel!.fName} ${Get.find<ProfileController>().userInfoModel!.lName}';
@@ -406,8 +412,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                                         CustomTextField(
                                           showTitle: true,
-                                          hintText: 'street_number'.tr,
-                                          titleText: '${'street_number'.tr} (${'optional'.tr})',
+                                          hintText: 'Road Number'.tr,
+                                          titleText: '${'Road Number'.tr} (${'optional'.tr})',
                                           showLabelText: false,
                                           inputType: TextInputType.streetAddress,
                                           focusNode: _streetNode,
@@ -433,17 +439,41 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                                           Expanded(
                                             child: CustomTextField(
-                                              hintText: 'floor_number'.tr,
+                                              hintText: 'Flat/Villa'.tr,
                                               showLabelText: false,
                                               showTitle: true,
-                                              titleText: "${'floor'.tr} (${'optional'.tr})",
+                                              titleText: "${'Flat/Villa'.tr} (${'optional'.tr})",
                                               inputType: TextInputType.text,
                                               focusNode: _floorNode,
-                                              inputAction: TextInputAction.done,
+                                              nextFocus: _blockNode,
                                               controller: _floorController,
                                             ),
                                           ),
                                         ]),
+                                        const SizedBox(height: Dimensions.paddingSizeLarge),
+
+                                        CustomTextField(
+                                          showTitle: true,
+                                          hintText: 'block'.tr,
+                                          titleText: "${'block'.tr} (${'optional'.tr})",
+                                          showLabelText: false,
+                                          inputType: TextInputType.text,
+                                          focusNode: _blockNode,
+                                          nextFocus: _areaNode,
+                                          controller: _blockController,
+                                        ),
+                                        const SizedBox(height: Dimensions.paddingSizeLarge),
+
+                                        CustomTextField(
+                                          showTitle: true,
+                                          hintText: 'area'.tr,
+                                          titleText: "${'area'.tr} (${'optional'.tr})",
+                                          showLabelText: false,
+                                          inputType: TextInputType.text,
+                                          focusNode: _areaNode,
+                                          inputAction: TextInputAction.done,
+                                          controller: _areaController,
+                                        ),
                                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
                                         button(locationController),
@@ -686,7 +716,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   SizedBox(height: widget.forGuest ? Dimensions.paddingSizeExtremeLarge : 0),
 
                   CustomTextField(
-                    labelText: '${'street_number'.tr} (${'optional'.tr})',
+                    labelText: '${'Road Number'.tr} (${'optional'.tr})',
                     titleText: 'write_street_number'.tr,
                     inputType: TextInputType.streetAddress,
                     focusNode: _streetNode,
@@ -710,15 +740,36 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                     Expanded(
                       child: CustomTextField(
-                        labelText: "${'floor'.tr} (${'optional'.tr})",
+                        labelText: "${'Flat/Villa'.tr} (${'optional'.tr})",
                         titleText: 'write_floor_number'.tr,
                         inputType: TextInputType.text,
                         focusNode: _floorNode,
-                        inputAction: TextInputAction.done,
+                        nextFocus: _blockNode,
                         controller: _floorController,
                       ),
                     ),
                   ]),
+
+                  const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
+
+                  CustomTextField(
+                    labelText: "${'Block'.tr} (${'optional'.tr})",
+                    titleText: 'block'.tr,
+                    inputType: TextInputType.text,
+                    focusNode: _blockNode,
+                    nextFocus: _areaNode,
+                    controller: _blockController,
+                  ),
+                  const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
+
+                  CustomTextField(
+                    labelText: "${'Area'.tr} (${'optional'.tr})",
+                    titleText: 'area'.tr,
+                    inputType: TextInputType.text,
+                    focusNode: _areaNode,
+                    inputAction: TextInputAction.done,
+                    controller: _areaController,
+                  ),
 
                   const SizedBox(height: Dimensions.paddingSizeLarge),
 
@@ -814,6 +865,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
         streetNumber: _streetNumberController.text,
         house: _houseController.text,
         floor: _floorController.text,
+        block: _blockController.text,
+        area: _areaController.text,
       );
       return addressModel;
     }

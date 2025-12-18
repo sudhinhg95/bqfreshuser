@@ -121,14 +121,22 @@ class OrderItemWidget extends StatelessWidget {
 
         variationText!.isNotEmpty ? Padding(
           padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
-          child: Row(children: [
-            const SizedBox(width: 60),
-            Text('${'variations'.tr}: ', style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall)),
-            Flexible(child: Text(
-                variationText,
-                style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor,
-            ))),
-          ]),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(width: 60),
+              Flexible(
+                child: Text(
+                  variationText,
+                  // Match cart screen style: plain text without "Variations" heading
+                  style: robotoRegular.copyWith(
+                    fontSize: Dimensions.fontSizeSmall,
+                    color: Theme.of(context).textTheme.bodyLarge!.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ) : const SizedBox(),
 
       ]),

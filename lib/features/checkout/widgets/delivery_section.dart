@@ -56,6 +56,8 @@ class DeliverySection extends StatelessWidget {
                   checkoutController.streetNumberController.text = address.streetNumber ?? '';
                   checkoutController.houseController.text = address.house ?? '';
                   checkoutController.floorController.text = address.floor ?? '';
+                  checkoutController.blockController.text = address.block ?? '';
+                  checkoutController.areaController.text = address.area ?? '';
                 }
               },
               icon: const Icon(Icons.add, size: 20),
@@ -106,6 +108,8 @@ class DeliverySection extends StatelessWidget {
                           checkoutController.streetNumberController.text = address[checkoutController.addressIndex!].streetNumber ?? '';
                           checkoutController.houseController.text = address[checkoutController.addressIndex!].house ?? '';
                           checkoutController.floorController.text = address[checkoutController.addressIndex!].floor ?? '';
+                          checkoutController.blockController.text = address[checkoutController.addressIndex!].block ?? '';
+                          checkoutController.areaController.text = address[checkoutController.addressIndex!].area ?? '';
                           Navigator.pop(context);
                         },
                         child: Row(
@@ -174,6 +178,8 @@ class DeliverySection extends StatelessWidget {
                 checkoutController.streetNumberController.text = address[checkoutController.addressIndex!].streetNumber ?? '';
                 checkoutController.houseController.text = address[checkoutController.addressIndex!].house ?? '';
                 checkoutController.floorController.text = address[checkoutController.addressIndex!].floor ?? '';
+                checkoutController.blockController.text = address[checkoutController.addressIndex!].block ?? '';
+                checkoutController.areaController.text = address[checkoutController.addressIndex!].area ?? '';
 
               },
               dropdownButtonStyle: DropdownButtonStyle(
@@ -207,7 +213,7 @@ class DeliverySection extends StatelessWidget {
           const SizedBox(height: Dimensions.paddingSizeLarge),
 
           !isDesktop ? CustomTextField(
-            labelText: 'street_number'.tr,
+            labelText: 'Road Number'.tr,
             titleText: 'write_street_number'.tr,
             inputType: TextInputType.streetAddress,
             focusNode: checkoutController.streetNode,
@@ -221,7 +227,7 @@ class DeliverySection extends StatelessWidget {
                 isDesktop ? Expanded(
                   child: CustomTextField(
                     titleText: 'write_street_number'.tr,
-                    labelText: 'street_number'.tr,
+                    labelText: 'Road Number'.tr,
                     inputType: TextInputType.streetAddress,
                     focusNode: checkoutController.streetNode,
                     nextFocus: checkoutController.houseNode,
@@ -245,16 +251,43 @@ class DeliverySection extends StatelessWidget {
                 Expanded(
                   child: CustomTextField(
                     titleText: 'write_floor_number'.tr,
-                    labelText: 'floor'.tr,
+                    labelText: 'Flat/Villa'.tr,
                     inputType: TextInputType.text,
                     focusNode: checkoutController.floorNode,
-                    inputAction: TextInputAction.done,
+                    nextFocus: checkoutController.blockNode,
+                    inputAction: TextInputAction.next,
                     controller: checkoutController.floorController,
                   ),
                 ),
                 //const SizedBox(height: Dimensions.paddingSizeLarge),
               ]
           ),
+          const SizedBox(height: Dimensions.paddingSizeSmall),
+
+          Row(children: [
+            Expanded(
+              child: CustomTextField(
+                titleText: 'block'.tr,
+                labelText: 'Block'.tr,
+                inputType: TextInputType.text,
+                focusNode: checkoutController.blockNode,
+                nextFocus: checkoutController.areaNode,
+                controller: checkoutController.blockController,
+              ),
+            ),
+            const SizedBox(width: Dimensions.paddingSizeSmall),
+
+            Expanded(
+              child: CustomTextField(
+                titleText: 'area'.tr,
+                labelText: 'Area'.tr,
+                inputType: TextInputType.text,
+                focusNode: checkoutController.areaNode,
+                inputAction: TextInputAction.done,
+                controller: checkoutController.areaController,
+              ),
+            ),
+          ]),
           const SizedBox(height: Dimensions.paddingSizeLarge),
         ]),
       ) : const SizedBox(),
