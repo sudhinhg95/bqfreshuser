@@ -79,7 +79,7 @@ class _SupportScreenState extends State<SupportScreen> {
               // Use WhatsApp PNG from assets instead of a Material icon.
               icon: Icons.chat,
               image: Images.whatsapp,
-              title: 'whatsapp'.tr,
+              title: 'WhatsApp'.tr,
               color: Colors.green,
               info: Get.find<SplashController>().configModel!.phone,
               onTap: () async {
