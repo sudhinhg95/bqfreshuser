@@ -59,6 +59,7 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   late bool _isLogin;
   bool active = false;
+  bool _hasScheduledRunningOrderAutoHide = false;
 
   @override
   void initState() {
@@ -292,23 +293,44 @@ class DashboardScreenState extends State<DashboardScreen> {
 
                     enableToggle: true,
 
-                    expandableContent: (widget.fromSplash && Get.find<LocationController>().showLocationSuggestion && active && !ResponsiveHelper.isDesktop(context)) ?  const SizedBox()
-                    : (ResponsiveHelper.isDesktop(context) || !_isLogin || orderController.runningOrderModel == null
-                    || orderController.runningOrderModel!.orders!.isEmpty || !orderController.showBottomSheet) ? const SizedBox()
-                    : Dismissible(
-                      key: UniqueKey(),
-                      onDismissed: (direction) {
-                        if(orderController.showBottomSheet){
-                          orderController.showRunningOrders();
-                        }
-                      },
-                      child: RunningOrderViewWidget(reversOrder: reversOrder, onOrderTap: () {
-                        _setPage(3);
-                        if(orderController.showBottomSheet){
-                          orderController.showRunningOrders();
-                        }
-                      }),
-                    ),
+                    expandableContent: (widget.fromSplash && Get.find<LocationController>().showLocationSuggestion && active && !ResponsiveHelper.isDesktop(context))
+                        ? const SizedBox()
+                        : (ResponsiveHelper.isDesktop(context) || !_isLogin || orderController.runningOrderModel == null
+                                || orderController.runningOrderModel!.orders!.isEmpty || !orderController.showBottomSheet)
+                            ? const SizedBox()
+                            : Builder(
+                                builder: (context) {
+                                  if (!_hasScheduledRunningOrderAutoHide) {
+                                    _hasScheduledRunningOrderAutoHide = true;
+                                    Future.delayed(const Duration(seconds: 10), () {
+                                      final controller = Get.find<OrderController>();
+                                      if (controller.showBottomSheet && controller.runningOrderModel != null &&
+                                          controller.runningOrderModel!.orders != null &&
+                                          controller.runningOrderModel!.orders!.isNotEmpty) {
+                                        controller.showRunningOrders();
+                                      }
+                                    });
+                                  }
+
+                                  return Dismissible(
+                                    key: UniqueKey(),
+                                    onDismissed: (direction) {
+                                      if (orderController.showBottomSheet) {
+                                        orderController.showRunningOrders();
+                                      }
+                                    },
+                                    child: RunningOrderViewWidget(
+                                      reversOrder: reversOrder,
+                                      onOrderTap: () {
+                                        _setPage(3);
+                                        if (orderController.showBottomSheet) {
+                                          orderController.showRunningOrders();
+                                        }
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
                   ),
                 ),
               );

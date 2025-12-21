@@ -282,11 +282,8 @@ class TopSection extends StatelessWidget {
           discount: discount, addOns: addOns, deliveryCharge: deliveryCharge, variationPrice: variationPrice,
         ) : const SizedBox(),
 
-        ///DmTips..
-        DeliveryManTipsSection(
-          takeAway: takeAway, tooltipController3: dmTipsTooltipController,
-          totalPrice: total, onTotalChange: (double price) => total + price, storeId: storeId,
-        ),
+        ///DmTips hidden on checkout page
+        const SizedBox(),
 
         ///Payment..
         Container(

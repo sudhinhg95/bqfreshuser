@@ -8,7 +8,9 @@ class SupportButtonWidget extends StatelessWidget {
   final String? info;
   final Color color;
   final Function onTap;
-  const SupportButtonWidget({super.key, required this.icon, required this.title, required this.info, required this.color, required this.onTap});
+  // Optional asset image to use instead of the built-in icon.
+  final String? image;
+  const SupportButtonWidget({super.key, required this.icon, required this.title, required this.info, required this.color, required this.onTap, this.image});
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +26,18 @@ class SupportButtonWidget extends StatelessWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
 
           Container(
-            height: 40, width: 40,
+            height: image != null ? 44 : 40,
+            width: image != null ? 44 : 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: color.withOpacity( 0.2),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: image != null
+                ? Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Image.asset(image!, fit: BoxFit.contain),
+                  )
+                : Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: Dimensions.paddingSizeSmall),
 

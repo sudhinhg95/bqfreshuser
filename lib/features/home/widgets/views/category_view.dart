@@ -7,6 +7,7 @@ import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/styles.dart';
 import 'package:sixam_mart/common/widgets/custom_image.dart';
+import 'package:sixam_mart/common/widgets/title_widget.dart';
 import 'package:sixam_mart/features/home/widgets/category_pop_up.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
@@ -27,25 +28,34 @@ class CategoryView extends StatelessWidget {
         return (categoryController.categoryList != null && categoryController.categoryList!.isEmpty)
         ? const SizedBox() : isPharmacy ? PharmacyCategoryView(categoryController: categoryController)
           : isFood ? FoodCategoryView(categoryController: categoryController) : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+              child: TitleWidget(
+                title: 'categories'.tr,
+                onTap: () => Get.toNamed(RouteHelper.getCategoryRoute()),
+              ),
+            ),
+            const SizedBox(height: Dimensions.paddingSizeExtraSmall),
             Row(
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 158,
+                    height: 148,
                     child: categoryController.categoryList != null ? ListView.builder(
                       controller: scrollController,
                       itemCount: categoryController.categoryList!.length > 10 ? 10 : categoryController.categoryList!.length,
-                      // Slightly reduce top padding; keep small left margin
-                      padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeSmall, bottom: Dimensions.paddingSizeSmall),
+                      // Reduce top padding so cards sit closer to heading
+                      padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeExtraSmall, bottom: 0),
                       physics: const BouncingScrollPhysics(),
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
                         return Padding(
-                          // Slight gap between cards: a bit more than before
+                          // Tighter vertical gap between cards and section edges
                           padding: const EdgeInsets.only(
-                            bottom: Dimensions.paddingSizeSmall,
-                            top: Dimensions.paddingSizeSmall,
+                            bottom: 0,
+                            top: Dimensions.paddingSizeExtraSmall,
                             right: Dimensions.paddingSizeSmall,
                           ),
                           child: InkWell(

@@ -46,6 +46,13 @@ class BottomSection extends StatelessWidget {
     required this.orderAmount, this.maxCodOrderAmount, this.storeId, this.taxPercent, required this.price,
     required this.addOns, this.checkoutButton, required this.isPrescriptionRequired, required this.referralDiscount, required this.variationPrice});
 
+  String get taxPercentLabel {
+    final double effectiveTaxPercent = taxPercent ?? 0;
+    return effectiveTaxPercent % 1 == 0
+        ? effectiveTaxPercent.toInt().toString()
+        : effectiveTaxPercent.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     bool takeAway = checkoutController.orderType == 'take_away';
@@ -187,19 +194,13 @@ class BottomSection extends StatelessWidget {
             ]) : const SizedBox(),
 
             storeId == null ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${taxIncluded ? 'Vat Included'.tr : ''} ($taxPercent%)', style: robotoRegular),
+              Text('${taxIncluded ? 'VAT Included'.tr : ''} ($taxPercentLabel%)', style: robotoRegular),
               Text((taxIncluded ? '' : '(+) ') + PriceConverter.convertPrice(tax), style: robotoRegular, textDirection: TextDirection.ltr),
             ]) : const SizedBox(),
             // SizedBox(height: storeId == null ? Dimensions.paddingSizeSmall : 0),
 
-            // (!takeAway && Get.find<SplashController>().configModel!.dmTipsStatus == 1) ? Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //   children: [
-            //     Text('delivery_man_tips'.tr, style: robotoRegular),
-            //     Text('(+) ${PriceConverter.convertPrice(checkoutController.tips)}', style: robotoRegular, textDirection: TextDirection.ltr),
-            //   ],
-            // ) : const SizedBox.shrink(),
-            SizedBox(height: !takeAway && Get.find<SplashController>().configModel!.dmTipsStatus == 1 ? Dimensions.paddingSizeSmall : 0.0),
+            // Delivery man tips row and spacing hidden on checkout summary
+            const SizedBox.shrink(),
 
             (checkoutController.store!.extraPackagingStatus! && Get.find<CartController>().needExtraPackage) ? Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

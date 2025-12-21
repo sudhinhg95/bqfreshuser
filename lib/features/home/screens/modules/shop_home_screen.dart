@@ -38,11 +38,12 @@ class ShopHomeScreen extends StatelessWidget {
             BadWeatherWidget(),
 
             BannerView(isFeatured: false),
-            SizedBox(height: 12),
+            SizedBox(height: 8),
           ],
         ),
       ),
 
+      const SizedBox(height: 4),
       const CategoryView(),
       // isLoggedIn ? const VisitAgainView() : const SizedBox(),
   // Latest items (shown below Most Popular)

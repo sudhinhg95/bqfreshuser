@@ -125,7 +125,20 @@ class SplashController extends GetxController implements GetxService {
       _onRemoveLoader();
     }else {
       if(response.statusText == ApiClient.noInternetMessage) {
-        _hasConnection = false;
+        if(_firstTimeConnectionCheck) {
+          _firstTimeConnectionCheck = false;
+          await getConfigData(
+            notificationBody: notificationBody,
+            loadModuleData: loadModuleData,
+            loadLandingData: loadLandingData,
+            source: DataSourceEnum.client,
+            fromMainFunction: fromMainFunction,
+            fromDemoReset: fromDemoReset,
+          );
+          return;
+        } else {
+          _hasConnection = false;
+        }
       }
     }
     update();

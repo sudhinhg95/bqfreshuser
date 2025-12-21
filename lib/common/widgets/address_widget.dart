@@ -40,7 +40,13 @@ class AddressWidget extends StatelessWidget {
           onTap: onTap as void Function()?,
           radius: fromDashBoard ? Dimensions.radiusDefault : fromCheckout ? 0 : Dimensions.radiusSmall,
           child: Padding(
-            padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeDefault : Dimensions.paddingSizeSmall),
+            padding: EdgeInsets.all(
+              fromCheckout
+                  ? Dimensions.paddingSizeExtraSmall
+                  : (ResponsiveHelper.isDesktop(context)
+                      ? Dimensions.paddingSizeDefault
+                      : Dimensions.paddingSizeSmall),
+            ),
             child: Row(mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Expanded(
@@ -68,27 +74,34 @@ class AddressWidget extends StatelessWidget {
                     Text(
                       address!.address ?? '',
                       style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
-                      maxLines: 1,
+                      maxLines: fromCheckout ? 2 : 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
 
                     Builder(builder: (context) {
+                      // On checkout, only show the main delivery address line,
+                      // not the detailed flat/building/road/block/area summary.
+                      if(fromCheckout) {
+                        return const SizedBox();
+                      }
+
                       final parts = <String>[];
-                      if(address!.streetNumber != null && address!.streetNumber!.isNotEmpty) {
-                        parts.add('${'Road Number'.tr}: ${address!.streetNumber!}');
-                      }
-                      if(address!.house != null && address!.house!.isNotEmpty) {
-                        parts.add('${'house'.tr}: ${address!.house!}');
-                      }
+                      // Order: Flat/Villa, Building, Road, Block, Area
                       if(address!.floor != null && address!.floor!.isNotEmpty) {
                         parts.add('${'Flat/Villa'.tr}: ${address!.floor!}');
                       }
+                      if(address!.house != null && address!.house!.isNotEmpty) {
+                        parts.add('${'Building'.tr}: ${address!.house!}');
+                      }
+                      if(address!.streetNumber != null && address!.streetNumber!.isNotEmpty) {
+                        parts.add('${'Road'.tr}: ${address!.streetNumber!}');
+                      }
                       if(address!.block != null && address!.block!.isNotEmpty) {
-                        parts.add('${'block'.tr}: ${address!.block!}');
+                        parts.add('${'Block'.tr}: ${address!.block!}');
                       }
                       if(address!.area != null && address!.area!.isNotEmpty) {
-                        parts.add('${'area'.tr}: ${address!.area!}');
+                        parts.add('${'Area'.tr}: ${address!.area!}');
                       }
 
                       if(parts.isEmpty) {

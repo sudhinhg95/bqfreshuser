@@ -27,8 +27,6 @@ class CartItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    double? startingPrice = _calculatePriceWithVariation(item: cart.item);
-    double? endingPrice = _calculatePriceWithVariation(item: cart.item, isStartingPrice: false);
     String? variationText = _setupVariationText(cart: cart);
     String addOnText = _setupAddonsText(cart: cart) ?? '';
 
@@ -155,22 +153,50 @@ class CartItemWidget extends StatelessWidget {
                       const SizedBox(height: 2),
 
                       Wrap(children: [
-                        Text(
-                          '${PriceConverter.convertPrice(startingPrice, discount: discount, discountType: discountType)}'
-                              '${endingPrice!= null ? ' - ${PriceConverter.convertPrice(endingPrice, discount: discount, discountType: discountType)}' : ''}',
-                          style: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall), textDirection: TextDirection.ltr,
-                        ),
-                        SizedBox(width: discount! > 0 ? Dimensions.paddingSizeExtraSmall : 0),
+                        Builder(
+                          builder: (context) {
+                            double linePrice = 0;
+                            double lineOriginalPrice = 0;
 
-                        discount > 0 ? Text(
-                          '${PriceConverter.convertPrice(startingPrice)}'
-                              '${endingPrice!= null ? ' - ${PriceConverter.convertPrice(endingPrice)}' : ''}',
-                          textDirection: TextDirection.ltr,
-                          style: robotoRegular.copyWith(
-                            color: Theme.of(context).disabledColor, decoration: TextDecoration.lineThrough,
-                            fontSize: Dimensions.fontSizeExtraSmall,
-                          ),
-                        ) : const SizedBox(),
+                            String variationType = cart.variation != null && cart.variation!.isNotEmpty ? cart.variation![0].type! : '';
+
+                            if (cart.variation != null && cart.variation!.isNotEmpty && cart.item!.variations != null && cart.item!.variations!.isNotEmpty) {
+                              for (Variation variation in cart.item!.variations!) {
+                                if (variation.type == variationType) {
+                                  linePrice = (PriceConverter.convertWithDiscount(variation.price!, discount, discountType)! * cart.quantity!);
+                                  lineOriginalPrice = variation.price! * cart.quantity!;
+                                  break;
+                                }
+                              }
+                            } else {
+                              linePrice = (PriceConverter.convertWithDiscount(cart.item!.price!, discount, discountType)! * cart.quantity!);
+                              lineOriginalPrice = cart.item!.price! * cart.quantity!;
+                            }
+
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  PriceConverter.convertPrice(linePrice),
+                                  style: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                  textDirection: TextDirection.ltr,
+                                ),
+                                SizedBox(width: (discount ?? 0) > 0 ? Dimensions.paddingSizeExtraSmall : 0),
+                                (discount ?? 0) > 0
+                                    ? Text(
+                                        PriceConverter.convertPrice(lineOriginalPrice),
+                                        textDirection: TextDirection.ltr,
+                                        style: robotoRegular.copyWith(
+                                          color: Theme.of(context).disabledColor,
+                                          decoration: TextDecoration.lineThrough,
+                                          fontSize: Dimensions.fontSizeExtraSmall,
+                                        ),
+                                      )
+                                    : const SizedBox(),
+                              ],
+                            );
+                          },
+                        ),
                       ]),
 
                       cart.item!.isPrescriptionRequired! ? Padding(
@@ -192,24 +218,21 @@ class CartItemWidget extends StatelessWidget {
                         ]),
                       ) : const SizedBox(),
 
-                      variationText!.isNotEmpty ? Padding(
-                        padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                variationText,
-                                // Darker variation text without the "variations" heading.
-                                style: robotoRegular.copyWith(
-                                  fontSize: Dimensions.fontSizeSmall,
-                                  color: Theme.of(context).textTheme.bodyLarge!.color,
+                      variationText!.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  variationText,
+                                  style: robotoMedium.copyWith(
+                                    fontSize: Dimensions.fontSizeSmall,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ) : const SizedBox(),
+                            )
+                          : const SizedBox(),
                     ]),
                   ),
 
@@ -289,13 +312,11 @@ class CartItemWidget extends StatelessWidget {
       if(cart.foodVariations!.isNotEmpty) {
         for(int index=0; index<cart.foodVariations!.length; index++) {
           if(cart.foodVariations![index].contains(true)) {
-            variationText = '${variationText!}${variationText.isNotEmpty ? ', ' : ''}${cart.item!.foodVariations![index].name} (';
             for(int i=0; i<cart.foodVariations![index].length; i++) {
               if(cart.foodVariations![index][i]!) {
-                variationText = '${variationText!}${variationText.endsWith('(') ? '' : ', '}${cart.item!.foodVariations![index].variationValues![i].level}';
+                variationText = '${variationText!}${variationText.isNotEmpty ? ', ' : ''}${cart.item!.foodVariations![index].variationValues![i].level}';
               }
             }
-            variationText = '${variationText!})';
           }
         }
       }
@@ -305,7 +326,7 @@ class CartItemWidget extends StatelessWidget {
         if(variationTypes.length == cart.item!.choiceOptions!.length) {
           int index0 = 0;
           for (var choice in cart.item!.choiceOptions!) {
-            variationText = '${variationText!}${(index0 == 0) ? '' : ',  '}${choice.title} - ${variationTypes[index0]}';
+            variationText = '${variationText!}${(index0 == 0) ? '' : ',  '}${variationTypes[index0]}';
             index0 = index0 + 1;
           }
         }else {

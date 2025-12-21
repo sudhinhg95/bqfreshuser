@@ -102,8 +102,25 @@ class WebSupportScreen extends StatelessWidget {
                                     },
                                   ),
                                 )),
-
                                 const SizedBox(width: Dimensions.paddingSizeExtremeLarge),
+
+                                Expanded(child: customCard(context,
+                                  child: element(context,
+                                    image: Images.whatsapp, title: 'whatsapp'.tr,
+                                    subTitle: Get.find<SplashController>().configModel!.phone!,
+                                    onTap: () async {
+                                      final String rawPhone = Get.find<SplashController>().configModel!.phone ?? '';
+                                      final String phone = rawPhone.replaceAll('+', '').replaceAll(' ', '');
+                                      final String url = 'https://wa.me/$phone';
+                                      if (await canLaunchUrlString(url)) {
+                                        launchUrlString(url, mode: LaunchMode.externalApplication);
+                                      } else {
+                                        showCustomSnackBar('${'can_not_launch'.tr} Whatsapp');
+                                      }
+                                    },
+                                  ),
+                                )),
+
                                 const SizedBox(width: Dimensions.paddingSizeExtremeLarge),
 
                               ])

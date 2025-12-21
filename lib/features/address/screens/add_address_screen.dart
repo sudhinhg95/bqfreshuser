@@ -405,38 +405,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                           showLabelText: false,
                                           controller: _emailController,
                                           focusNode: _emailFocus,
-                                          nextFocus: _streetNode,
+                                          nextFocus: _floorNode,
                                           inputType: TextInputType.emailAddress,
                                         ) : const SizedBox(),
                                         SizedBox(height: widget.forGuest ? Dimensions.paddingSizeLarge : 0),
 
-                                        CustomTextField(
-                                          showTitle: true,
-                                          hintText: 'Road Number'.tr,
-                                          titleText: '${'Road Number'.tr} (${'optional'.tr})',
-                                          showLabelText: false,
-                                          inputType: TextInputType.streetAddress,
-                                          focusNode: _streetNode,
-                                          nextFocus: _houseNode,
-                                          controller: _streetNumberController,
-                                        ),
-                                        const SizedBox(height: Dimensions.paddingSizeLarge),
-
+                                        // Row 1: Flat/Villa, Building
                                         Row(children: [
-                                          Expanded(
-                                            child: CustomTextField(
-                                              showTitle: true,
-                                              hintText: 'house_name'.tr,
-                                              titleText: '${'house'.tr} (${'optional'.tr})',
-                                              showLabelText: false,
-                                              inputType: TextInputType.text,
-                                              focusNode: _houseNode,
-                                              nextFocus: _floorNode,
-                                              controller: _houseController,
-                                            ),
-                                          ),
-                                          const SizedBox(width: Dimensions.paddingSizeSmall),
-
                                           Expanded(
                                             child: CustomTextField(
                                               hintText: 'Flat/Villa'.tr,
@@ -445,25 +420,59 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                               titleText: "${'Flat/Villa'.tr} (${'optional'.tr})",
                                               inputType: TextInputType.text,
                                               focusNode: _floorNode,
-                                              nextFocus: _blockNode,
+                                              nextFocus: _houseNode,
                                               controller: _floorController,
+                                            ),
+                                          ),
+                                          const SizedBox(width: Dimensions.paddingSizeSmall),
+
+                                          Expanded(
+                                            child: CustomTextField(
+                                              showTitle: true,
+                                              hintText: 'house_name'.tr,
+                                              titleText: '${'house'.tr} (${'optional'.tr})',
+                                              showLabelText: false,
+                                              inputType: TextInputType.text,
+                                              focusNode: _houseNode,
+                                              nextFocus: _streetNode,
+                                              controller: _houseController,
                                             ),
                                           ),
                                         ]),
                                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
-                                        CustomTextField(
-                                          showTitle: true,
-                                          hintText: 'block'.tr,
-                                          titleText: "${'block'.tr} (${'optional'.tr})",
-                                          showLabelText: false,
-                                          inputType: TextInputType.text,
-                                          focusNode: _blockNode,
-                                          nextFocus: _areaNode,
-                                          controller: _blockController,
-                                        ),
+                                        // Row 2: Road, Block
+                                        Row(children: [
+                                          Expanded(
+                                            child: CustomTextField(
+                                              showTitle: true,
+                                              hintText: 'Road'.tr,
+                                              titleText: '${'Road'.tr} (${'optional'.tr})',
+                                              showLabelText: false,
+                                              inputType: TextInputType.streetAddress,
+                                              focusNode: _streetNode,
+                                              nextFocus: _blockNode,
+                                              controller: _streetNumberController,
+                                            ),
+                                          ),
+                                          const SizedBox(width: Dimensions.paddingSizeSmall),
+
+                                          Expanded(
+                                            child: CustomTextField(
+                                              showTitle: true,
+                                              hintText: 'block'.tr,
+                                              titleText: "${'block'.tr} (${'optional'.tr})",
+                                              showLabelText: false,
+                                              inputType: TextInputType.text,
+                                              focusNode: _blockNode,
+                                              nextFocus: _areaNode,
+                                              controller: _blockController,
+                                            ),
+                                          ),
+                                        ]),
                                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
+                                        // Row 3: Area
                                         CustomTextField(
                                           showTitle: true,
                                           hintText: 'area'.tr,
@@ -680,7 +689,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                   CustomTextField(
                     labelText: 'contact_person_name'.tr,
-                    titleText: 'write_name'.tr,
+                    titleText: 'Contact Person Name'.tr,
                     inputType: TextInputType.name,
                     controller: _contactPersonNameController,
                     focusNode: _nameNode,
@@ -691,7 +700,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                   CustomTextField(
                     labelText: 'contact_person_number'.tr,
-                    titleText: 'write_number'.tr,
+                    titleText: 'Contact Person Number'.tr,
                     controller: _contactPersonNumberController,
                     focusNode: _numberNode,
                     nextFocus: widget.forGuest ? _emailFocus : _streetNode,
@@ -705,8 +714,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
 
                   widget.forGuest ? CustomTextField(
-                    labelText: 'email'.tr,
-                    titleText: 'enter_email'.tr,
+                    labelText: 'Email'.tr,
+                    titleText: 'Email'.tr,
                     controller: _emailController,
                     focusNode: _emailFocus,
                     nextFocus: _streetNode,
@@ -715,37 +724,56 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   ) : const SizedBox(),
                   SizedBox(height: widget.forGuest ? Dimensions.paddingSizeExtremeLarge : 0),
 
-                  CustomTextField(
-                    labelText: '${'Road Number'.tr} (${'optional'.tr})',
-                    titleText: 'write_street_number'.tr,
-                    inputType: TextInputType.streetAddress,
-                    focusNode: _streetNode,
-                    nextFocus: _houseNode,
-                    controller: _streetNumberController,
-                  ),
-                  const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
-
+                  // Row 1: Flat/Villa, Building
                   Row(children: [
                     Expanded(
                       child: CustomTextField(
-                        labelText: '${'house'.tr} (${'optional'.tr})',
-                        titleText: 'write_house_number'.tr,
+                        labelText: "${'Flat/Villa'.tr} (${'optional'.tr})",
+                        titleText: 'Flat/Villa'.tr,
                         inputType: TextInputType.text,
-                        focusNode: _houseNode,
-                        nextFocus: _floorNode,
-                        controller: _houseController,
+                        focusNode: _floorNode,
+                        nextFocus: _houseNode,
+                        controller: _floorController,
                       ),
                     ),
                     const SizedBox(width: Dimensions.paddingSizeExtremeLarge),
 
                     Expanded(
                       child: CustomTextField(
-                        labelText: "${'Flat/Villa'.tr} (${'optional'.tr})",
-                        titleText: 'write_floor_number'.tr,
+                        labelText: '${'Building'.tr} (${'optional'.tr})',
+                        titleText: 'Building'.tr,
                         inputType: TextInputType.text,
-                        focusNode: _floorNode,
+                        focusNode: _houseNode,
+                        nextFocus: _streetNode,
+                        controller: _houseController,
+                      ),
+                    ),
+                  ]),
+
+                  const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
+
+                  // Row 2: Road, Block
+                  Row(children: [
+                    Expanded(
+                      child: CustomTextField(
+                        labelText: '${'Road'.tr} (${'optional'.tr})',
+                        titleText: 'Road'.tr,
+                        inputType: TextInputType.streetAddress,
+                        focusNode: _streetNode,
                         nextFocus: _blockNode,
-                        controller: _floorController,
+                        controller: _streetNumberController,
+                      ),
+                    ),
+                    const SizedBox(width: Dimensions.paddingSizeExtremeLarge),
+
+                    Expanded(
+                      child: CustomTextField(
+                        labelText: "${'Block'.tr} (${'optional'.tr})",
+                        titleText: 'Block'.tr,
+                        inputType: TextInputType.text,
+                        focusNode: _blockNode,
+                        nextFocus: _areaNode,
+                        controller: _blockController,
                       ),
                     ),
                   ]),
@@ -753,18 +781,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
 
                   CustomTextField(
-                    labelText: "${'Block'.tr} (${'optional'.tr})",
-                    titleText: 'block'.tr,
-                    inputType: TextInputType.text,
-                    focusNode: _blockNode,
-                    nextFocus: _areaNode,
-                    controller: _blockController,
-                  ),
-                  const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
-
-                  CustomTextField(
                     labelText: "${'Area'.tr} (${'optional'.tr})",
-                    titleText: 'area'.tr,
+                    titleText: 'Area'.tr,
                     inputType: TextInputType.text,
                     focusNode: _areaNode,
                     inputAction: TextInputAction.done,

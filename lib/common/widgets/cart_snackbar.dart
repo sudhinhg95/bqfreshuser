@@ -12,7 +12,7 @@ void showCartSnackBar() {
       right: ResponsiveHelper.isDesktop(Get.context) ? Get.context!.width*0.7 : Dimensions.paddingSizeSmall,
       top: Dimensions.paddingSizeSmall, bottom: Dimensions.paddingSizeSmall, left: Dimensions.paddingSizeSmall,
     ),
-    duration: const Duration(seconds: 3),
+    duration: const Duration(seconds: 4),
     backgroundColor: Colors.green,
     behavior: SnackBarBehavior.floating,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.radiusSmall)),

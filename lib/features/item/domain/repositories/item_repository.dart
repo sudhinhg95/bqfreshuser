@@ -77,7 +77,7 @@ class ItemRepository implements ItemRepositoryInterface {
   }
 
   @override
-  Future getList({int? offset, String? type, bool isLatestItem = false, bool isPopularItem = false, bool isReviewedItem = false, bool isFeaturedCategoryItems = false, bool isRecommendedItems = false, bool isCommonConditions = false, bool isDiscountedItems = false, DataSourceEnum? source}) async {
+  Future getList({int? offset, String? type, bool isLatestItem = false, bool isPopularItem = false, bool isReviewedItem = false, bool isFeaturedCategoryItems = false, bool isRecommendedItems = false, bool isCommonConditions = false, bool isDiscountedItems = false, DataSourceEnum? source, bool isAllItem = false}) async {
      if(isLatestItem) {
       return await _getLatestItemList(type!, source: source ?? DataSourceEnum.client);
     } else if(isPopularItem) {
@@ -92,7 +92,34 @@ class ItemRepository implements ItemRepositoryInterface {
       return await _getCommonConditions();
     } else if(isDiscountedItems) {
       return await _getDiscountedItemList(type!, source: source ?? DataSourceEnum.client);
+    } else if(isAllItem) {
+      return await _getAllItemList(type!, source: source ?? DataSourceEnum.client);
     }
+  }
+
+   Future<List<Item>?> _getAllItemList(String type, {required DataSourceEnum source}) async {
+    List<Item>? allItemList;
+    String cacheId = '${AppConstants.allItemUri}?type=$type-${Get.find<SplashController>().module!.id!}';
+
+    switch(source) {
+
+      case DataSourceEnum.client:
+        Response response = await apiClient.getData('${AppConstants.allItemUri}?type=$type');
+        if (response.statusCode == 200) {
+          allItemList = [];
+          allItemList.addAll(ItemModel.fromJson(response.body).items!);
+          LocalClient.organize(DataSourceEnum.client, cacheId, jsonEncode(response.body), apiClient.getHeader());
+        }
+
+      case DataSourceEnum.local:
+        String? cacheResponseData = await LocalClient.organize(DataSourceEnum.local, cacheId, null, null);
+        if(cacheResponseData != null) {
+          allItemList = [];
+          allItemList.addAll(ItemModel.fromJson(jsonDecode(cacheResponseData)).items!);
+        }
+    }
+
+    return allItemList;
   }
 
 

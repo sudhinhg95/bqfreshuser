@@ -132,6 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   bool searchBgShow = false;
   final GlobalKey _headerKey = GlobalKey();
+  bool _isPopupBannerShowingOrLoading = false;
 
   @override
   void initState() {
@@ -153,6 +154,13 @@ class _HomeScreenState extends State<HomeScreen> {
             final splashController = Get.find<SplashController>();
             if (!(splashController.popupBannerShown)) {
               print('🔔 Popup: popupBannerShown is false, calling _showPopupBanner');
+              try {
+                // Mark as shown for this session *before* loading,
+                // so any backup timers or repeated triggers will skip.
+                splashController.markPopupShownInSession();
+              } catch (e) {
+                print('🔔 Popup: Failed to mark popup as shown in session -> $e');
+              }
               _showPopupBanner();
             } else {
               print('🔔 Popup: popupBannerShown is true; skipping popup');
@@ -242,6 +250,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   
   void _showPopupBanner() async {
+    if (_isPopupBannerShowingOrLoading) {
+      print('🔔 Popup: Popup banner is already showing or loading, skipping duplicate call');
+      return;
+    }
+    _isPopupBannerShowingOrLoading = true;
     try {
       print('🔔 Popup: Starting _showPopupBanner function');
       if (!mounted) {
@@ -308,6 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final pageController = PageController(initialPage: 0);
       int currentIndex = 0;
       Timer? imageTimer;
+      bool isUserTouching = false;
       // Prepare video controllers for any video URLs (do NOT autoplay)
       final videoControllers = List<VideoPlayerController?>.filled(validBanners.length, null);
       final List<Future> initFutures = [];
@@ -423,8 +437,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 // helper to start a 3s timer for images (cancels any existing)
                 void startImageTimer() {
                   imageTimer?.cancel();
+                  if (isUserTouching) {
+                    // Do not schedule auto-slide while user is interacting
+                    return;
+                  }
                   imageTimer = Timer(const Duration(seconds: 3), () {
-                    if (!mounted) return;
+                    if (!mounted || isUserTouching) return;
                     final next = (currentIndex + 1) % validBanners.length;
                     try {
                       pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
@@ -440,26 +458,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         // Increased height (~20% more) for a larger banner.
                         height: 700,
                         width: double.infinity,
-                        child: PageView.builder(
-                          controller: pageController,
-                          itemCount: validBanners.length,
-                          onPageChanged: (index) {
-                            // cancel any timers and pause other videos
-                            currentIndex = index;
+                        child: Listener(
+                          onPointerDown: (_) {
+                            isUserTouching = true;
                             imageTimer?.cancel();
-                            for (int j = 0; j < videoControllers.length; j++) {
-                              final vc = videoControllers[j];
-                              if (vc != null && j != index) {
-                                try { vc.pause(); vc.seekTo(Duration.zero); } catch (_) {}
-                              }
-                            }
-                            // If new page is a video, start timer only when it's paused; if image, start timer immediately
-                            final vc = videoControllers[index];
+                          },
+                          onPointerUp: (_) {
+                            isUserTouching = false;
+                            // After user releases, restart timer based on current page type
+                            final vc = (currentIndex >= 0 && currentIndex < videoControllers.length)
+                                ? videoControllers[currentIndex]
+                                : null;
                             if (vc != null) {
                               try {
-                                if (vc.value.isPlaying) {
-                                  imageTimer?.cancel();
-                                } else {
+                                if (!vc.value.isPlaying) {
                                   startImageTimer();
                                 }
                               } catch (_) {
@@ -468,10 +480,56 @@ class _HomeScreenState extends State<HomeScreen> {
                             } else {
                               startImageTimer();
                             }
-
-                            // rebuild title and controls
-                            setState(() {});
                           },
+                          onPointerCancel: (_) {
+                            isUserTouching = false;
+                            final vc = (currentIndex >= 0 && currentIndex < videoControllers.length)
+                                ? videoControllers[currentIndex]
+                                : null;
+                            if (vc != null) {
+                              try {
+                                if (!vc.value.isPlaying) {
+                                  startImageTimer();
+                                }
+                              } catch (_) {
+                                startImageTimer();
+                              }
+                            } else {
+                              startImageTimer();
+                            }
+                          },
+                          child: PageView.builder(
+                            controller: pageController,
+                            itemCount: validBanners.length,
+                            onPageChanged: (index) {
+                              // cancel any timers and pause other videos
+                              currentIndex = index;
+                              imageTimer?.cancel();
+                              for (int j = 0; j < videoControllers.length; j++) {
+                                final vc = videoControllers[j];
+                                if (vc != null && j != index) {
+                                  try { vc.pause(); vc.seekTo(Duration.zero); } catch (_) {}
+                                }
+                              }
+                              // If new page is a video, start timer only when it's paused; if image, start timer immediately
+                              final vc = videoControllers[index];
+                              if (vc != null) {
+                                try {
+                                  if (vc.value.isPlaying) {
+                                    imageTimer?.cancel();
+                                  } else {
+                                    startImageTimer();
+                                  }
+                                } catch (_) {
+                                  startImageTimer();
+                                }
+                              } else {
+                                startImageTimer();
+                              }
+
+                              // rebuild title and controls
+                              setState(() {});
+                            },
                           itemBuilder: (context, index) {
                             final bannerUrl = validBanners[index];
                             final vController = videoControllers[index];
@@ -494,14 +552,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           if (vController.value.isPlaying) {
                                             try { await vController.pause(); } catch (_) {}
                                             // start auto-advance timer when paused
-                                            imageTimer?.cancel();
-                                            imageTimer = Timer(const Duration(seconds: 3), () {
-                                              if (!mounted) return;
-                                              if (!vController.value.isPlaying && currentIndex == index) {
-                                                final next = (currentIndex + 1) % validBanners.length;
-                                                try { pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut); } catch (_) {}
-                                              }
-                                            });
+                                            startImageTimer();
                                           } else {
                                             try { await vController.play(); } catch (_) {}
                                             // cancel any auto-advance while playing
@@ -530,14 +581,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             // start image timer only for first build of this page
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (currentIndex == index && (videoControllers[index] == null)) {
-                                imageTimer?.cancel();
-                                imageTimer = Timer(const Duration(seconds: 3), () {
-                                  if (!mounted) return;
-                                  final next = (currentIndex + 1) % validBanners.length;
-                                  try {
-                                    pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
-                                  } catch (_) {}
-                                });
+                                startImageTimer();
                               }
                             });
                             return Image.network(
@@ -553,6 +597,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             );
                           },
+                        ),
                         ),
                       ),
                       // Banner title + close button overlay at the top of the popup
@@ -640,6 +685,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Stack trace: $stackTrace');
       // Don't crash the app if popup fails
     }
+    _isPopupBannerShowingOrLoading = false;
   }
 
 

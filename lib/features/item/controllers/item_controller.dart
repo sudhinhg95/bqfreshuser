@@ -43,6 +43,9 @@ class ItemController extends GetxController implements GetxService {
   
   List<Categories>? _reviewedCategoriesList;
   List<Categories>? get reviewedCategoriesList => _reviewedCategoriesList;
+
+  List<Item>? _allItemList;
+  List<Item>? get allItemList => _allItemList;
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -148,6 +151,33 @@ class ItemController extends GetxController implements GetxService {
     _discountedItemList = null;
     _featuredCategoriesItem = null;
     _recommendedItemList = null;
+  }
+
+
+  Future<void> getAllItemList(bool reload, String type, bool notify, {DataSourceEnum dataSource = DataSourceEnum.client, bool fromRecall = false}) async {
+    _latestType = type;
+    if(reload) {
+      _allItemList = null;
+    }
+    if(notify) {
+      update();
+    }
+    if(_allItemList == null || reload || fromRecall) {
+      final List<Item>? items = await itemServiceInterface.getAllItemList(type, DataSourceEnum.client);
+      _prepareAllItems(items);
+      print("Latest Items:");
+      print(_allItemList);
+    }
+  }
+
+  
+  _prepareAllItems(List<Item>? items) {
+    if (items != null) {
+      _allItemList = [];
+      _allItemList!.addAll(items);
+      _isLoading = false;
+    }
+    update();
   }
 
   Future<void> getLatestItemList(bool reload, String type, bool notify, {DataSourceEnum dataSource = DataSourceEnum.client, bool fromRecall = false}) async {

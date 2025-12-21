@@ -20,6 +20,7 @@ class AppConstants {
   static const String bannerUri = '/api/v1/banners';
   static const String storeItemUri = '/api/v1/items/latest';
   static const String popularItemUri = '/api/v1/items/popular';
+  static const String allItemUri = '/api/v1/items/all';
   static const String reviewedItemUri = '/api/v1/items/most-reviewed';
   static const String searchItemUri = '/api/v1/items/details/';
   static const String subCategoryUri = '/api/v1/categories/childes/';
@@ -289,9 +290,9 @@ class AppConstants {
 
   static List<LanguageModel> languages = [
     LanguageModel(imageUrl: Images.english, languageName: 'English', countryCode: 'US', languageCode: 'en'),
-    LanguageModel(imageUrl: Images.arabic, languageName: 'عربى', countryCode: 'SA', languageCode: 'ar'),
-    LanguageModel(imageUrl: Images.spanish, languageName: 'Spanish', countryCode: 'ES', languageCode: 'es'),
-    LanguageModel(imageUrl: Images.bengali, languageName: 'Bengali', countryCode: 'BN', languageCode: 'bn'),
+    LanguageModel(imageUrl: Images.arabic, languageName: 'عربى', countryCode: 'BH', languageCode: 'ar'),
+      // LanguageModel(imageUrl: Images.spanish, languageName: 'Spanish', countryCode: 'ES', languageCode: 'es'),
+      // LanguageModel(imageUrl: Images.bengali, languageName: 'Bengali', countryCode: 'BN', languageCode: 'bn'),
   ];
 
   static List<String> joinDropdown = [

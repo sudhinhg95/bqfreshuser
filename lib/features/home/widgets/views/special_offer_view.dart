@@ -22,13 +22,17 @@ class SpecialOfferView extends StatelessWidget {
       // print()
 
       return discountedItemList != null ? discountedItemList.isNotEmpty ? Padding(
-        padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+        // Use only bottom padding so the gap below the
+        // category section matches the gap above it.
+        padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
         child: Container(
           color: Theme.of(context).disabledColor.withOpacity( 0.1),
           child: Column(children: [
 
             Padding(
-              padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
+              // Further reduce top padding so Special Offer
+              // sits a bit closer to the category section.
+              padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
               child: TitleWidget(
                 title: 'special_offer'.tr,
                 image: Images.discountOfferIcon,
@@ -66,13 +70,14 @@ class ItemShimmerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+      // Match the non-shimmer view: only bottom external padding.
+      padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
       child: Container(
         color: Theme.of(context).disabledColor.withOpacity( 0.1),
         child: Column(children: [
 
           Padding(
-            padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
+            padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
             child: TitleWidget(
               title: isPopularItem ? 'most_popular_items'.tr : 'special_offer'.tr,
               image: isPopularItem ? Images.mostPopularIcon : Images.discountOfferIcon,

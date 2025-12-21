@@ -34,11 +34,12 @@ class FoodHomeScreen extends StatelessWidget {
             BadWeatherWidget(),
 
             BannerView(isFeatured: false),
-            SizedBox(height: 12),
+            SizedBox(height: 8),
           ],
         ),
       ),
 
+      const SizedBox(height: 4),
       const CategoryView(),
       // isLoggedIn ? const VisitAgainView(fromFood: true) : const SizedBox(),
       const SpecialOfferView(isFood: true, isShop: false),

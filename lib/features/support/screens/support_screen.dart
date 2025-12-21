@@ -73,6 +73,27 @@ class _SupportScreenState extends State<SupportScreen> {
               },
             ),
 
+            const SizedBox(height: Dimensions.paddingSizeSmall),
+
+            SupportButtonWidget(
+              // Use WhatsApp PNG from assets instead of a Material icon.
+              icon: Icons.chat,
+              image: Images.whatsapp,
+              title: 'whatsapp'.tr,
+              color: Colors.green,
+              info: Get.find<SplashController>().configModel!.phone,
+              onTap: () async {
+                final String rawPhone = Get.find<SplashController>().configModel!.phone ?? '';
+                final String phone = rawPhone.replaceAll('+', '').replaceAll(' ', '');
+                final String url = 'https://wa.me/$phone';
+                if(await canLaunchUrlString(url)) {
+                  launchUrlString(url, mode: LaunchMode.externalApplication);
+                } else {
+                  showCustomSnackBar('${'can_not_launch'.tr} Whatsapp');
+                }
+              },
+            ),
+
           ])),
         )),
       ),
