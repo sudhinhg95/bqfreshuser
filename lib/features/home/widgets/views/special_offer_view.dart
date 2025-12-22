@@ -19,46 +19,51 @@ class SpecialOfferView extends StatelessWidget {
     return GetBuilder<ItemController>(builder: (itemController) {
       List<Item>? discountedItemList = itemController.discountedItemList;
       
-      // print()
+      return discountedItemList != null
+          ? discountedItemList.isNotEmpty
+              ? Container(
+                  color: Theme.of(context).disabledColor.withOpacity(0.1),
+                  padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+                  child: Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                      child: TitleWidget(
+                        title: 'special_offer'.tr,
+                        image: Images.discountOfferIcon,
+                        onTap: () => Get.toNamed(RouteHelper.getPopularItemRoute(false, true)),
+                      ),
+                    ),
 
-      return discountedItemList != null ? discountedItemList.isNotEmpty ? Padding(
-        // Use only bottom padding so the gap below the
-        // category section matches the gap above it.
-        padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
-        child: Container(
-          color: Theme.of(context).disabledColor.withOpacity( 0.1),
-          child: Column(children: [
-
-            Padding(
-              // Further reduce top padding so Special Offer
-              // sits a bit closer to the category section.
-              padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
-              child: TitleWidget(
-                title: 'special_offer'.tr,
-                image: Images.discountOfferIcon,
-                onTap: () => Get.toNamed(RouteHelper.getPopularItemRoute(false, true)),
-              ),
-            ),
-
-            SizedBox(
-              // Slightly taller to prevent bottom overflow but still tight.
-              height: 246, width: Get.width,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
-                itemCount: discountedItemList.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
-                    child: ItemCard(item: discountedItemList[index], isPopularItem: false, isFood: isFood, isShop: isShop, index: index),
-                  );
-                  },
-              ),
-            ),
-          ]),
-        ),
-      ) : const SizedBox() : const ItemShimmerView(isPopularItem: false);
+                    SizedBox(
+                      height: 246,
+                      width: Get.width,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
+                        itemCount: discountedItemList.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: Dimensions.paddingSizeDefault,
+                              right: Dimensions.paddingSizeDefault,
+                              bottom: Dimensions.paddingSizeDefault,
+                            ),
+                            child: ItemCard(
+                              item: discountedItemList[index],
+                              isPopularItem: false,
+                              isFood: isFood,
+                              isShop: isShop,
+                              index: index,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ]),
+                )
+              : const SizedBox()
+          : const ItemShimmerView(isPopularItem: false);
     });
   }
 }

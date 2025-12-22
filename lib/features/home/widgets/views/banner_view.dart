@@ -52,6 +52,13 @@ class BannerView extends StatelessWidget {
 
                   return InkWell(
                     onTap: () async {
+                      // For all non-featured banners on home screens, always
+                      // go to the category screen showing all products.
+                      if(!isFeatured) {
+                        Get.toNamed(RouteHelper.getCategoryRoute());
+                        return;
+                      }
+
                       if(bannerDataList![index] is Item) {
                         Item? item = bannerDataList[index];
                         Get.find<ItemController>().navigateToItemPage(item, context);

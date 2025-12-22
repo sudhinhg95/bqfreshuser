@@ -54,27 +54,21 @@ class BannerView extends StatelessWidget {
 
                   return InkWell(
                     onTap: () async {
+                      // For all non-featured banners (home module banners), always
+                      // go to the category screen showing all products.
+                      if(!isFeatured) {
+                        Get.toNamed(RouteHelper.getCategoryRoute());
+                        return;
+                      }
+
                       if(bannerDataList![index] is Item) {
                         Item? item = bannerDataList[index];
                         Get.find<ItemController>().navigateToItemPage(item, context);
                       }else if(bannerDataList[index] is Store) {
-                        Store? store = bannerDataList[index];
-                        if(isFeatured && (AddressHelper.getUserAddressFromSharedPref()!.zoneData != null && AddressHelper.getUserAddressFromSharedPref()!.zoneData!.isNotEmpty)) {
-                          for(ModuleModel module in Get.find<SplashController>().moduleList!) {
-                            if(module.id == store!.moduleId) {
-                              Get.find<SplashController>().setModule(module);
-                              break;
-                            }
-                          }
-                          ZoneData zoneData = AddressHelper.getUserAddressFromSharedPref()!.zoneData!.firstWhere((data) => data.id == store!.zoneId);
-
-                          Modules module = zoneData.modules!.firstWhere((module) => module.id == store!.moduleId);
-                          Get.find<SplashController>().setModule(ModuleModel(id: module.id, moduleName: module.moduleName, moduleType: module.moduleType, themeId: module.themeId, storesCount: module.storesCount));
-                        }
-                        Get.toNamed(
-                          RouteHelper.getStoreRoute(id: store!.id, page: isFeatured ? 'module' : 'banner'),
-                          arguments: StoreScreen(store: store, fromModule: isFeatured),
-                        );
+                        // For featured banners that are linked to a store,
+                        // also redirect to the category screen instead of
+                        // opening the store landing page.
+                        Get.toNamed(RouteHelper.getCategoryRoute());
                       }else if(bannerDataList[index] is BasicCampaignModel) {
                         BasicCampaignModel campaign = bannerDataList[index];
                         Get.toNamed(RouteHelper.getBasicCampaignRoute(campaign));
