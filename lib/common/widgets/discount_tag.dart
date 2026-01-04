@@ -24,6 +24,12 @@ class DiscountTag extends StatelessWidget {
     bool isRightSide = Get.find<SplashController>().configModel!.currencySymbolDirection == 'right';
     String currencySymbol = Get.find<SplashController>().configModel!.currencySymbol!;
 
+    // Format discount without unnecessary trailing decimals (e.g. 10.0 -> 10).
+    String discountText = discount != null ? discount!.toString() : '0';
+    if (discountText.endsWith('.0')) {
+      discountText = discountText.substring(0, discountText.length - 2);
+    }
+
     return (discount! > 0 || freeDelivery!) ? Positioned(
       top: fromTop, left: inLeft ? isFloating! ? Dimensions.paddingSizeSmall : 0 : null, right: inLeft ? null : 0,
       child: Container(
@@ -37,7 +43,7 @@ class DiscountTag extends StatelessWidget {
           ),
         ),
         child: Text(
-          discount! > 0 ? '${(isRightSide || discountType == 'percent') ? '' : currencySymbol}$discount${discountType == 'percent' ? '%'
+          discount! > 0 ? '${(isRightSide || discountType == 'percent') ? '' : currencySymbol}$discountText${discountType == 'percent' ? '%'
               : isRightSide ? currencySymbol : ''} ${'off'.tr}' : 'free_delivery'.tr,
           style: robotoMedium.copyWith(
             color: Colors.white,

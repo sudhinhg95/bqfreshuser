@@ -49,6 +49,18 @@ class OrderItemWidget extends StatelessWidget {
       }
     }
 
+    // Base unit price stored with the order.
+    final double unitPrice = orderDetails.price ?? 0;
+    // Backend provides item-level discount per unit in
+    // `discountOnItem`, so the effective unit price is
+    // simply unitPrice - discountPerUnit.
+    final double discountPerUnit = orderDetails.discountOnItem ?? 0;
+    final bool hasDiscount = discountPerUnit > 0;
+    double discountedUnitPrice = unitPrice;
+    if (hasDiscount) {
+      discountedUnitPrice = unitPrice - discountPerUnit;
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -83,9 +95,27 @@ class OrderItemWidget extends StatelessWidget {
               ]),
               const SizedBox(height: Dimensions.paddingSizeExtraSmall),
               Row(children: [
-                Expanded(child: Text(
-                  PriceConverter.convertPrice(orderDetails.price),
-                  style: robotoMedium, textDirection: TextDirection.ltr,
+                Expanded(child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasDiscount)
+                      Text(
+                        PriceConverter.convertPrice(unitPrice),
+                        style: robotoRegular.copyWith(
+                          fontSize: Dimensions.fontSizeSmall,
+                          color: Theme.of(context).disabledColor,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                        textDirection: TextDirection.ltr,
+                      ),
+                    if (hasDiscount)
+                      const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+                    Text(
+                      PriceConverter.convertPrice(discountedUnitPrice),
+                      style: robotoMedium,
+                      textDirection: TextDirection.ltr,
+                    ),
+                  ],
                 )),
 
                 // Hide UOM (unitType) in order item rows; only show veg/non-veg when enabled

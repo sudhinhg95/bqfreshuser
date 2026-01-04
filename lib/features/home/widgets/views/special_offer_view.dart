@@ -4,6 +4,8 @@ import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:sixam_mart/features/item/controllers/item_controller.dart';
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
+import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/common/widgets/title_widget.dart';
@@ -16,17 +18,27 @@ class SpecialOfferView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isEcommerce = Get.find<SplashController>().module != null
+        && Get.find<SplashController>().module!.moduleType.toString() == AppConstants.ecommerce;
+
     return GetBuilder<ItemController>(builder: (itemController) {
       List<Item>? discountedItemList = itemController.discountedItemList;
       
-      return discountedItemList != null
+        return discountedItemList != null
           ? discountedItemList.isNotEmpty
-              ? Container(
-                  color: Theme.of(context).disabledColor.withOpacity(0.1),
-                  padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
-                  child: Column(children: [
+            ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
+              child: Container(
+              // Match LatestItemView background styling
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: Column(children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                      // Match LatestItemView title padding (add small top padding)
+                      padding: const EdgeInsets.only(
+                        top: Dimensions.paddingSizeExtraSmall,
+                        left: Dimensions.paddingSizeDefault,
+                        right: Dimensions.paddingSizeDefault,
+                      ),
                       child: TitleWidget(
                         title: 'special_offer'.tr,
                         image: Images.discountOfferIcon,
@@ -45,23 +57,24 @@ class SpecialOfferView extends StatelessWidget {
                         itemBuilder: (context, index) {
                           return Padding(
                             padding: const EdgeInsets.only(
-                              top: Dimensions.paddingSizeDefault,
-                              right: Dimensions.paddingSizeDefault,
-                              bottom: Dimensions.paddingSizeDefault,
+                              top: Dimensions.paddingSizeSmall,
+                              right: Dimensions.paddingSizeSmall,
+                              bottom: Dimensions.paddingSizeSmall,
                             ),
                             child: ItemCard(
                               item: discountedItemList[index],
-                              isPopularItem: false,
+                              // Use same card style as LatestItemView
+                              isPopularItem: isEcommerce ? false : true,
+                              isPopularItemCart: true,
                               isFood: isFood,
                               isShop: isShop,
-                              index: index,
                             ),
                           );
                         },
                       ),
                     ),
                   ]),
-                )
+                ))
               : const SizedBox()
           : const ItemShimmerView(isPopularItem: false);
     });
@@ -82,10 +95,25 @@ class ItemShimmerView extends StatelessWidget {
         child: Column(children: [
 
           Padding(
-            padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
-            child: TitleWidget(
-              title: isPopularItem ? 'most_popular_items'.tr : 'special_offer'.tr,
-              image: isPopularItem ? Images.mostPopularIcon : Images.discountOfferIcon,
+            padding: const EdgeInsets.only(
+              top: Dimensions.paddingSizeExtraSmall,
+              left: Dimensions.paddingSizeDefault,
+              right: Dimensions.paddingSizeDefault,
+            ),
+            child: Shimmer(
+              duration: const Duration(seconds: 2),
+              enabled: true,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  height: 16,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).shadowColor,
+                    borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                  ),
+                ),
+              ),
             ),
           ),
 

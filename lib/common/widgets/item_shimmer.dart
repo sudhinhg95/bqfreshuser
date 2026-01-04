@@ -11,7 +11,85 @@ class ItemShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool desktop = ResponsiveHelper.isDesktop(context);
+    // For item lists (non-store), show a vertical card-style skeleton
+    // that matches the current grid card layout used by ItemWidget.
+    if (!isStore) {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+          color: Theme.of(context).cardColor,
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image placeholder on top
+            Container(
+              height: desktop ? 160 : 120,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                color: Theme.of(context).shadowColor,
+              ),
+            ),
 
+            Padding(
+              padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title line
+                  Container(
+                    height: 12,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                      color: Theme.of(context).shadowColor,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Subtitle / description line
+                  Container(
+                    height: 10,
+                    width: MediaQuery.of(context).size.width * 0.4,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                      color: Theme.of(context).shadowColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Price + small badge line
+                  Row(children: [
+                    Container(
+                      height: 12,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                        color: Theme.of(context).shadowColor,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      height: 10,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                        color: Theme.of(context).shadowColor,
+                      ),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Fallback layout for store shimmers keeps the previous
+    // row-style skeleton used in store lists.
     return Container(
       padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
       decoration: BoxDecoration(
@@ -45,29 +123,17 @@ class ItemShimmer extends StatelessWidget {
                       height: desktop ? 15 : 10, width: double.maxFinite, color: Theme.of(context).shadowColor,
                       margin: const EdgeInsets.only(right: Dimensions.paddingSizeLarge),
                     ),
-                    SizedBox(height: isStore ? Dimensions.paddingSizeSmall : 0),
+                    const SizedBox(height: Dimensions.paddingSizeSmall),
 
-                    !isStore ? Row(
+                    Row(
                       children: List.generate(5, (index) {
                         return Icon(Icons.star, color: Theme.of(context).shadowColor, size: 12);
                       }),
-                    ) : const SizedBox(),
-                    isStore ? Row(
-                      children: List.generate(5, (index) {
-                        return Icon(Icons.star, color: Theme.of(context).shadowColor, size: 12);
-                      }),
-                    ) : Row(children: [
-                      Container(height: desktop ? 20 : 15, width: 30, color: Theme.of(context).shadowColor),
-                      const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-                      Container(height: desktop ? 15 : 10, width: 20, color: Theme.of(context).shadowColor),
-                    ]),
-
+                    ),
                   ]),
                 ),
 
-                Column(mainAxisAlignment: isStore ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween, children: [
-                  const SizedBox(),
-
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: desktop ? Dimensions.paddingSizeSmall : 0),
                     child: Icon(

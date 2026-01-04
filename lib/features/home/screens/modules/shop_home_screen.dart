@@ -11,6 +11,7 @@ import 'package:sixam_mart/features/home/widgets/views/item_that_you_love_view.d
 import 'package:sixam_mart/features/home/widgets/views/just_for_you_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/most_popular_item_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/latest_item_view.dart';
+import 'package:sixam_mart/features/home/widgets/views/sub_category_sections_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/middle_section_banner_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/special_offer_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/promotional_banner_view.dart';
@@ -46,9 +47,11 @@ class ShopHomeScreen extends StatelessWidget {
       const SizedBox(height: 4),
       const CategoryView(),
       // isLoggedIn ? const VisitAgainView() : const SizedBox(),
-  // Latest items (shown below Most Popular)
-  const MostPopularItemView(isFood: false, isShop: true),
-  const LatestItemView(isFood: false, isShop: true),
+        // Home item sections order: Today's Special -> Most Popular -> Latest -> Sub-categories
+        const ItemThatYouLoveView(forShop: true),
+        const MostPopularItemView(isFood: false, isShop: true),
+        const LatestItemView(isFood: false, isShop: true),
+        const SubCategorySectionsView(isFood: false, isShop: true),
       const FlashSaleViewWidget(),
       const MiddleSectionBannerView(),
       const HighlightWidget(),
@@ -60,7 +63,6 @@ class ShopHomeScreen extends StatelessWidget {
       const TopOffersNearMe(),
       const FeaturedCategoriesView(),
       // const StoreWiseBannerView(),
-      const ItemThatYouLoveView(forShop: true,),
       // const NewOnMartView(isShop: true,isPharmacy: false),
       const PromotionalBannerView(),
     ]);

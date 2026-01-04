@@ -125,10 +125,11 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
               List<int?> listOfAddOnQty = _getSelectedAddonQtnList(addOnIdList: addOnIdList);
 
               cart = OnlineCart(
-                  cartId, widget.item!.id, null, priceWithDiscount.toString(), '',
-                  variation != null ? [variation] : [], null,
-                  itemController.cartIndex != -1 ? cartController.cartList[itemController.cartIndex].quantity
-                      : itemController.quantity, listOfAddOnId, addOnsList, listOfAddOnQty, 'Item'
+                cartId, widget.item!.id, null, priceWithDiscount.toString(), '',
+                variation != null ? [variation] : [], null,
+                itemController.cartIndex != -1 ? cartController.cartList[itemController.cartIndex].quantity
+                    : itemController.quantity, listOfAddOnId, addOnsList, listOfAddOnQty, 'Item',
+                taxFlag: (widget.item!.tax != null && widget.item!.tax == 1) ? 1 : 0,
               );
               priceWithAddons = priceWithQuantity + (Get.find<SplashController>().configModel!.moduleConfig!.module!.addOn! ? addonsCost : 0);
             }

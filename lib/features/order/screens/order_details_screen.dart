@@ -125,12 +125,13 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
             deliveryCharge = order.deliveryCharge!;
             couponDiscount = order.couponDiscountAmount!;
             discount = order.storeDiscountAmount! + order.flashAdminDiscountAmount! + order.flashStoreDiscountAmount!;
-            tax = order.totalTaxAmount!;
             dmTips = order.dmTips!;
             taxIncluded = order.taxStatus!;
             additionalCharge = order.additionalCharge!;
             extraPackagingCharge = order.extraPackagingAmount!;
             referrerBonusAmount = order.referrerBonusAmount!;
+            // Use backend-provided total tax amount for VAT/Tax display.
+            tax = order.totalTaxAmount ?? 0;
             if(prescriptionOrder) {
               double orderAmount = order.orderAmount ?? 0;
               itemsPrice = (orderAmount + discount) - ((taxIncluded ? 0 : tax) + deliveryCharge) - dmTips - additionalCharge;
@@ -391,5 +392,74 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
         ),
       ) : const SizedBox(),
     ]);
+  }
+
+  double _calculateOrderTaxFromDetails({
+    required List<OrderDetailsModel> orderDetailsList,
+    required double couponDiscount,
+    required double referrerBonusAmount,
+    required double? taxPercent,
+    required bool taxIncluded,
+  }) {
+    if (orderDetailsList.isEmpty || (taxPercent ?? 0) <= 0) {
+      return 0;
+    }
+
+    double totalNetBeforeGlobalDiscount = 0;
+    double taxableNetBeforeGlobalDiscount = 0;
+
+    print('Calculating tax from order details:');
+  
+
+
+    for (final details in orderDetailsList) {
+        print(details.toJson());
+      final int quantity = details.quantity ?? 0;
+      if (quantity <= 0) continue;
+
+      final double unitPrice = details.price ?? 0;
+      final double lineDiscountOnItem = details.discountOnItem ?? 0;
+      final double addOnTotal = details.totalAddOnPrice ?? 0;
+
+      // Line amount after per-item discount, including add-ons.
+      final double lineBaseTotal = unitPrice * quantity;
+      final double lineNet = (lineBaseTotal - lineDiscountOnItem) + addOnTotal;
+
+      totalNetBeforeGlobalDiscount += lineNet;
+
+
+      // Respect item-level tax flag: only items with tax == 1 are taxable.
+      final double itemTaxFlag = details.itemDetails?.tax ?? 0;
+      if (itemTaxFlag == 1) {
+        taxableNetBeforeGlobalDiscount += lineNet;
+      }
+    }
+
+    if (totalNetBeforeGlobalDiscount <= 0 || taxableNetBeforeGlobalDiscount <= 0) {
+      return 0;
+    }
+
+    // Distribute coupon & referral discounts proportionally to taxable lines.
+    final double taxableRatio = taxableNetBeforeGlobalDiscount / totalNetBeforeGlobalDiscount;
+    final double taxableCouponDiscount = couponDiscount * taxableRatio;
+    final double taxableReferralDiscount = referrerBonusAmount * taxableRatio;
+
+    double taxableOrderAmount = taxableNetBeforeGlobalDiscount
+        - taxableCouponDiscount
+        - taxableReferralDiscount;
+
+    if (taxableOrderAmount <= 0) {
+      return 0;
+    }
+
+    double tax = 0;
+    final double percent = taxPercent ?? 0;
+    if (taxIncluded) {
+      tax = taxableOrderAmount * percent / (100 + percent);
+    } else {
+      tax = PriceConverter.calculation(taxableOrderAmount, percent, 'percent', 1);
+    }
+
+    return PriceConverter.toFixed(tax);
   }
 }

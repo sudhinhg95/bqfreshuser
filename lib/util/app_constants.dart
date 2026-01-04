@@ -12,7 +12,7 @@ class AppConstants {
   static const int balanceInputLen = 10;
   static const String webHostedUrl = 'https://bqfresh.com';
   static const bool useReactWebsite = false;
-
+ 
   static const String baseUrl = 'https://admin.bqfresh.com';
   // static const String baseUrl = 'http://localhost/admin.bqfresh.com';
 

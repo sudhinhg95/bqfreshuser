@@ -50,6 +50,7 @@ import 'package:sixam_mart/features/flash_sale/screens/flash_sale_details_screen
 import 'package:sixam_mart/features/item/screens/item_campaign_screen.dart';
 import 'package:sixam_mart/features/item/screens/item_details_screen.dart';
 import 'package:sixam_mart/features/item/screens/popular_item_screen.dart';
+import 'package:sixam_mart/features/item/screens/recommended_item_screen.dart';
 import 'package:sixam_mart/features/item/screens/latest_item_screen.dart';
 import 'package:sixam_mart/features/verification/screens/forget_pass_screen.dart';
 import 'package:sixam_mart/features/verification/screens/new_pass_screen.dart';
@@ -116,6 +117,7 @@ class RouteHelper {
   static const String categoryItem = '/category-item';
   static const String popularItems = '/popular-items';
   static const String latestItems = '/latest-items';
+  static const String recommendedItems = '/recommended-items';
   static const String itemCampaign = '/item-campaign';
   static const String support = '/help-and-support';
   static const String rateReview = '/rate-and-review';
@@ -234,6 +236,7 @@ class RouteHelper {
   }
   static String getPopularItemRoute(bool isPopular, bool isSpecial) => '$popularItems?page=${isPopular ? 'popular' : 'reviewed'}&special=${isSpecial.toString()}';
   static String getLatestItemRoute() => latestItems;
+  static String getRecommendedItemRoute() => recommendedItems;
   static String getItemCampaignRoute({bool isJustForYou = false}) => itemCampaign + (isJustForYou ? '?just-for-you=${isJustForYou.toString()}' : '');
   static String getSupportRoute() => support;
   static String getReviewRoute() => rateReview;
@@ -466,6 +469,7 @@ class RouteHelper {
     }),
   GetPage(name: popularItems, page: () => getRoute(PopularItemScreen(isPopular: Get.parameters['page'] == 'popular', isSpecial: Get.parameters['special'] == 'true'))),
   GetPage(name: latestItems, page: () => getRoute(const LatestItemScreen())),
+  GetPage(name: recommendedItems, page: () => getRoute(const RecommendedItemScreen())),
     GetPage(name: itemCampaign, page: () => getRoute(ItemCampaignScreen(isJustForYou: Get.parameters['just-for-you'] == 'true'))),
     GetPage(name: support, page: () => const SupportScreen()),
     GetPage(name: update, page: () => UpdateScreen(isUpdate: Get.parameters['update'] == 'true')),

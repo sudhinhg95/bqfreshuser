@@ -12,7 +12,7 @@ import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/home/widgets/web/middle_section_multiple_banner_view_widget.dart';
 import 'package:sixam_mart/features/home/widgets/web/module_widget.dart';
 import 'package:sixam_mart/features/home/widgets/web/web_basic_medicine_nearby_view_widget.dart';
-import 'package:sixam_mart/features/home/widgets/web/web_best_review_item_view_widget.dart';
+// import removed to hide best reviewed items section on web home
 import 'package:sixam_mart/features/home/widgets/web/web_best_store_nearby_view_widget.dart';
 import 'package:sixam_mart/features/home/widgets/web/web_category_view_widget.dart';
 import 'package:sixam_mart/features/home/widgets/web/web_common_condition_view_widget.dart';
@@ -134,7 +134,8 @@ class _WebNewHomeScreenState extends State<WebNewHomeScreen> {
                 const WebHighlightWidget(),
 
                 (isPharmacy || isShop) ? const MiddleSectionMultipleBannerViewWidget()
-                    : isFood ? const WebBestReviewItemViewWidget()
+                    // Best reviewed items hidden for food module on web
+                    : isFood ? const SizedBox()
                     : const WebBestStoreNearbyViewWidget(),
 
                 isPharmacy ? const WebBestStoreNearbyViewWidget()
@@ -155,8 +156,9 @@ class _WebNewHomeScreenState extends State<WebNewHomeScreen> {
 
                 isPharmacy ? const WebNewOnViewWidget()
                     : isFood ? const WebMostPopularItemViewWidget(isFood: true, isShop: false)
-                    : isShop ? const WebBestReviewItemViewWidget()
-                    : const WebBestReviewItemViewWidget(),
+                    // Best reviewed items hidden for shop/other modules on web
+                    : isShop ? const SizedBox()
+                    : const SizedBox(),
 
                 isPharmacy ? const WebCommonConditionViewWidget()
                     : isFood ? const WebJustForYouViewWidget()

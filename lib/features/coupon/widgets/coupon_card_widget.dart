@@ -52,7 +52,13 @@ class CouponCardWidget extends StatelessWidget {
               const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
               Text(
-                '${coupon.discount}${coupon.discountType == 'percent' ? '%' : Get.find<SplashController>().configModel!.currencySymbol} ${'off'.tr}',
+                '${(() {
+                  String discountText = (coupon.discount ?? 0).toString();
+                  if (discountText.endsWith('.0')) {
+                    discountText = discountText.substring(0, discountText.length - 2);
+                  }
+                  return discountText;
+                })()}${coupon.discountType == 'percent' ? '%' : Get.find<SplashController>().configModel!.currencySymbol} ${'off'.tr}',
                 style: robotoBold.copyWith(fontSize: Dimensions.fontSizeDefault),
               ),
               const SizedBox(height: Dimensions.paddingSizeExtraSmall),

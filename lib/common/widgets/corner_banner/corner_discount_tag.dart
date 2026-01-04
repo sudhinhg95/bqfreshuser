@@ -53,6 +53,11 @@ class CornerDiscountTag extends StatelessWidget {
   }
 
   Widget _buildBannerContent() {
+    // Format discount without unnecessary trailing decimals (e.g. 10.0 -> 10).
+    String discountText = discount != null ? discount!.toString() : '0';
+    if (discountText.endsWith('.0')) {
+      discountText = discountText.substring(0, discountText.length - 2);
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3.0,),
       child: Material(
@@ -69,7 +74,7 @@ class CornerDiscountTag extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children:  [
                 Text(
-                  discount! > 0 ? '$discount${discountType == 'percent' ? '%'
+                  discount! > 0 ? '$discountText${discountType == 'percent' ? '%'
                       : Get.find<SplashController>().configModel!.currencySymbol} ${'off'.tr}' : 'free_delivery'.tr,
                   style: robotoMedium.copyWith(
                     color: Colors.white,

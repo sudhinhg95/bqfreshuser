@@ -5,7 +5,10 @@ import 'package:get/get.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:sixam_mart/features/item/controllers/item_controller.dart';
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
-import 'package:sixam_mart/features/home/widgets/components/item_that_you_love_card_widget.dart';
+import 'package:sixam_mart/common/widgets/card_design/item_card.dart';
+import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
+import 'package:sixam_mart/helper/route_helper.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/features/home/widgets/components/review_item_card_widget.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/util/dimensions.dart';
@@ -43,101 +46,117 @@ class _ItemThatYouLoveViewState extends State<ItemThatYouLoveView> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ItemController>(builder: (itemController) {
-
-      List<Item>? recommendItems = itemController.recommendedItemList;
-
-      // If there are no recommended items (null or empty), do not
-      // show this section at all – avoid the loading shimmer.
-      if (recommendItems == null || recommendItems.isEmpty) {
-        return const SizedBox();
-      }
-
-      return Column(children: [
-
-        Padding(
-          padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
-          child: Align(
-            alignment: widget.forShop ? Alignment.center : Alignment.centerLeft,
-            child: Text('item_that_you_love'.tr, style: robotoBold.copyWith(fontSize: Dimensions.fontSizeLarge)),
-          ),
-        ),
-
-        widget.forShop ? Padding(
-          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
-          child: Stack(
-            children: [
-              SizedBox(
-                height: 300, width: Get.width,
-                child: Swiper(
-                  controller: swiperController,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ReviewItemCard(item: recommendItems[index]);
-                  },
-                  itemCount: recommendItems.length,
-                  itemWidth: 250,
-                  itemHeight: 300,
-                  layout: SwiperLayout.TINDER,
-                ),
-              ),
-
-              Positioned(
-                top: 150, right: 10,
-                child: InkWell(
-                  onTap: () => swiperController.next(),
-                  child: Icon(Icons.arrow_forward, color: Theme.of(context).primaryColor),
-                ),
-              ),
-
-              Positioned(
-                top: 150, left: 10,
-                child: InkWell(
-                  onTap: () => swiperController.previous(),
-                  child: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor),
-                ),
-              ),
-            ],
-          ),
-        ) : AspectRatio(
-          aspectRatio: ResponsiveHelper.isTab(context) ? 2.5 : 1.0,
-          child: PageView.builder(
-            itemCount: recommendItems.length,
-            allowImplicitScrolling: true,
-            physics: const ClampingScrollPhysics(),
-            controller: _pageController,
-            itemBuilder: (context, index) {
-              return Container(
-                  margin: EdgeInsets.zero,
-                  child: AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, child) {
-                      double value = 0.0;
-                      if (_pageController.position.haveDimensions) {
-                        value = index.toDouble() - (_pageController.page ?? 0);
-                        value = (value * 0.038).clamp(-1, 1);
-                      }
-                      return Transform.rotate(
-                        angle: pi * value,
-                        child: carouselCard(index, recommendItems[index]),
-                      );
-                    },
-                  ),
-              );
-            },
-          ),
-        ),
-      ]);
-      }
-    );
-  }
-
-  Widget carouselCard(int index, Item item) {
     return Padding(
-      padding: const EdgeInsets.all(Dimensions.paddingSizeLarge),
-      child: Hero(
-        tag: "image$index",
-        child: ItemThatYouLoveCard(item: item, index: index),
-      ),
+      // Match LatestItemView vertical spacing so this
+      // section aligns uniformly with others.
+      padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
+      child: GetBuilder<ItemController>(builder: (itemController) {
+
+        List<Item>? recommendItems = itemController.recommendedItemList;
+
+        // If there are no recommended items (null or empty), do not
+        // show this section at all.
+        if (recommendItems == null || recommendItems.isEmpty) {
+          return const SizedBox();
+        }
+
+        // Keep the existing swiper layout for shop screens.
+        if (widget.forShop) {
+          return Column(children: [
+
+            Padding(
+              padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
+              child: Align(
+                alignment: Alignment.center,
+                child: Text('item_that_you_love'.tr, style: robotoBold.copyWith(fontSize: Dimensions.fontSizeLarge)),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault),
+              child: Stack(
+                children: [
+                  SizedBox(
+                    height: 300, width: Get.width,
+                    child: Swiper(
+                      controller: swiperController,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ReviewItemCard(item: recommendItems[index]);
+                      },
+                      itemCount: recommendItems.length,
+                      itemWidth: 250,
+                      itemHeight: 300,
+                      layout: SwiperLayout.TINDER,
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 150, right: 10,
+                    child: InkWell(
+                      onTap: () => swiperController.next(),
+                      child: Icon(Icons.arrow_forward, color: Theme.of(context).primaryColor),
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 150, left: 10,
+                    child: InkWell(
+                      onTap: () => swiperController.previous(),
+                      child: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ]);
+        }
+
+        // For non-shop screens, use the exact same design and
+        // card size as Latest Items, but keep using the
+        // recommended items list for content.
+        final splashController = Get.find<SplashController>();
+        final module = splashController.module;
+        final bool isFoodModule = module != null && module.moduleType.toString() == AppConstants.food;
+        final bool isShopModule = module != null && module.moduleType.toString() == AppConstants.ecommerce;
+        final bool isEcommerce = isShopModule;
+        return Container(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          child: Column(children: [
+
+            Padding(
+              padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
+              child: TitleWidget(
+                title: 'item_that_you_love'.tr,
+                onTap: () => Get.toNamed(RouteHelper.getRecommendedItemRoute()),
+              ),
+            ),
+
+            SizedBox(
+              height: 246,
+              width: Get.width,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
+                itemCount: recommendItems.length,
+                    itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall, right: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeSmall),
+                    child: ItemCard(
+                      isPopularItem: isEcommerce ? false : true,
+                      isPopularItemCart: true,
+                      item: recommendItems[index],
+                      isShop: isShopModule,
+                      isFood: isFoodModule,
+                    ),
+                  );
+                },
+              ),
+            ),
+
+          ]),
+        );
+      }),
     );
   }
 }

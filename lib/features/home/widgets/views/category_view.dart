@@ -171,7 +171,7 @@ class PharmacyCategoryView extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       SizedBox(
         height: 160,
-        child: categoryController.categoryList != null ? ListView.builder(
+          child: categoryController.categoryList != null ? ListView.builder(
           controller: scrollController,
           physics: const BouncingScrollPhysics(),
           shrinkWrap: true,
@@ -180,7 +180,7 @@ class PharmacyCategoryView extends StatelessWidget {
           itemCount: categoryController.categoryList!.length > 10 ? 10 : categoryController.categoryList!.length,
           itemBuilder: (context, index) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeDefault),
+              padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall, right: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeDefault),
               child: InkWell(
                 onTap: () {
                   if(index == 9 && categoryController.categoryList!.length > 10) {
@@ -283,7 +283,7 @@ class FoodCategoryView extends StatelessWidget {
             itemCount: categoryController.categoryList!.length > 10 ? 10 : categoryController.categoryList!.length,
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
+                padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall, right: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
                 child: InkWell(
                   onTap: () {
                     if(index == 9 && categoryController.categoryList!.length > 10) {
@@ -415,11 +415,11 @@ class FoodCategoryShimmer extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+      padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, bottom: Dimensions.paddingSizeExtraSmall),
       itemCount: 8,
       itemBuilder: (context, index) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
+          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
           child: SizedBox(
             width: 60,
             child: Column(children: [
@@ -464,11 +464,11 @@ class PharmacyCategoryShimmer extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
+      padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, bottom: Dimensions.paddingSizeExtraSmall),
       itemCount: 8,
       itemBuilder: (context, index) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
+          padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
           child: Shimmer(
             duration: const Duration(seconds: 2),
             enabled: true,

@@ -69,7 +69,13 @@ class PriceConverter {
   }
 
   static String percentageCalculation(String price, String discount, String discountType) {
-    return '$discount${discountType == 'percent' ? '%' : Get.find<SplashController>().configModel!.currencySymbol} OFF';
+    // Format discount without unnecessary trailing decimals (e.g. "10.0" -> "10").
+    String formattedDiscount = discount;
+    final parsed = double.tryParse(discount);
+    if (parsed != null && parsed % 1 == 0) {
+      formattedDiscount = parsed.toInt().toString();
+    }
+    return '$formattedDiscount${discountType == 'percent' ? '%' : Get.find<SplashController>().configModel!.currencySymbol} OFF';
   }
 
   static double toFixed(double val) {

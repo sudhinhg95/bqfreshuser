@@ -293,6 +293,7 @@ class OnlineCart {
   List<int?>? _addOnQtys;
   String? _model;
   String? _itemType;
+  int? _taxFlag;
 
   OnlineCart(
     int? cartId,
@@ -307,7 +308,8 @@ class OnlineCart {
     List<AddOns>? addOns,
     List<int?> addOnQtys,
     String model,
-    {String? itemType}){
+    {String? itemType,
+    int? taxFlag}){
     _cartId = cartId;
     _itemId = itemId;
     _itemCampaignId = itemCampaignId;
@@ -321,6 +323,7 @@ class OnlineCart {
     _addOnQtys = addOnQtys;
     _model = model;
     _itemType = itemType;
+    _taxFlag = taxFlag;
   }
 
   int? get cartId => _cartId;
@@ -335,6 +338,7 @@ class OnlineCart {
   List<int?>? get addOnQtys => _addOnQtys;
   String? get model => _model;
   String? get itemType => _itemType;
+  int? get taxFlag => _taxFlag;
 
   OnlineCart.fromJson(Map<String, dynamic> json) {
     _cartId = json['cart_id'];
@@ -366,6 +370,9 @@ class OnlineCart {
     if (json['item_type'] != null && json['item_type'] != 'null') {
       _itemType = json['item_type'];
     }
+    if (json.containsKey('tax_flag')) {
+      _taxFlag = int.tryParse(json['tax_flag'].toString());
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -390,6 +397,9 @@ class OnlineCart {
     if (_itemType != null) {
       data['item_type'] = _itemType;
     }
+    // Always send tax_flag so backend can persist taxability on cart line.
+    // When not explicitly set, default to 0 (non-taxable).
+    data['tax_flag'] = _taxFlag ?? 0;
     return data;
   }
 }

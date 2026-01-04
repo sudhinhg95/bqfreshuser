@@ -28,9 +28,23 @@ class TitleWidget extends StatelessWidget {
         onTap: onTap as void Function()?,
         child: Padding(
           padding: EdgeInsets.fromLTRB(ltr ? 10 : 0, 5, ltr ? 0 : 10, 5),
-          child: Text(
-            'see_all'.tr,
-            style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor, decoration: TextDecoration.underline),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'see_all'.tr,
+                style: robotoBold.copyWith(
+                  fontSize: Dimensions.fontSizeDefault,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                ltr ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
+                size: 14,
+                color: Theme.of(context).primaryColor,
+              ),
+            ],
           ),
         ),
       ) : const SizedBox(),

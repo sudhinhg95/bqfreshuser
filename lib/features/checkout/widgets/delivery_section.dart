@@ -77,6 +77,10 @@ class DeliverySection extends StatelessWidget {
                   checkoutController.floorController.text = address.floor ?? '';
                   checkoutController.blockController.text = address.block ?? '';
                   checkoutController.areaController.text = address.area ?? '';
+                  // Auto-select the newly added address (last in list)
+                  if (address.isNotEmpty) {
+                    checkoutController.setAddressIndex(address.length - 1);
+                  }
                 }
               },
               icon: const Icon(Icons.add, size: 20),

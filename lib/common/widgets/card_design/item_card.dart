@@ -138,9 +138,8 @@ class ItemCard extends StatelessWidget {
                           const SizedBox(height: 6),
 
                           Row(children: [
-                            // Price with smaller currency text and normal-sized amount.
-                            // Use the same base price as the main listing cards
-                            // so home and listing show identical prices.
+                            // Price section: show current (discounted) price and, if discounted,
+                            // the original price struck through underneath.
                             Expanded(
                               child: Builder(builder: (_) {
                                 final String fullPrice = PriceConverter.convertPrice(
@@ -170,31 +169,62 @@ class ItemCard extends StatelessWidget {
                                   }
                                 }
 
-                                return RichText(
-                                  textDirection: TextDirection.ltr,
-                                  text: TextSpan(
-                                    children: [
-                                      if (currencyPart.isNotEmpty)
-                                        TextSpan(
-                                          text: '$currencyPart ',
-                                          style: robotoMedium.copyWith(
-                                            // Match listing card: smaller and description-colored currency label
-                                            fontSize: Dimensions.fontSizeExtraSmall,
-                                            color: Theme.of(context).disabledColor,
+                                final bool hasDiscount = (discount ?? 0) > 0;
+                                final String originalPriceText = hasDiscount
+                                    ? PriceConverter.convertPrice(item.price)
+                                    : '';
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Current (discounted or base) price
+                                    RichText(
+                                      textDirection: TextDirection.ltr,
+                                      text: TextSpan(
+                                        children: [
+                                          if (currencyPart.isNotEmpty)
+                                            TextSpan(
+                                              text: '$currencyPart ',
+                                              style: robotoMedium.copyWith(
+                                                fontSize:
+                                                    Dimensions.fontSizeExtraSmall,
+                                                color: Theme.of(context)
+                                                    .disabledColor,
+                                              ),
+                                            ),
+                                          TextSpan(
+                                            text: amountPart,
+                                            style: robotoMedium.copyWith(
+                                              fontSize:
+                                                  Dimensions.fontSizeDefault,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge!
+                                                  .color,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Original price (struck through) when discounted
+                                    if (hasDiscount && originalPriceText.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 2),
+                                        child: Text(
+                                          originalPriceText,
+                                          style: robotoRegular.copyWith(
+                                            fontSize:
+                                                Dimensions.fontSizeExtraSmall,
+                                            color:
+                                                Theme.of(context).disabledColor,
+                                            decoration:
+                                                TextDecoration.lineThrough,
                                           ),
                                         ),
-                                      TextSpan(
-                                        text: amountPart,
-                                        style: robotoMedium.copyWith(
-                                          fontSize: Dimensions.fontSizeDefault,
-                                          color: Theme.of(context)
-                                              .textTheme
-                                              .bodyLarge!
-                                              .color,
-                                        ),
                                       ),
-                                    ],
-                                  ),
+                                  ],
                                 );
                               }),
                             ),

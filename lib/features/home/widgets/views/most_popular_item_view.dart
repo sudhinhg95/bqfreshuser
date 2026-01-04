@@ -23,14 +23,20 @@ class MostPopularItemView extends StatelessWidget {
     return GetBuilder<ItemController>(builder: (itemController) {
       List<Item>? itemList = itemController.popularItemList;
 
-      return (itemList != null)
+        return (itemList != null)
           ? itemList.isNotEmpty
-              ? Container(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
-                  child: Column(children: [
+            ? Padding(
+              // Use symmetric vertical padding for uniform section spacing
+              padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
+              child: Container(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: Column(children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                      padding: const EdgeInsets.only(
+                        top: Dimensions.paddingSizeExtraSmall,
+                        left: Dimensions.paddingSizeDefault,
+                        right: Dimensions.paddingSizeDefault,
+                      ),
                       child: TitleWidget(
                         title: isShop ? 'most_popular_products'.tr : 'most_popular_items'.tr,
                         image: Images.mostPopularIcon,
@@ -50,9 +56,9 @@ class MostPopularItemView extends StatelessWidget {
                         itemBuilder: (context, index) {
                           return Padding(
                             padding: const EdgeInsets.only(
-                              top: Dimensions.paddingSizeDefault,
-                              right: Dimensions.paddingSizeDefault,
-                              bottom: Dimensions.paddingSizeDefault,
+                              top: Dimensions.paddingSizeSmall,
+                              right: Dimensions.paddingSizeSmall,
+                              bottom: Dimensions.paddingSizeSmall,
                             ),
                             child: ItemCard(
                               isPopularItem: isShop ? false : true,
@@ -66,7 +72,7 @@ class MostPopularItemView extends StatelessWidget {
                       ),
                     ),
                   ]),
-                )
+                ))
               : const SizedBox()
           : const ItemShimmerView(isPopularItem: true);
     });

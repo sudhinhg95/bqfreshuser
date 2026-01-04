@@ -52,37 +52,36 @@ class _ItemsViewState extends State<ItemsView> {
 
     return Column(children: [
 
-      !isNull
+        !isNull
           ? length > 0
-              ? GridView.builder(
-                  key: UniqueKey(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    // Reduced horizontal gap between item cards on mobile lists
-                    crossAxisSpacing: ResponsiveHelper.isDesktop(context)
-                        ? Dimensions.paddingSizeExtremeLarge
-                        : widget.stores != null
-                            ? Dimensions.paddingSizeLarge
-                            : Dimensions.paddingSizeSmall,
-                    mainAxisSpacing: ResponsiveHelper.isDesktop(context)
-                        ? Dimensions.paddingSizeExtremeLarge
-                        : widget.stores != null && widget.isStore
-                            ? Dimensions.paddingSizeLarge
-                            : Dimensions.paddingSizeSmall,
-                    // Card height per grid item; tuned so the tile
-                    // closely wraps the compact item card without overflow.
-                    mainAxisExtent:
-                      ResponsiveHelper.isDesktop(context) && widget.isStore
-                        ? 220
-                        : ResponsiveHelper.isMobile(context)
-                          ? (widget.isStore ? 190 : 210)
-                          : 220,
-                    crossAxisCount: ResponsiveHelper.isMobile(context)
-                        ? (widget.isStore ? 1 : 2)
-                        : ResponsiveHelper.isDesktop(context) &&
-                                widget.stores != null
-                            ? 3
-                            : 3,
-                  ),
+            ? GridView.builder(
+              key: UniqueKey(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              // Match the grid layout used for shimmer so
+              // loading and loaded states look identical.
+              crossAxisSpacing: ResponsiveHelper.isDesktop(context)
+                ? Dimensions.paddingSizeExtremeLarge
+                : widget.stores != null
+                  ? Dimensions.paddingSizeLarge
+                  : Dimensions.paddingSizeSmall,
+              mainAxisSpacing: ResponsiveHelper.isDesktop(context)
+                ? Dimensions.paddingSizeExtremeLarge
+                : widget.stores != null && widget.isStore
+                  ? Dimensions.paddingSizeLarge
+                  : Dimensions.paddingSizeSmall,
+              mainAxisExtent:
+                ResponsiveHelper.isDesktop(context) && widget.isStore
+                ? 220
+                : ResponsiveHelper.isMobile(context)
+                  ? (widget.isStore ? 190 : 210)
+                  : 220,
+              crossAxisCount: ResponsiveHelper.isMobile(context)
+                ? (widget.isStore ? 1 : 2)
+                : ResponsiveHelper.isDesktop(context) &&
+                    widget.stores != null
+                  ? 3
+                  : 3,
+              ),
                   physics: widget.isScrollable
                       ? const BouncingScrollPhysics()
                       : const NeverScrollableScrollPhysics(),
@@ -123,35 +122,32 @@ class _ItemsViewState extends State<ItemsView> {
                               : 'no_store_available'.tr
                           : 'no_item_available'.tr),
                 )
-          : GridView.builder(
+            : GridView.builder(
               key: UniqueKey(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisSpacing: ResponsiveHelper.isDesktop(context)
-                    ? Dimensions.paddingSizeExtremeLarge
-                    : widget.stores != null
-                        ? Dimensions.paddingSizeLarge
-                        : Dimensions.paddingSizeLarge,
-                mainAxisSpacing: ResponsiveHelper.isDesktop(context)
-                    ? Dimensions.paddingSizeLarge
-                    : widget.stores != null
-                        ? Dimensions.paddingSizeLarge
-                        : Dimensions.paddingSizeSmall,
-                // childAspectRatio: ResponsiveHelper.isDesktop(context) && widget.isStore ? (1/0.6)
-                //     : ResponsiveHelper.isMobile(context) ? widget.isStore ? 2 : 3.8
-                //     : 3,
-                mainAxisExtent:
-                    ResponsiveHelper.isDesktop(context) && widget.isStore
-                        ? 220
-                        : ResponsiveHelper.isMobile(context)
-                            ? widget.isStore
-                                ? 200
-                                : 110
-                            : 110,
-                crossAxisCount: ResponsiveHelper.isMobile(context)
-                    ? 1
-                    : ResponsiveHelper.isDesktop(context)
-                        ? 3
-                        : 3,
+              // Use the same grid metrics as the loaded state so
+              // shimmer items occupy identical card slots.
+              crossAxisSpacing: ResponsiveHelper.isDesktop(context)
+                ? Dimensions.paddingSizeExtremeLarge
+                : widget.stores != null
+                  ? Dimensions.paddingSizeLarge
+                  : Dimensions.paddingSizeSmall,
+              mainAxisSpacing: ResponsiveHelper.isDesktop(context)
+                ? Dimensions.paddingSizeExtremeLarge
+                : widget.stores != null && widget.isStore
+                  ? Dimensions.paddingSizeLarge
+                  : Dimensions.paddingSizeSmall,
+              mainAxisExtent:
+                ResponsiveHelper.isDesktop(context) && widget.isStore
+                  ? 220
+                  : ResponsiveHelper.isMobile(context)
+                    ? (widget.isStore ? 190 : 210)
+                    : 220,
+              crossAxisCount: ResponsiveHelper.isMobile(context)
+                ? (widget.isStore ? 1 : 2)
+                : ResponsiveHelper.isDesktop(context) && widget.stores != null
+                  ? 3
+                  : 3,
               ),
               physics: widget.isScrollable
                   ? const BouncingScrollPhysics()

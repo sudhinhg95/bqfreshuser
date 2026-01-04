@@ -35,7 +35,7 @@ class WebBusinessPlanWidget extends StatelessWidget {
 
               Get.find<SplashController>().configModel!.commissionBusinessModel != 0 ? Expanded(
                 child: BaseCardWidget(storeRegistrationController: storeRegController, title: 'commission_base'.tr,
-                  description: "${'store_will_pay'.tr} ${Get.find<SplashController>().configModel!.adminCommission}% ${'commission_to'.tr} ${Get.find<SplashController>().configModel!.businessName} ${'from_each_order_You_will_get_access_of_all'.tr}",
+                  description: "${'store_will_pay'.tr} ${((Get.find<SplashController>().configModel!.adminCommission ?? 0) % 1 == 0 ? (Get.find<SplashController>().configModel!.adminCommission ?? 0).toInt().toString() : (Get.find<SplashController>().configModel!.adminCommission ?? 0).toString())}% ${'commission_to'.tr} ${Get.find<SplashController>().configModel!.businessName} ${'from_each_order_You_will_get_access_of_all'.tr}",
                   index: 0, onTap: ()=> storeRegController.setBusiness(0),
                 ),
               ) : const SizedBox(),

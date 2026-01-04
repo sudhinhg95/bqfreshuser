@@ -544,6 +544,7 @@ class ItemController extends GetxController implements GetxService {
         null, isCampaign ? null : item.id, isCampaign ? item.id : null, price.toString(),
         '', null, ModuleHelper.getModuleConfig(item.moduleType).newVariation! ? [] : null,
         1, [], [], [], 'Item',
+        taxFlag: (item.tax != null && item.tax == 1) ? 1 : 0,
       );
       if(Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! && item.stock! <= 0){
         showCustomSnackBar('out_of_stock'.tr);

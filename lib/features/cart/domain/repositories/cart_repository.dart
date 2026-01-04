@@ -46,7 +46,17 @@ class CartRepository implements CartRepositoryInterface<OnlineCart> {
 
   Future<List<OnlineCartModel>?> _addToCartOnline(OnlineCart cart) async {
     List<OnlineCartModel>? onlineCartList;
-    Response response = await apiClient.postData('${AppConstants.addCartUri}${!AuthHelper.isLoggedIn() ? '?guest_id=${AuthHelper.getGuestId()}' : ''}', cart.toJson());
+    // Build request body from OnlineCart and explicitly ensure tax_flag
+    // is present so backend can persist item.tax (0/1) on the cart line.
+    final Map<String, dynamic> body = cart.toJson();
+    if (!body.containsKey('tax_flag')) {
+      body['tax_flag'] = cart.taxFlag ?? 0;
+    }
+
+    Response response = await apiClient.postData(
+      '${AppConstants.addCartUri}${!AuthHelper.isLoggedIn() ? '?guest_id=${AuthHelper.getGuestId()}' : ''}',
+      body,
+    );
     if(response.statusCode == 200) {
       onlineCartList = [];
       response.body.forEach((cart) => onlineCartList!.add(OnlineCartModel.fromJson(cart)));

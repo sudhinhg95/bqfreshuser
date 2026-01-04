@@ -145,7 +145,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                     color: Theme.of(context).primaryColor,
                                   ),
                                   padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
-                                  child: Text('${store?.discount!.discountType == 'percent' ? '${store?.discount!.discount}% ${'off'.tr}'
+                                    child: Text('${store?.discount!.discountType == 'percent' ? '${((store?.discount!.discount ?? 0) % 1 == 0 ? (store?.discount!.discount ?? 0).toInt().toString() : (store?.discount!.discount ?? 0).toString())}% ${'off'.tr}'
                                       : '${PriceConverter.convertPrice(store?.discount!.discount)} ${'off'.tr}'} '
                                       '${'on_all_products'.tr}, ${'after_minimum_purchase'.tr} ${PriceConverter.convertPrice(store?.discount!.minPurchase)},'
                                       ' ${'daily_time'.tr}: ${DateConverter.convertTimeToTime(store!.discount!.startTime!)} '
@@ -203,7 +203,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(Dimensions.radiusLarge)),
                               ),
                               padding: EdgeInsets.all(Dimensions.paddingSizeExtraSmall - (GetPlatform.isAndroid ? (scrollingRate * Dimensions.paddingSizeExtraSmall) : 0)),
-                              child: Text('${store.discount!.discountType == 'percent' ? '${store.discount!.discount}% ${'off'.tr}'
+                                child: Text('${store.discount!.discountType == 'percent' ? '${((store.discount!.discount ?? 0) % 1 == 0 ? (store.discount!.discount ?? 0).toInt().toString() : (store.discount!.discount ?? 0).toString())}% ${'off'.tr}'
                                   : '${PriceConverter.convertPrice(store.discount!.discount)} ${'off'.tr}'} '
                                   '${'on_all_products'.tr}, ${'after_minimum_purchase'.tr} ${PriceConverter.convertPrice(store.discount!.minPurchase)},'
                                   ' ${'daily_time'.tr}: ${DateConverter.convertTimeToTime(store.discount!.startTime!)} '

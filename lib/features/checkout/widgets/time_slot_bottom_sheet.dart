@@ -37,119 +37,149 @@ class _TimeSlotBottomSheetState extends State<TimeSlotBottomSheet> {
   Widget build(BuildContext context) {
     return GetBuilder<CheckoutController>(builder: (checkoutController) {
       return GetBuilder<StoreController>(builder: (storeController) {
+        // Custom slot logic
+        final now = DateTime.now();
+        final todaySlots = <String>[];
+        final tomorrowSlots = <String>[];
+
+        // Today: only 10AM-12PM, 12PM-3PM (if after 10AM, only 12PM-3PM)
+        if (checkoutController.selectedDateSlot == 0) {
+          if (now.hour < 10) {
+            todaySlots.add('10:00 AM - 12:00 PM');
+            todaySlots.add('12:00 PM - 3:00 PM');
+          } else if (now.hour < 12) {
+            todaySlots.add('12:00 PM - 3:00 PM');
+          }
+        }
+        // Tomorrow: 7AM-10AM, 10AM-12PM, 12PM-3PM
+        if (checkoutController.selectedDateSlot == 1) {
+          tomorrowSlots.add('7:00 AM - 10:00 AM');
+          tomorrowSlots.add('10:00 AM - 12:00 PM');
+          tomorrowSlots.add('12:00 PM - 3:00 PM');
+        }
+
+        final slots = checkoutController.selectedDateSlot == 0 ? todaySlots : tomorrowSlots;
+
         return Container(
           width: ResponsiveHelper.isDesktop(context) ? 550 : context.width,
           constraints: BoxConstraints(maxHeight: context.height * 0.8, minHeight: 0),
           margin: EdgeInsets.only(top: GetPlatform.isWeb ? 0 : 30),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: ResponsiveHelper.isMobile(context) ?
-              const BorderRadius.vertical(top: Radius.circular(Dimensions.radiusExtraLarge))
-              : const BorderRadius.all(Radius.circular(Dimensions.radiusDefault)),
+            borderRadius: ResponsiveHelper.isMobile(context)
+                ? const BorderRadius.vertical(top: Radius.circular(Dimensions.radiusExtraLarge))
+                : const BorderRadius.all(Radius.circular(Dimensions.radiusDefault)),
           ),
           child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
-                !ResponsiveHelper.isDesktop(context) ? InkWell(
-                  onTap: ()=> Get.back(),
-                  child: Container(
-                    height: 4, width: 35,
-                    margin: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall),
-                    decoration: BoxDecoration(color: Theme.of(context).disabledColor, borderRadius: BorderRadius.circular(10)),
-                  ),
-                ) : const SizedBox(),
-
+                !ResponsiveHelper.isDesktop(context)
+                    ? InkWell(
+                        onTap: () => Get.back(),
+                        child: Container(
+                          height: 4,
+                          width: 35,
+                          margin: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall),
+                          decoration: BoxDecoration(
+                              color: Theme.of(context).disabledColor,
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                      )
+                    : const SizedBox(),
                 Flexible(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeLarge),
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
-
                       Row(children: [
                         Expanded(
-                          child: tabView(context:context, title: 'today'.tr, isSelected: checkoutController.selectedDateSlot == 0, onTap: (){
-                            checkoutController.updateDateSlot(0, Get.find<StoreController>().store!.orderPlaceToScheduleInterval);
-                          }),
+                          child: tabView(
+                              context: context,
+                              title: 'today'.tr,
+                              isSelected: checkoutController.selectedDateSlot == 0,
+                              onTap: () {
+                                checkoutController.updateDateSlot(0, Get.find<StoreController>().store!.orderPlaceToScheduleInterval);
+                              }),
                         ),
-
                         Expanded(
-                          child: tabView(context:context, title: 'tomorrow'.tr, isSelected: checkoutController.selectedDateSlot == 1, onTap: (){
-                            checkoutController.updateDateSlot(1, Get.find<StoreController>().store!.orderPlaceToScheduleInterval);
-                          }),
+                          child: tabView(
+                              context: context,
+                              title: 'tomorrow'.tr,
+                              isSelected: checkoutController.selectedDateSlot == 1,
+                              onTap: () {
+                                checkoutController.updateDateSlot(1, Get.find<StoreController>().store!.orderPlaceToScheduleInterval);
+                              }),
                         ),
                       ]),
                       const SizedBox(height: Dimensions.paddingSizeSmall),
-
                       Flexible(
                         child: ((checkoutController.selectedDateSlot == 0 && widget.todayClosed) || (checkoutController.selectedDateSlot == 1 && widget.tomorrowClosed))
                             ? Center(child: Text(widget.module!.showRestaurantText! ? 'restaurant_is_closed'.tr : 'store_is_closed'.tr))
-                            : checkoutController.timeSlots != null
-                            ? checkoutController.timeSlots!.isNotEmpty ? GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: Dimensions.paddingSizeSmall,
-                              crossAxisSpacing: Dimensions.paddingSizeExtraSmall,
-                              childAspectRatio: ResponsiveHelper.isDesktop(context) ? 4 : ResponsiveHelper.isMobile(context) ? 2.5 : 3,
-                            ),
-                            shrinkWrap: true,
-                            padding: const EdgeInsets.only(left: 2),
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: checkoutController.timeSlots!.length,
-                            itemBuilder: (context, index){
-                              String time = (index == 0 && checkoutController.selectedDateSlot == 0
-                                  && storeController.isStoreOpenNow(storeController.store!.active!, storeController.store!.schedules)
-                                  && (Get.find<SplashController>().configModel!.moduleConfig!.module!.orderPlaceToScheduleInterval! ? storeController.store!.orderPlaceToScheduleInterval == 0 : true))
-                                  ? 'instance'.tr : '${DateConverter.dateToTimeOnly(checkoutController.timeSlots![index].startTime!)} '
-                                  '- ${DateConverter.dateToTimeOnly(checkoutController.timeSlots![index].endTime!)}';
-                              return SlotWidget(
-                                title: time,
-                                isSelected: selectedTimeSlotIndex == index,
-                                onTap: () {
-                                  setState(() {
-                                    selectedTimeSlotIndex = index;
-                                    selectedTimeSlot = time;
-                                  });
-                                },
-                              );
-                            }) : Center(child: Text('no_slot_available'.tr)) : const Center(child: CircularProgressIndicator()),
+                            : slots.isNotEmpty
+                                ? GridView.builder(
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      mainAxisSpacing: Dimensions.paddingSizeSmall,
+                                      crossAxisSpacing: Dimensions.paddingSizeExtraSmall,
+                                      childAspectRatio: ResponsiveHelper.isDesktop(context)
+                                          ? 4
+                                          : ResponsiveHelper.isMobile(context)
+                                              ? 2.5
+                                              : 3,
+                                    ),
+                                    shrinkWrap: true,
+                                    padding: const EdgeInsets.only(left: 2),
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    itemCount: slots.length,
+                                    itemBuilder: (context, index) {
+                                      final time = slots[index];
+                                      return SlotWidget(
+                                        title: time,
+                                        isSelected: selectedTimeSlotIndex == index,
+                                        onTap: () {
+                                          setState(() {
+                                            selectedTimeSlotIndex = index;
+                                            selectedTimeSlot = time;
+                                          });
+                                        },
+                                      );
+                                    },
+                                  )
+                                : Center(child: Text('no_slot_available'.tr)),
                       ),
-
                     ]),
                   ),
                 ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeExtraLarge, vertical: Dimensions.paddingSizeSmall),
-                child: Row(children: [
-                  Expanded(
-                    child: CustomButton(
-                      radius: ResponsiveHelper.isDesktop(context) ?  Dimensions.radiusSmall : Dimensions.radiusDefault,
-                      height: ResponsiveHelper.isDesktop(context) ? 50 : null,
-                      isBold:  ResponsiveHelper.isDesktop(context) ? false : true,
-                      buttonText: 'cancel'.tr,
-                      color: Theme.of(context).disabledColor,
-                      onPressed: () => Get.back(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeExtraLarge, vertical: Dimensions.paddingSizeSmall),
+                  child: Row(children: [
+                    Expanded(
+                      child: CustomButton(
+                        radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
+                        height: ResponsiveHelper.isDesktop(context) ? 50 : null,
+                        isBold: ResponsiveHelper.isDesktop(context) ? false : true,
+                        buttonText: 'cancel'.tr,
+                        color: Theme.of(context).disabledColor,
+                        onPressed: () => Get.back(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: Dimensions.paddingSizeSmall),
-
-                  Expanded(
-                    child: CustomButton(
-                      radius: ResponsiveHelper.isDesktop(context) ?  Dimensions.radiusSmall : Dimensions.radiusDefault,
-                      height: ResponsiveHelper.isDesktop(context) ? 50 : null,
-                      isBold:  ResponsiveHelper.isDesktop(context) ? false : true,
-                      buttonText: 'schedule'.tr,
-                      onPressed: () {
-                        checkoutController.updateTimeSlot(selectedTimeSlotIndex);
-                        checkoutController.setPreferenceTimeForView(selectedTimeSlot);
-                        Get.back();
-                      },
+                    const SizedBox(width: Dimensions.paddingSizeSmall),
+                    Expanded(
+                      child: CustomButton(
+                        radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
+                        height: ResponsiveHelper.isDesktop(context) ? 50 : null,
+                        isBold: ResponsiveHelper.isDesktop(context) ? false : true,
+                        buttonText: 'schedule'.tr,
+                        onPressed: () {
+                          checkoutController.updateTimeSlot(selectedTimeSlotIndex);
+                          checkoutController.setPreferenceTimeForView(selectedTimeSlot);
+                          Get.back();
+                        },
+                      ),
                     ),
-                  ),
-                ]),
-              )],
-            ),
+                  ]),
+                )
+              ],),
           ),
         );
       });

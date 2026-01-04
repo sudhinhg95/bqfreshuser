@@ -168,8 +168,16 @@ class StoreCard extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: 3),
                           child: Text(
-                            discount > 0 ? '${(isRightSide || discountType == 'percent') ? '' : currencySymbol}$discount${discountType == 'percent' ? '%'
-                                : isRightSide ? currencySymbol : ''} ${'off'.tr}' : 'free_delivery'.tr,
+                            (() {
+                              String discountText = discount.toString();
+                              if (discountText.endsWith('.0')) {
+                                discountText = discountText.substring(0, discountText.length - 2);
+                              }
+                              return discount > 0
+                                  ? '${(isRightSide || discountType == 'percent') ? '' : currencySymbol}$discountText${discountType == 'percent' ? '%'
+                                      : isRightSide ? currencySymbol : ''} ${'off'.tr}'
+                                  : 'free_delivery'.tr;
+                            })(),
                             style: robotoMedium.copyWith(color: Theme.of(context).cardColor, fontSize: Dimensions.fontSizeSmall),
                             textAlign: TextAlign.center,
                           ),

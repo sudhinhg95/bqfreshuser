@@ -194,10 +194,13 @@ class BottomSection extends StatelessWidget {
             ]) : const SizedBox(),
 
             storeId == null ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${taxIncluded ? 'VAT Included'.tr : ''} ($taxPercentLabel%)', style: robotoRegular),
+              Text('${taxIncluded ? 'VAT Included'.tr : 'VAT'.tr} ($taxPercentLabel%)', style: robotoRegular),
               Text((taxIncluded ? '' : '(+) ') + PriceConverter.convertPrice(tax), style: robotoRegular, textDirection: TextDirection.ltr),
             ]) : const SizedBox(),
-            // SizedBox(height: storeId == null ? Dimensions.paddingSizeSmall : 0),
+            // Add consistent vertical spacing after the VAT row so
+            // the following rows (like delivery fee) don't appear
+            // visually stuck to it.
+            SizedBox(height: storeId == null ? Dimensions.paddingSizeSmall : 0),
 
             // Delivery man tips row and spacing hidden on checkout summary
             const SizedBox.shrink(),

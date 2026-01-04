@@ -78,12 +78,15 @@ class HomeScreen extends StatefulWidget {
         Get.find<FlashSaleController>().getFlashSale(reload, false);
       }
       if(module.moduleType.toString() == AppConstants.ecommerce) {
-        Get.find<ItemController>().getFeaturedCategoriesItemList(false, false);
         Get.find<FlashSaleController>().getFlashSale(reload, false);
         Get.find<BrandsController>().getBrandList();
       }
       Get.find<BannerController>().getPromotionalBannerList(reload);
       Get.find<ItemController>().getDiscountedItemList(reload, false, 'all');
+      // Load featured category + product data once so the
+      // new sub-category sections after Latest Items can use it
+      // across modules.
+      Get.find<ItemController>().getFeaturedCategoriesItemList(false, false);
       Get.find<CategoryController>().getCategoryList(reload);
       // Get.find<StoreController>().getPopularStoreList(reload, 'all', false);
       Get.find<CampaignController>().getBasicCampaignList(reload);
@@ -455,8 +458,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Stack(
                     children: [
                       SizedBox(
-                        // Increased height (~20% more) for a larger banner.
-                        height: 700,
+                        // Reduced popup height to better fit typical screens.
+                        height: MediaQuery.of(context).size.height * 0.6,
                         width: double.infinity,
                         child: Listener(
                           onPointerDown: (_) {
@@ -586,13 +589,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             });
                             return Image.network(
                               bannerUrl,
-                              // Use contain so full portrait/mobile photos fit in the popup
-                              // without being cropped.
-                              fit: BoxFit.contain,
+                              // Use cover so the image fills the
+                              // entire popup area in both width
+                              // and height.
+                              fit: BoxFit.cover,
                               width: double.infinity,
                               errorBuilder: (_, __, ___) => Image.asset(
                                 "assets/image/no_coupon.png",
-                                fit: BoxFit.contain,
+                                fit: BoxFit.cover,
                                 width: double.infinity,
                               ),
                             );
@@ -874,12 +878,26 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: GetBuilder<LocationController>(builder: (locationController) {
                               final address = AddressHelper.getUserAddressFromSharedPref();
                               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                // Always show a neutral location label instead of
-                                // the raw address type (e.g. "Others").
-                                Text(
-                                  'your_location'.tr,
-                                  style: robotoMedium.copyWith(color: Theme.of(context).textTheme.bodyLarge!.color, fontSize: Dimensions.fontSizeDefault),
-                                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                                // Location label with leading location icon.
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 18,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'your_location'.tr,
+                                      style: robotoMedium.copyWith(
+                                        color: Theme.of(context).textTheme.bodyLarge!.color,
+                                        fontSize: Dimensions.fontSizeDefault,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
 
                                 Row(children: [
@@ -960,11 +978,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: !showMobileModule ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
                         isGrocery ? const GroceryHomeScreen()
-                            : isPharmacy ? const PharmacyHomeScreen()
-                            : isFood ? const FoodHomeScreen()
-                            : isShop ? const ShopHomeScreen()
-                            : isTaxi ? const TaxiHomeScreen()
-                            : const SizedBox(),
+                          : isPharmacy ? const PharmacyHomeScreen()
+                          : isFood ? const FoodHomeScreen()
+                          : isShop ? const ShopHomeScreen()
+                          : isTaxi ? const TaxiHomeScreen()
+                          : const SizedBox(),
+
+                        // Coupon code banner at bottom hidden by request
+                        // REMOVE or COMMENT OUT the widget that displays the coupon code/banner here.
+                        // If you see a widget like: CouponBannerWidget() or similar, comment it out.
+                        // Example:
+                        // CouponBannerWidget(),
 
                       ]) : ModuleView(splashController: splashController),
                     )),

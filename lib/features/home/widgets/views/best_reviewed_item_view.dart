@@ -21,43 +21,10 @@ class _BestReviewItemViewState extends State<BestReviewItemView> {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ItemController>(builder: (itemController) {
-      List<Item>? reviewItemList = itemController.reviewedItemList;
-
-      return reviewItemList != null ? reviewItemList.isNotEmpty ? Column(children: [
-
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical : Dimensions.paddingSizeSmall, horizontal: Dimensions.paddingSizeDefault),
-          child: TitleWidget(
-            title: 'best_reviewed_item'.tr,
-            onTap: () => Get.toNamed(RouteHelper.getPopularItemRoute(false, false)),
-          ),
-        ),
-
-        SizedBox(
-          // Increased to align with other item carousels and clear overflow.
-          height: 246, width: Get.width,
-          child: ListView.builder(
-            controller: scrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
-            itemCount: reviewItemList.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
-                child: CustomInkWell(
-                  onTap: () => Get.find<ItemController>().navigateToItemPage(reviewItemList[index], context),
-                  child: ReviewItemCard(
-                    item: itemController.reviewedItemList![index],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ]) : const SizedBox() : const BestReviewItemShimmer();
-    });
+    // Best reviewed items are hidden from the home screen as requested.
+    // Returning an empty widget ensures this section does not render
+    // anywhere it might still be referenced.
+    return const SizedBox();
   }
 }
 

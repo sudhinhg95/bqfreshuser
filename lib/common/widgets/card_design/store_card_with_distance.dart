@@ -99,8 +99,16 @@ class StoreCardWithDistance extends StatelessWidget {
                               color: Theme.of(context).colorScheme.error.withOpacity( 0.8),
                             ),
                             child: Text(
-                              discount > 0 ? '${(isRightSide || discountType == 'percent') ? '' : currencySymbol}$discount${discountType == 'percent' ? '%'
-                                  : isRightSide ? currencySymbol : ''} ${'off'.tr}' : 'free_delivery'.tr,
+                              (() {
+                                String discountText = discount.toString();
+                                if (discountText.endsWith('.0')) {
+                                  discountText = discountText.substring(0, discountText.length - 2);
+                                }
+                                return discount > 0
+                                    ? '${(isRightSide || discountType == 'percent') ? '' : currencySymbol}$discountText${discountType == 'percent' ? '%'
+                                        : isRightSide ? currencySymbol : ''} ${'off'.tr}'
+                                    : 'free_delivery'.tr;
+                              })(),
                               style: robotoMedium.copyWith(color: Theme.of(context).cardColor, fontSize: Dimensions.fontSizeSmall),
                               textAlign: TextAlign.center,
                             ),

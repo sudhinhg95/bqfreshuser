@@ -173,6 +173,13 @@ class CartItemWidget extends StatelessWidget {
                               lineOriginalPrice = cart.item!.price! * cart.quantity!;
                             }
 
+                            // Decide whether this line actually has a
+                            // discount based on the computed prices,
+                            // not just the raw discount value, so that
+                            // every discounted cart line shows the
+                            // strikethrough consistently.
+                            final bool hasDiscount = lineOriginalPrice > linePrice;
+
                             return Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -181,8 +188,8 @@ class CartItemWidget extends StatelessWidget {
                                   style: robotoBold.copyWith(fontSize: Dimensions.fontSizeSmall),
                                   textDirection: TextDirection.ltr,
                                 ),
-                                SizedBox(width: (discount ?? 0) > 0 ? Dimensions.paddingSizeExtraSmall : 0),
-                                (discount ?? 0) > 0
+                                SizedBox(width: hasDiscount ? Dimensions.paddingSizeExtraSmall : 0),
+                                hasDiscount
                                     ? Text(
                                         PriceConverter.convertPrice(lineOriginalPrice),
                                         textDirection: TextDirection.ltr,

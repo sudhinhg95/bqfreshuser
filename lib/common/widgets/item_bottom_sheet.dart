@@ -498,6 +498,7 @@ class _ItemBottomSheetState extends State<ItemBottomSheet> {
                                       priceWithDiscountAndAddons.toString(), '', variation != null ? [variation] : null,
                                       Get.find<SplashController>().getModuleConfig(widget.item!.moduleType).newVariation! ? variations : null,
                                       itemController.quantity, listOfAddOnId, addOnsList, listOfAddOnQty, 'Item',
+                                      taxFlag: (widget.item!.tax != null && widget.item!.tax == 1) ? 1 : 0,
                                     );
 
                                     if(widget.isCampaign) {

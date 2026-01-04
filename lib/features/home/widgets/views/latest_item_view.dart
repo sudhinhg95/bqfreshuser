@@ -19,54 +19,50 @@ class LatestItemView extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isEcommerce = Get.find<SplashController>().module != null && Get.find<SplashController>().module!.moduleType.toString() == AppConstants.ecommerce;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeDefault),
-      child: GetBuilder<ItemController>(builder: (itemController) {
-        List? itemList = itemController.latestItemList;
-
-        return (itemList != null)
-            ? itemList.isNotEmpty
-                ? Container(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    child: Column(children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: Dimensions.paddingSizeDefault, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
-                        child: TitleWidget(
-                          title: isShop ? 'Latest Products'.tr : 'Latest Items'.tr,
-                          image: Images.mostPopularIcon,
-                          onTap: () => Get.toNamed(RouteHelper.getLatestItemRoute()),
-                        ),
-                      ),
-
-                      SizedBox(
-                        // Increased a bit more to clear 7px bottom overflow.
-                        height: 246,
-                        width: Get.width,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
-                          itemCount: itemList.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
-                              child: ItemCard(
-                                isPopularItem: isEcommerce ? false : true,
-                                isPopularItemCart: true,
-                                item: itemList[index],
-                                isShop: isShop,
-                                isFood: isFood,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-
-                    ]),
-                  )
-                : const SizedBox()
-            : const ItemShimmerView(isPopularItem: true);
-      }),
-    );
+    return GetBuilder<ItemController>(builder: (itemController) {
+      List? itemList = itemController.latestItemList;
+      if (itemList == null || itemList.isEmpty) {
+        // No latest items, so don't add any extra spacing
+        return const SizedBox();
+      }
+      return Padding(
+        padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
+        child: Container(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall, left: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault),
+              child: TitleWidget(
+                title: isShop ? 'Latest Products'.tr : 'Latest Items'.tr,
+                image: Images.mostPopularIcon,
+                onTap: () => Get.toNamed(RouteHelper.getLatestItemRoute()),
+              ),
+            ),
+            SizedBox(
+              height: 246,
+              width: Get.width,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(left: Dimensions.paddingSizeDefault),
+                itemCount: itemList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeSmall, right: Dimensions.paddingSizeSmall, top: Dimensions.paddingSizeSmall),
+                    child: ItemCard(
+                      isPopularItem: isEcommerce ? false : true,
+                      isPopularItemCart: true,
+                      item: itemList[index],
+                      isShop: isShop,
+                      isFood: isFood,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ]),
+        ),
+      );
+    });
   }
 }

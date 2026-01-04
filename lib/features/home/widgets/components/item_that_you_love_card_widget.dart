@@ -4,7 +4,6 @@ import 'package:sixam_mart/common/widgets/custom_asset_image_widget.dart';
 import 'package:sixam_mart/common/widgets/custom_ink_well.dart';
 import 'package:sixam_mart/common/widgets/hover/text_hover.dart';
 import 'package:sixam_mart/features/item/controllers/item_controller.dart';
-import 'package:sixam_mart/features/language/controllers/language_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
@@ -32,7 +31,7 @@ class ItemThatYouLoveCard extends StatelessWidget {
       isItem: true,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+          borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
           color: Theme.of(context).cardColor,
           boxShadow: ResponsiveHelper.isMobile(context) ? [BoxShadow(color: Colors.grey.withOpacity( 0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 1))] : null,
         ),
@@ -41,56 +40,68 @@ class ItemThatYouLoveCard extends StatelessWidget {
           radius: Dimensions.radiusDefault,
           child: TextHover(
             builder: (hovered) {
-              return Column(children: [
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
 
-                Expanded(
-                  flex: 7,
-                  child: Stack(clipBehavior: Clip.none, children: [
-
-                    Padding(
-                      padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-                        child: CustomImage(
-                          isHovered: hovered,
-                          image: '${item.imageFullUrl}',
-                          fit: BoxFit.cover, width: double.infinity, height: double.infinity,
+                  // Image section – fixed height similar to Latest Items `ItemCard`.
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                    ),
+                    child: SizedBox(
+                      height: 120,
+                      child: Stack(clipBehavior: Clip.none, children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
+                          child: CustomImage(
+                            isHovered: hovered,
+                            image: '${item.imageFullUrl}',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 120,
+                          ),
                         ),
-                      ),
+
+                        DiscountTag(
+                          discount: discount,
+                          discountType: discountType,
+                          freeDelivery: false,
+                        ),
+
+                        item.isStoreHalalActive! && item.isHalalItem! ? const Positioned(
+                          top: 40, right: 15,
+                          child: CustomAssetImageWidget(
+                            Images.halalTag,
+                            height: 20, width: 20,
+                          ),
+                        ) : const SizedBox(),
+
+                        AddFavouriteView(
+                          item: item,
+                        ),
+
+                        Get.find<ItemController>().isAvailable(item) ? const SizedBox() : const NotAvailableWidget(),
+                      ]),
                     ),
+                  ),
 
-                    DiscountTag(
-                      discount: discount,
-                      discountType: discountType,
-                      freeDelivery: false,
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: Dimensions.paddingSizeSmall,
+                      right: Dimensions.paddingSizeSmall,
+                      // Match Latest Items card bottom padding to avoid
+                      // vertical overflow within the 246px list height.
+                      bottom: Dimensions.paddingSizeExtraSmall,
                     ),
-
-                    item.isStoreHalalActive! && item.isHalalItem! ? const Positioned(
-                      top: 40, right: 15,
-                      child: CustomAssetImageWidget(
-                        Images.halalTag,
-                        height: 20, width: 20,
-                      ),
-                    ) : const SizedBox(),
-
-                    AddFavouriteView(
-                      item: item,
-                    ),
-
-                    Get.find<ItemController>().isAvailable(item) ? const SizedBox() : const NotAvailableWidget(),
-                  ]),
-                ),
-                const SizedBox(height: Dimensions.paddingSizeExtraSmall),
-
-                Expanded(
-                  flex: Get.find<LocalizationController>().isLtr ? 3 : 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        // Item name (match Most Popular style)
+                        // Item name (match Most Popular / Latest Items style)
                         Text(
                           item.name ?? '',
                           style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeDefault),
@@ -100,7 +111,7 @@ class ItemThatYouLoveCard extends StatelessWidget {
 
                         const SizedBox(height: 4),
 
-                        // Single-line description under name, similar to ItemCard
+                        // Single-line description under name
                         if (item.description != null && item.description!.isNotEmpty)
                           Text(
                             item.description!,
@@ -115,8 +126,7 @@ class ItemThatYouLoveCard extends StatelessWidget {
                         const SizedBox(height: 6),
 
                         Row(children: [
-                          // Price styling same as Most Popular / ItemCard (small currency, normal amount)
-                          // Use the same base price as listing cards so values match.
+                          // Price styling same as Latest Items / `ItemCard`.
                           Expanded(
                             child: Builder(builder: (_) {
                               final String fullPrice = PriceConverter.convertPrice(
@@ -179,8 +189,8 @@ class ItemThatYouLoveCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
-              ]);
+                ],
+              );
             }
           ),
         ),

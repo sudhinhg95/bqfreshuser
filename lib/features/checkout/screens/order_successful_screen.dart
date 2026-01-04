@@ -103,7 +103,7 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
 
                 Text(
                   success ? parcel ? 'you_placed_the_parcel_request_successfully'.tr
-                      : 'you_placed_the_order_successfully'.tr : 'your_order_is_failed_to_place'.tr,
+                      : 'You placed the order successfully.' : 'your_order_is_failed_to_place'.tr,
                   style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge),
                 ),
                 const SizedBox(height: Dimensions.paddingSizeSmall),
@@ -140,7 +140,7 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
                   child: Text(
                     success ? parcel ? 'your_parcel_request_is_placed_successfully'.tr
-                        : 'your_order_is_placed_successfully'.tr : 'your_order_is_failed_to_place_because'.tr,
+                      : 'Your order is placed successfully. We will start our delivery process and you will receive your item soon.' : 'your_order_is_failed_to_place_because'.tr,
                     style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
                     textAlign: TextAlign.center,
                   ),

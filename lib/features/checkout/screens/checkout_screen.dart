@@ -169,8 +169,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     Module? module = Get.find<SplashController>().configModel!.moduleConfig!.module;
+
     bool guestCheckoutPermission = AuthHelper.isGuestLoggedIn() && Get.find<SplashController>().configModel!.guestCheckoutStatus!;
     bool isLoggedIn = AuthHelper.isLoggedIn();
 
@@ -207,6 +207,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
           );
           double couponDiscount = PriceConverter.toFixed(couponController.discount!);
           bool taxIncluded = Get.find<SplashController>().configModel!.taxIncluded == 1;
+    //       bool taxIncluded =
+    // Get.find<SplashController>().configModel!.taxIncluded == 1;
 
           double subTotal = _calculateSubTotal(price: price, addOns: addOns, variations: variations, cartList: _cartList);
 
@@ -217,24 +219,46 @@ class CheckoutScreenState extends State<CheckoutScreen> {
             couponDiscount: couponDiscount, cartList: _cartList, referralDiscount: referralDiscount,
           );
 
+          // Calculate tax only on items where item.tax == 1 (tax-enabled items).
+          double taxableOrderAmount = _calculateTaxableOrderAmount(
+            cartList: _cartList,
+            couponDiscount: couponDiscount,
+            referralDiscount: referralDiscount,
+          );
+
           double tax = _calculateTax(
-            taxIncluded: taxIncluded, orderAmount: orderAmount, taxPercent: _taxPercent,
+            taxIncluded: taxIncluded,
+            orderAmount: taxableOrderAmount,
+            taxPercent: _taxPercent,
           );
 
           double additionalCharge =  Get.find<SplashController>().configModel!.additionalChargeStatus!
               ? Get.find<SplashController>().configModel!.additionCharge! : 0;
           double originalCharge = _calculateOriginalDeliveryCharge(
-            store: checkoutController.store, address: AddressHelper.getUserAddressFromSharedPref()!,
-            distance: checkoutController.distance, extraCharge: checkoutController.extraCharge,
+            store: checkoutController.store,
+            address: AddressHelper.getUserAddressFromSharedPref()!,
+            distance: checkoutController.distance,
+            extraCharge: checkoutController.extraCharge,
           );
           double deliveryCharge = _calculateDeliveryCharge(
             store: checkoutController.store, address: AddressHelper.getUserAddressFromSharedPref()!, distance: checkoutController.distance,
             extraCharge: checkoutController.extraCharge, orderType: checkoutController.orderType!, orderAmount: orderAmount,
           );
 
-          if(checkoutController.orderType != 'take_away' && checkoutController.store != null) {
-            _deliveryChargeForView = (checkoutController.orderType == 'delivery' ? checkoutController.store!.freeDelivery! : true) ? 'free'.tr
-                : deliveryCharge != -1 ? PriceConverter.convertPrice(deliveryCharge) : 'calculating'.tr;
+          if (checkoutController.orderType != 'take_away' && checkoutController.store != null) {
+            // Show the actual calculated delivery charge with 3 decimals;
+            // only show "Free" when the computed charge is exactly zero.
+            if (deliveryCharge > 0) {
+              final String formattedDelivery = deliveryCharge.toStringAsFixed(3);
+              _deliveryChargeForView = PriceConverter.convertPrice(
+                deliveryCharge,
+                formatedStringPrice: formattedDelivery,
+              );
+            } else if (deliveryCharge == 0) {
+              _deliveryChargeForView = 'free'.tr;
+            } else {
+              _deliveryChargeForView = 'calculating'.tr;
+            }
           }
 
           double extraPackagingCharge = _calculateExtraPackagingCharge(checkoutController);
@@ -523,7 +547,9 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                   cart.discountedPrice.toString(), '',
                   Get.find<SplashController>().getModuleConfig(cart.item!.moduleType).newVariation! ? null : cart.variation,
                   Get.find<SplashController>().getModuleConfig(cart.item!.moduleType).newVariation! ? variations : null,
-                  cart.quantity, addOnIdList, cart.addOns, addOnQtyList, 'Item', itemType: !widget.fromCart ? "AppModelsItemCampaign" : null,
+                  cart.quantity, addOnIdList, cart.addOns, addOnQtyList, 'Item',
+                  itemType: !widget.fromCart ? "AppModelsItemCampaign" : null,
+                  taxFlag: (cart.item!.tax != null && cart.item!.tax == 1) ? 1 : 0,
                 ));
               }
 
@@ -865,8 +891,69 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     return PriceConverter.toFixed(orderAmount);
   }
 
+  /// Calculates the portion of the order amount that is taxable, based on
+  /// per-item tax flag: if item.tax == 1, that line is considered taxable.
+  ///
+  /// We start from each cart line's discounted price (already including
+  /// item/store discounts, add-ons, and variations), then proportionally
+  /// allocate coupon and referral discounts to taxable lines only.
+  double _calculateTaxableOrderAmount({
+    required List<CartModel?>? cartList,
+    required double couponDiscount,
+    required double referralDiscount,
+  }) {
+    if (cartList == null || cartList.isEmpty) {
+      return 0;
+    }
+
+    double totalNetBeforeGlobalDiscount = 0;
+    double taxableNetBeforeGlobalDiscount = 0;
+
+    for (final cartModel in cartList) {
+      if (cartModel == null || cartModel.item == null) continue;
+
+      // In this setup, the item price we receive from the cart
+      // already represents the full line total (i.e. unit price
+      // multiplied by quantity, including variations/add-ons and
+      // item-level discounts). We should NOT multiply by quantity
+      // again when building the taxable amount.
+      double lineBase;
+      if (cartModel.discountedPrice != null) {
+        lineBase = cartModel.discountedPrice!;
+      } else {
+        lineBase = cartModel.price ?? 0;
+      }
+
+      if (lineBase <= 0) continue;
+
+      totalNetBeforeGlobalDiscount += lineBase;
+
+      // Treat item.tax == 1 as "tax enabled".
+      final double itemTaxFlag = cartModel.item!.tax ?? 0;
+      if (itemTaxFlag == 1) {
+        taxableNetBeforeGlobalDiscount += lineBase;
+      }
+    }
+
+    if (totalNetBeforeGlobalDiscount <= 0 || taxableNetBeforeGlobalDiscount <= 0) {
+      return 0;
+    }
+
+    // Distribute coupon & referral discounts proportionally to taxable lines.
+    final double taxableRatio = taxableNetBeforeGlobalDiscount / totalNetBeforeGlobalDiscount;
+    final double taxableCouponDiscount = couponDiscount * taxableRatio;
+    final double taxableReferralDiscount = referralDiscount * taxableRatio;
+
+    final double taxableOrderAmount = taxableNetBeforeGlobalDiscount
+        - taxableCouponDiscount
+        - taxableReferralDiscount;
+
+    return PriceConverter.toFixed(taxableOrderAmount > 0 ? taxableOrderAmount : 0);
+  }
+
   double _calculateTax({required bool taxIncluded, required double orderAmount, required double? taxPercent}) {
     double tax = 0;
+    print('-----order amount--$orderAmount---taxPercent--$taxPercent---taxincluded--$taxIncluded');
     if(taxIncluded){
       tax = orderAmount * taxPercent! /(100 + taxPercent);
     }else{
@@ -914,10 +1001,30 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     double perKmCharge = 0;
     double minimumCharge = 0;
     double? maximumCharge = 0;
+
+      print('STORE DEBUG -> '
+      'id=${store?.id}, '
+      'name=${store?.name}, '
+      'zoneId=${store?.zoneId}, '
+      'selfDeliverySystem=${store?.selfDeliverySystem}, '
+      'perKm=${store?.perKmShippingCharge}, '
+      'minCharge=${store?.minimumShippingCharge}, '
+      'maxCharge=${store?.maximumShippingCharge}, '
+      'freeDelivery=${store?.freeDelivery}, '
+      'distance=$distance');
+
+    // Free delivery within 3 km radius: only calculate
+    // distance-based charge when distance is above 3 km.
+    if (store != null && distance != null && distance != -1 && distance <= 3) {
+      return 0;
+    }
+
     if(store != null && distance != null && distance != -1 && store.selfDeliverySystem == 1) {
+
       perKmCharge = store.perKmShippingCharge!;
       minimumCharge = store.minimumShippingCharge!;
       maximumCharge = store.maximumShippingCharge;
+
     }else if(store != null && distance != null && distance != -1 && moduleData != null) {
       perKmCharge = moduleData.perKmShippingCharge!;
       minimumCharge = moduleData.minimumShippingCharge!;
@@ -942,19 +1049,21 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       badWeatherChargeForToolTip = (deliveryCharge * (zoneData.increaseDeliveryFee!/100));
       deliveryCharge = deliveryCharge + (deliveryCharge * (zoneData.increaseDeliveryFee!/100));
     }
-
     return deliveryCharge;
   }
 
   double _calculateDeliveryCharge({required Store? store, required AddressModel address, required double? distance, required double? extraCharge, required double orderAmount, required String orderType}) {
-    double deliveryCharge = _calculateOriginalDeliveryCharge(store: store, address: address, distance: distance, extraCharge: extraCharge);
+    double deliveryCharge = _calculateOriginalDeliveryCharge(
+      store: store,
+      address: address,
+      distance: distance,
+      extraCharge: extraCharge,
+    );
 
-    ConfigModel? configModel = Get.find<SplashController>().configModel;
-
-    if (orderType == 'take_away' || (store != null && store.freeDelivery!)
-        || (configModel?.adminFreeDelivery?.status == true && (configModel?.adminFreeDelivery?.type != null && configModel?.adminFreeDelivery?.type == 'free_delivery_to_all_store'))
-        || (configModel?.adminFreeDelivery?.status == true && (configModel?.adminFreeDelivery?.type != null &&  configModel?.adminFreeDelivery?.type == 'free_delivery_by_order_amount') && (configModel!.adminFreeDelivery?.freeDeliveryOver != null && orderAmount >= configModel.adminFreeDelivery!.freeDeliveryOver!))
-        || Get.find<CouponController>().freeDelivery || (AuthHelper.isGuestLoggedIn() && (Get.find<CheckoutController>().guestAddress == null && Get.find<CheckoutController>().orderType != 'take_away'))) {
+    // Only make take-away orders free by definition. Do not
+    // override the calculated deliveryCharge to 0 based on
+    // store/admin/coupon flags so that the real fee is shown.
+    if (orderType == 'take_away') {
       deliveryCharge = 0;
     }
 
