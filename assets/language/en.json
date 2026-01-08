@@ -1511,7 +1511,7 @@
 
   "additional_discount" : "additional discount",
   "forgot_your_password" : "Forgot Your Password",
-  "please_enter_the_registered_phone_where_you_want" : "Please enter the registered phone where you want to sent your password recovery OTP.",
+  "please_enter_the_registered_phone_where_you_want" : "Please enter the registered phone number to reset your password.",
   "please_enter_the_registered_email_where_you_want" : "Please enter the registered email where you want to sent your password recovery OTP.",
   "request_otp" : "Request OTP",
   "back_to" : "Back to",

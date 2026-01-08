@@ -17,13 +17,25 @@ class VerificationRepository implements VerificationRepositoryInterface{
 
   @override
   Future<ResponseModel> forgetPassword({String? phone, String? email}) async {
-    String? deviceToken = await Get.find<AuthController>().saveDeviceToken();
-    Response response = await apiClient.postData(AppConstants.forgetPasswordUri,
-      {"phone": phone, "email": email, "verification_method" : phone != null && phone.isNotEmpty ? 'phone' : 'email', "cm_firebase_token": deviceToken!}, handleError: false);
+    final String deviceToken = (await Get.find<AuthController>().saveDeviceToken()) ?? '';
+    Response response = await apiClient.postData(
+      AppConstants.forgetPasswordUri,
+      {
+        "phone": phone,
+        "email": email,
+        "verification_method": phone != null && phone.isNotEmpty ? 'phone' : 'email',
+        "cm_firebase_token": deviceToken,
+      },
+      handleError: false,
+    );
     if (response.statusCode == 200) {
       return ResponseModel(true, response.body["message"]);
     } else {
-      return ResponseModel(false, response.statusText);
+      final dynamic body = response.body;
+      final String msg = (body is Map && body['message'] != null && body['message'].toString().isNotEmpty)
+          ? body['message']
+          : (response.statusText ?? '');
+      return ResponseModel(false, msg);
     }
   }
 

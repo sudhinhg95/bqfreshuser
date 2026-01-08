@@ -112,6 +112,8 @@ class AppConstants {
   static const String tripPlaceUri = '/api/v1/trip/place';
   static const String runningTripUri = '/api/v1/trip/list';
   static const String vehicleChargeUri = '/api/v1/vehicle/extra_charge';
+  // Delivery charge fixed by block number
+  static const String blockDeliveryChargeUri = '/api/v1/delivery/block-charge';
   static const String vehiclesUri = '/api/v1/get-vehicles';
   static const String storeRecommendedItemUri = '/api/v1/items/recommended';
   static const String orderCancellationUri = '/api/v1/customer/order/cancellation-reasons';

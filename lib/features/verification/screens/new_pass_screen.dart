@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
+import 'package:local_auth/local_auth.dart';
 
 class NewPassScreen extends StatefulWidget {
   final String? resetToken;
@@ -32,6 +33,7 @@ class _NewPassScreenState extends State<NewPassScreen> {
   final FocusNode _newPasswordFocus = FocusNode();
   final FocusNode _confirmPasswordFocus = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  final LocalAuthentication _localAuth = LocalAuthentication();
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +124,7 @@ class _NewPassScreenState extends State<NewPassScreen> {
     );
   }
 
-  void _onPressedPasswordChange() {
+  Future<void> _onPressedPasswordChange() async {
     String password = _newPasswordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
     if (password.isEmpty) {
@@ -135,7 +137,29 @@ class _NewPassScreenState extends State<NewPassScreen> {
       if(widget.fromPasswordChange) {
         _changeUserPassword(password);
       }else {
-        _resetUserPassword(password, confirmPassword);
+        bool shouldUseBiometric = (GetPlatform.isAndroid || GetPlatform.isIOS);
+        bool proceed = true;
+        if(shouldUseBiometric) {
+          try {
+            final bool isSupported = await _localAuth.isDeviceSupported();
+            final bool canCheck = await _localAuth.canCheckBiometrics;
+            if(isSupported && canCheck) {
+              proceed = await _localAuth.authenticate(
+                localizedReason: 'Verify your identity to reset password',
+                options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+              );
+              if(!proceed) {
+                showCustomSnackBar('sorry_something_went_wrong'.tr);
+              }
+            }
+          } catch (_) {
+            proceed = true; // Fallback to normal flow on exceptions
+          }
+        }
+
+        if(proceed) {
+          _resetUserPassword(password, confirmPassword);
+        }
       }
     }
   }
@@ -156,7 +180,7 @@ class _NewPassScreenState extends State<NewPassScreen> {
   void _resetUserPassword(String password, String confirmPassword) {
     String? number = '';
     if(widget.number != null && widget.number != 'null' && widget.number!.isNotEmpty) {
-      number = widget.number!.startsWith('+') ? widget.number : '+${widget.number!.substring(1, widget.number!.length)}';
+      number = widget.number!.startsWith('+') ? widget.number : '+${widget.number!}';
     }
     Get.find<VerificationController>().resetPassword(resetToken: widget.resetToken, phone: number, email: widget.email, password: password, confirmPassword: confirmPassword).then((value) {
       if (value.isSuccess) {

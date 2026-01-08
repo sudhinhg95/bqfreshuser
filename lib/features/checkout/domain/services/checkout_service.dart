@@ -110,6 +110,11 @@ class CheckoutService implements CheckoutServiceInterface {
   }
 
   @override
+  Future<double?> getBlockDeliveryCharge(int storeId, String block) async {
+    return await checkoutRepositoryInterface.getBlockDeliveryCharge(storeId: storeId, block: block);
+  }
+
+  @override
   Future<Response> placeOrder(PlaceOrderBodyModel orderBody, List<MultipartBody> orderAttachment) async {
     return await checkoutRepositoryInterface.placeOrder(orderBody, orderAttachment);
   }

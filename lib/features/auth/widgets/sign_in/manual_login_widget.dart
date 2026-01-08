@@ -127,17 +127,9 @@ class ManualLoginWidget extends StatelessWidget {
           TextButton(
             style: TextButton.styleFrom(padding: EdgeInsets.zero),
             onPressed: () {
-              // Check if forget-password via phone or email is enabled in config
-              final splashController = Get.find<SplashController>();
-              final isPhoneEnabled = splashController.configModel!.centralizeLoginSetup!.phoneVerificationStatus! && (splashController.configModel!.isSmsActive! || splashController.configModel!.firebaseOtpVerification!);
-              final isEmailEnabled = splashController.configModel!.centralizeLoginSetup!.emailVerificationStatus! && splashController.configModel!.isMailActive!;
-              if (isPhoneEnabled || isEmailEnabled) {
-                Get.toNamed(RouteHelper.getForgotPassRoute());
-              } else {
-                // Prevent showing the generic error screen; guide user to support
-                showCustomSnackBar('please contact support'.tr);
-                Get.toNamed(RouteHelper.getSupportRoute());
-              }
+              // Always navigate to the forgot password flow;
+              // the screen itself will handle availability and messaging.
+              Get.toNamed(RouteHelper.getForgotPassRoute());
             },
             child: Text('${'forgot_password'.tr}?', style: robotoRegular.copyWith(color: Theme.of(context).primaryColor)),
           ),
@@ -294,24 +286,11 @@ class ManualLoginWidget extends StatelessWidget {
               TextButton(
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
                 onPressed: () {
-                  final splashController = Get.find<SplashController>();
-                  final isPhoneEnabled = splashController.configModel!.centralizeLoginSetup!.phoneVerificationStatus! && (splashController.configModel!.isSmsActive! || splashController.configModel!.firebaseOtpVerification!);
-                  final isEmailEnabled = splashController.configModel!.centralizeLoginSetup!.emailVerificationStatus! && splashController.configModel!.isMailActive!;
                   if(isDesktop) {
-                    if (isPhoneEnabled || isEmailEnabled) {
-                      Get.back();
-                      Get.dialog(const Center(child: ForgetPassScreen(fromDialog: true)));
-                    } else {
-                      showCustomSnackBar('please contact support'.tr);
-                      Get.toNamed(RouteHelper.getSupportRoute());
-                    }
+                    Get.back();
+                    Get.dialog(const Center(child: ForgetPassScreen(fromDialog: true)));
                   } else {
-                    if (isPhoneEnabled || isEmailEnabled) {
-                      Get.toNamed(RouteHelper.getForgotPassRoute());
-                    } else {
-                      showCustomSnackBar('please contact support'.tr);
-                      Get.toNamed(RouteHelper.getSupportRoute());
-                    }
+                    Get.toNamed(RouteHelper.getForgotPassRoute());
                   }
                 },
                 child: Text('${'forgot_password'.tr}?', style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor)),

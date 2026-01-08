@@ -52,6 +52,34 @@ class CheckoutRepository implements CheckoutRepositoryInterface {
   }
 
   @override
+  Future<double?> getBlockDeliveryCharge({required int storeId, required String block}) async {
+    try {
+      final encodedBlock = Uri.encodeComponent(block);
+      final Response response = await apiClient.getData(
+        '${AppConstants.blockDeliveryChargeUri}?store_id=$storeId&block=$encodedBlock',
+        handleError: false,
+      );
+      if (response.statusCode == 200) {
+        final body = response.body;
+        if (body is num) return body.toDouble();
+        if (body is String) {
+          final parsed = double.tryParse(body);
+          if (parsed != null) return parsed;
+        }
+        if (body is Map) {
+          final v = body['charge'] ?? body['delivery_charge'] ?? body['data'];
+          if (v is num) return v.toDouble();
+          if (v is String) {
+            final parsed = double.tryParse(v);
+            if (parsed != null) return parsed;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  @override
   Future<Response> placeOrder(PlaceOrderBodyModel orderBody, List<MultipartBody>? orderAttachment) async {
     return await apiClient.postMultipartData(AppConstants.placeOrderUri, orderBody.toJson(), orderAttachment ?? [], handleError: false);
   }

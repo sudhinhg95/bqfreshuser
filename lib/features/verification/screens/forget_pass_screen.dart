@@ -7,6 +7,7 @@ import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
 import 'package:sixam_mart/features/verification/controllers/verification_controller.dart';
 import 'package:sixam_mart/features/verification/screens/verification_screen.dart';
+// removed unused imports after simplifying flow
 import 'package:sixam_mart/helper/custom_validator.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
@@ -32,19 +33,24 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _numberController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final FocusNode _numberFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _newPasswordFocusNode = FocusNode();
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
   String? _countryDialCode = CountryCode.fromCountryCode(Get.find<SplashController>().configModel!.country!).dialCode;
   GlobalKey<FormState>? _formKeyLogin;
   bool isEmail = false;
-  bool isPhone = false;
+  bool isPhone = true; // Force phone-based flow without OTP
 
   @override
   void initState() {
     super.initState();
 
-    isPhone = Get.find<SplashController>().configModel!.centralizeLoginSetup!.phoneVerificationStatus! && (Get.find<SplashController>().configModel!.isSmsActive! || Get.find<SplashController>().configModel!.firebaseOtpVerification!);
-    isEmail = Get.find<SplashController>().configModel!.centralizeLoginSetup!.emailVerificationStatus! && Get.find<SplashController>().configModel!.isMailActive!;
+    // Always use phone-only flow without OTP, per requirement
+    isPhone = true;
+    isEmail = false;
 
     _formKeyLogin = GlobalKey<FormState>();
     if (!kIsWeb) {
@@ -57,7 +63,11 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
   @override
   void dispose() {
     _numberController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     _numberFocusNode.dispose();
+    _newPasswordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
@@ -87,7 +97,8 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
                   ),
                 ) : const SizedBox(),
 
-                (isPhone || isEmail) ? Padding(
+                // Simplified phone-only reset: phone + current password + new password + confirm
+                Padding(
                   padding: widget.fromDialog ? const EdgeInsets.all(Dimensions.paddingSizeExtremeLarge) : context.width > 700 ? const EdgeInsets.all(Dimensions.paddingSizeDefault) : const EdgeInsets.all(Dimensions.paddingSizeLarge),
                   child: Column(children: [
 
@@ -101,41 +112,51 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
 
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
-                      child: Text(
-                        isPhone ? 'please_enter_the_registered_phone_where_you_want'.tr : 'please_enter_the_registered_email_where_you_want'.tr,
-                        style: robotoRegular.copyWith(fontSize: widget.fromDialog ? Dimensions.fontSizeSmall : null, color: Theme.of(context).hintColor), textAlign: TextAlign.center,
-                      ),
+                      child: Text('please_enter_the_registered_phone_where_you_want'.tr, style: robotoRegular.copyWith(fontSize: widget.fromDialog ? Dimensions.fontSizeSmall : null, color: Theme.of(context).hintColor), textAlign: TextAlign.center),
                     ),
                     const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
 
                     Form(
                       key: _formKeyLogin,
-                      child: isPhone ? CustomTextField(
-                        titleText: 'xxx-xxx-xxxxx'.tr,
-                        controller: _numberController,
-                        focusNode: _numberFocusNode,
-                        inputType: TextInputType.phone,
-                        inputAction: TextInputAction.done,
-                        isPhone: true,
-                        onCountryChanged: (CountryCode countryCode) {
-                          _countryDialCode = countryCode.dialCode;
-                        },
-                        countryDialCode: CountryCode.fromCountryCode(Get.find<SplashController>().configModel!.country!).code ?? Get.find<LocalizationController>().locale.countryCode,
-                        onSubmit: (text) => GetPlatform.isWeb ? _onPressedForgetPass(_countryDialCode!) : null,
-                        labelText: 'phone'.tr,
-                        validator: (value) => ValidateCheck.validateEmptyText(value, null),
-                      ) : CustomTextField(
-                        titleText: 'enter_email'.tr,
-                        labelText: 'email'.tr,
-                        showLabelText: true,
-                        required: true,
-                        controller: _emailController,
-                        focusNode: _emailFocusNode,
-                        inputType: TextInputType.emailAddress,
-                        inputAction: TextInputAction.done,
-                        prefixIcon: CupertinoIcons.mail_solid,
-                        validator: (value) => ValidateCheck.validateEmail(value),
-                      ),
+                      child: Column(children: [
+                        CustomTextField(
+                          titleText: 'xxx-xxx-xxxxx'.tr,
+                          controller: _numberController,
+                          focusNode: _numberFocusNode,
+                          inputType: TextInputType.phone,
+                          inputAction: TextInputAction.next,
+                          isPhone: true,
+                          onCountryChanged: (CountryCode countryCode) { _countryDialCode = countryCode.dialCode; },
+                          countryDialCode: CountryCode.fromCountryCode(Get.find<SplashController>().configModel!.country!).code ?? Get.find<LocalizationController>().locale.countryCode,
+                          labelText: 'phone'.tr,
+                          validator: (value) => ValidateCheck.validateEmptyText(value, null),
+                        ),
+                        const SizedBox(height: Dimensions.paddingSizeLarge),
+                        // Removed current password field per requirement
+                        CustomTextField(
+                          titleText: '8+characters'.tr,
+                          controller: _newPasswordController,
+                          focusNode: _newPasswordFocusNode,
+                          inputType: TextInputType.visiblePassword,
+                          inputAction: TextInputAction.next,
+                          prefixIcon: Icons.lock,
+                          isPassword: true,
+                          labelText: 'new_password'.tr,
+                          validator: (value) => ValidateCheck.validateEmptyText(value, 'please_enter_new_password'.tr),
+                        ),
+                        const SizedBox(height: Dimensions.paddingSizeLarge),
+                        CustomTextField(
+                          titleText: '8+characters'.tr,
+                          controller: _confirmPasswordController,
+                          focusNode: _confirmPasswordFocusNode,
+                          inputType: TextInputType.visiblePassword,
+                          inputAction: TextInputAction.done,
+                          prefixIcon: Icons.lock,
+                          isPassword: true,
+                          labelText: 'confirm_password'.tr,
+                          validator: (value) => ValidateCheck.validateEmptyText(value, 'please_enter_confirm_password'.tr),
+                        ),
+                      ]),
                     ),
 
                     const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
@@ -144,9 +165,9 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
                       return GetBuilder<AuthController>(builder: (authController) {
                         return CustomButton(
                           radius: Dimensions.radiusDefault,
-                          buttonText: 'request_otp'.tr,
+                          buttonText: 'change_password'.tr,
                           isLoading: verificationController.isLoading || authController.isLoading,
-                          onPressed: () => _onPressedForgetPass(_countryDialCode!),
+                          onPressed: () => _onPressedChangeByPhone(_countryDialCode!),
                         );
                       });
                     }),
@@ -168,47 +189,6 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
                     ]), textAlign: TextAlign.center, maxLines: 3),
 
                   ]),
-                ) : Padding(
-                  padding: widget.fromDialog ? const EdgeInsets.all(Dimensions.paddingSizeExtremeLarge) : context.width > 700 ? const EdgeInsets.all(Dimensions.paddingSizeDefault) : const EdgeInsets.all(Dimensions.paddingSizeLarge),
-                  child: Column(children: [
-
-                    Image.asset(Images.forgot, height:  widget.fromDialog ? 160 : 220),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
-                      child: Text('sorry_something_went_wrong'.tr, style: robotoBold.copyWith(fontSize: Dimensions.fontSizeExtraLarge), textAlign: TextAlign.center),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
-                      child: Text(
-                        'please_try_again_after_some_time_or_contact_with_our_support_team'.tr,
-                        style: robotoRegular.copyWith(fontSize: widget.fromDialog ? Dimensions.fontSizeSmall : null, color: Theme.of(context).hintColor), textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
-
-                    CustomButton(
-                      buttonText: 'help_and_support'.tr,
-                      onPressed: () {
-                        Get.toNamed(RouteHelper.getSupportRoute());
-                      }
-                    ),
-                    const SizedBox(height: Dimensions.paddingSizeLarge),
-
-                    RichText(text: TextSpan(children: [
-                      TextSpan(
-                        text: '${'continue_as'.tr} ',
-                        style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeDefault, color: Theme.of(context).hintColor),
-                      ),
-                      TextSpan(
-                        text: 'guest'.tr, style: robotoMedium.copyWith(color: Theme.of(context).primaryColor, fontSize: Dimensions.fontSizeDefault, decoration: TextDecoration.underline),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () => Get.offAllNamed(RouteHelper.getInitialRoute()),
-                      ),
-                    ]), textAlign: TextAlign.center, maxLines: 3),
-
-                  ]),
                 ),
               ],
             ),
@@ -218,50 +198,47 @@ class _ForgetPassScreenState extends State<ForgetPassScreen> {
     );
   }
 
-  void _onPressedForgetPass(String countryCode) async {
+  void _onPressedChangeByPhone(String countryCode) async {
     String phone = _numberController.text.trim();
-    String email = _emailController.text.trim();
+    String newPassword = _newPasswordController.text.trim();
+    String confirmPassword = _confirmPasswordController.text.trim();
 
-    String? numberWithCountryCode;
-    PhoneValid? phoneValid;
-
-    if(isPhone) {
-      numberWithCountryCode = countryCode + phone;
-      phoneValid = await CustomValidator.isPhoneValid(numberWithCountryCode);
-      numberWithCountryCode = phoneValid.phone;
-    }
+    String numberWithCountryCode = countryCode + phone;
+    PhoneValid phoneValid = await CustomValidator.isPhoneValid(numberWithCountryCode);
+    numberWithCountryCode = phoneValid.phone;
 
     if(_formKeyLogin!.currentState!.validate()) {
-      if(isPhone && phoneValid != null && !phoneValid.isValid) {
+      if(!phoneValid.isValid) {
         showCustomSnackBar('invalid_phone_number'.tr);
         return;
       }
+      if(newPassword.length < 6) {
+        showCustomSnackBar('password_should_be'.tr);
+        return;
+      }
+      if(newPassword != confirmPassword) {
+        showCustomSnackBar('confirm_password_does_not_matched'.tr);
+        return;
+      }
 
-      String? sendPhone = isPhone ? numberWithCountryCode : null;
-      String? sendEmail = isPhone ? null : email;
-
-      Get.find<VerificationController>().forgetPassword(email: sendEmail, phone: sendPhone).then((status) async {
-        if (status.isSuccess) {
-          final splashController = Get.find<SplashController>();
-          final bool useFirebaseOtp = isPhone
-              && splashController.configModel!.centralizeLoginSetup!.phoneVerificationStatus!
-              && splashController.configModel!.firebaseOtpVerification!;
-
-          if(useFirebaseOtp && sendPhone != null) {
-            Get.find<AuthController>().firebaseVerifyPhoneNumber(sendPhone, status.message, '', fromSignUp: false);
+      // Directly call resetPassword using phone only (no OTP/token),
+      // as per requirement to bypass email/otp verification.
+      Get.find<VerificationController>().resetPassword(
+        resetToken: null,
+        phone: numberWithCountryCode,
+        email: null,
+        password: newPassword,
+        confirmPassword: confirmPassword,
+      ).then((response) {
+        if(response.isSuccess) {
+          showCustomSnackBar('password_reset_successfully'.tr, isError: false);
+          if(!ResponsiveHelper.isDesktop(Get.context)) {
+            Get.offAllNamed(RouteHelper.getSignInRoute(RouteHelper.resetPassword));
           } else {
-            if(ResponsiveHelper.isDesktop(Get.context)) {
-              Get.back();
-              Get.dialog(VerificationScreen(
-                number: sendPhone, email: sendEmail, token: '', fromSignUp: false,
-                fromForgetPassword: true, loginType: '', password: '',
-              ));
-            } else {
-              Get.toNamed(RouteHelper.getVerificationRoute(sendPhone, sendEmail, '', RouteHelper.forgotPassword, '', ''));
-            }
+            Get.back();
           }
         } else {
-          showCustomSnackBar(status.message);
+          showCustomSnackBar(response.message);
         }
       });
     }

@@ -65,6 +65,8 @@
 	<string>This app requires access to the camera to upload customer profile picture and voice.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to the gallery to upload customer profile picture.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Use Face ID to securely verify your identity when resetting your password.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -114,6 +115,14 @@ class CheckoutController extends GetxController implements GetxService {
   double? _extraCharge;
   double? get extraCharge => _extraCharge;
 
+  double? _blockDeliveryCharge;
+  double? get blockDeliveryCharge => _blockDeliveryCharge;
+  bool _isFetchingBlockCharge = false;
+  bool get isFetchingBlockCharge => _isFetchingBlockCharge;
+  bool _blockListenerAttached = false;
+  Timer? _blockDebounce;
+  VoidCallback? _blockListenerRef;
+
   String? _orderType = 'delivery';
   String? get orderType => _orderType;
 
@@ -149,8 +158,21 @@ class CheckoutController extends GetxController implements GetxService {
   Future<void> initCheckoutData(int? storeId) async {
     Get.find<CouponController>().removeCouponData(false);
     clearPrevData();
-    _store = await Get.find<StoreController>().getStoreDetails(Store(id: storeId), false);
+    // Pass fromCart: true to avoid StoreController triggering a default
+    // distance call using shared-pref coordinates. Distance will be
+    // computed from the selected address within the checkout UI.
+    _store = await Get.find<StoreController>().getStoreDetails(
+      Store(id: storeId),
+      false,
+      fromCart: true,
+    );
     initializeTimeSlot(_store!);
+    attachBlockListener();
+    // If block is provided, pre-fetch block-based delivery charge.
+    final block = blockController.text.trim();
+    if (block.isNotEmpty && _store?.id != null) {
+      _fetchBlockDeliveryCharge(storeId: _store!.id!, block: block);
+    }
   }
 
   void showTipsField(){
@@ -342,6 +364,49 @@ class CheckoutController extends GetxController implements GetxService {
     _extraCharge = null;
     _extraCharge = await checkoutServiceInterface.getExtraCharge(distance);
     return _extraCharge;
+  }
+
+  Future<void> _fetchBlockDeliveryCharge({required int storeId, required String block}) async {
+    _isFetchingBlockCharge = true;
+    update();
+    try {
+      _blockDeliveryCharge = await checkoutServiceInterface.getBlockDeliveryCharge(storeId, block);
+    } finally {
+      _isFetchingBlockCharge = false;
+      update();
+    }
+  }
+
+  void attachBlockListener() {
+    if (_blockListenerAttached) return;
+    _blockListenerAttached = true;
+    _blockListenerRef = () {
+      final text = blockController.text.trim();
+      if (_blockDebounce?.isActive ?? false) {
+        _blockDebounce!.cancel();
+      }
+      _blockDebounce = Timer(const Duration(milliseconds: 500), () {
+        if (text.isEmpty) {
+          _blockDeliveryCharge = null;
+          update();
+          return;
+        }
+        final id = _store?.id;
+        if (id != null) {
+          _fetchBlockDeliveryCharge(storeId: id, block: text);
+        }
+      });
+    };
+    blockController.addListener(_blockListenerRef!);
+  }
+
+  @override
+  void onClose() {
+    _blockDebounce?.cancel();
+    if (_blockListenerAttached && _blockListenerRef != null) {
+      blockController.removeListener(_blockListenerRef!);
+    }
+    super.onClose();
   }
 
   Future<bool> checkBalanceStatus(double totalPrice, double discount) async {

@@ -47,6 +47,15 @@ class DeliverySection extends StatelessWidget {
         checkoutController.floorController.text = selected.floor ?? '';
         checkoutController.blockController.text = selected.block ?? '';
         checkoutController.areaController.text = selected.area ?? '';
+
+        // Ensure initial distance/fee uses the selected address, not
+        // shared-pref coordinates. Only run if distance is not ready.
+        if (checkoutController.distance == null || checkoutController.distance == -1) {
+          checkoutController.getDistanceInKM(
+            LatLng(double.parse(selected.latitude!), double.parse(selected.longitude!)),
+            LatLng(double.parse(checkoutController.store!.latitude!), double.parse(checkoutController.store!.longitude!)),
+          );
+        }
       }
     }
 

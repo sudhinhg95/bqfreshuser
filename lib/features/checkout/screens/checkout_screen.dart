@@ -36,6 +36,7 @@ import 'package:get/get.dart';
 import 'package:sixam_mart/features/checkout/widgets/bottom_section.dart';
 import 'package:sixam_mart/features/checkout/widgets/top_section.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartModel?>? cartList;
@@ -131,12 +132,47 @@ class CheckoutScreenState extends State<CheckoutScreen> {
         }
         widget.fromCart ? _cartList!.addAll(Get.find<CartController>().cartList) : _cartList!.addAll(widget.cartList!);
         if(_cartList != null && _cartList!.isNotEmpty) {
-          Get.find<CheckoutController>().initCheckoutData(_cartList![0]!.item!.storeId);
+          await Get.find<CheckoutController>().initCheckoutData(_cartList![0]!.item!.storeId);
+          // Compute initial distance using the currently selected address (index 0 in-zone),
+          // falling back to saved address if list is not yet available.
+          final store = Get.find<CheckoutController>().store;
+          final addrList = Get.find<AddressController>().addressList;
+          AddressModel? origin;
+          if (store != null && addrList != null && addrList.isNotEmpty) {
+            final inZone = addrList.where((a) => a.zoneIds != null && a.zoneIds!.contains(store.zoneId)).toList();
+            if (inZone.isNotEmpty) {
+              origin = inZone.first;
+            }
+          }
+          origin ??= AddressHelper.getUserAddressFromSharedPref();
+          if (origin != null && store != null) {
+            await Get.find<CheckoutController>().getDistanceInKM(
+              LatLng(double.parse(origin.latitude!), double.parse(origin.longitude!)),
+              LatLng(double.parse(store.latitude!), double.parse(store.longitude!)),
+            );
+          }
         }
       }
       if(widget.storeId != null){
-        Get.find<CheckoutController>().initCheckoutData(widget.storeId);
+        await Get.find<CheckoutController>().initCheckoutData(widget.storeId);
         Get.find<CouponController>().removeCouponData(false);
+        // Compute initial distance as above for direct store checkout
+        final store = Get.find<CheckoutController>().store;
+        final addrList = Get.find<AddressController>().addressList;
+        AddressModel? origin;
+        if (store != null && addrList != null && addrList.isNotEmpty) {
+          final inZone = addrList.where((a) => a.zoneIds != null && a.zoneIds!.contains(store.zoneId)).toList();
+          if (inZone.isNotEmpty) {
+            origin = inZone.first;
+          }
+        }
+        origin ??= AddressHelper.getUserAddressFromSharedPref();
+        if (origin != null && store != null) {
+          await Get.find<CheckoutController>().getDistanceInKM(
+            LatLng(double.parse(origin.latitude!), double.parse(origin.longitude!)),
+            LatLng(double.parse(store.latitude!), double.parse(store.longitude!)),
+          );
+        }
       }
       Get.find<CheckoutController>().pickPrescriptionImage(isRemove: true, isCamera: false);
       _isWalletActive = Get.find<SplashController>().configModel!.customerWalletStatus == 1;
@@ -1053,12 +1089,22 @@ class CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   double _calculateDeliveryCharge({required Store? store, required AddressModel address, required double? distance, required double? extraCharge, required double orderAmount, required String orderType}) {
-    double deliveryCharge = _calculateOriginalDeliveryCharge(
-      store: store,
-      address: address,
-      distance: distance,
-      extraCharge: extraCharge,
-    );
+    // If block number is provided and backend returned a fixed charge,
+    // use it; otherwise, fall back to the distance-based logic.
+    double deliveryCharge;
+    final checkoutController = Get.find<CheckoutController>();
+    final blockFee = checkoutController.blockDeliveryCharge;
+    if (blockFee != null) {
+      print('Applying fixed delivery charge: $blockFee');
+      deliveryCharge = blockFee;
+    } else {
+      deliveryCharge = _calculateOriginalDeliveryCharge(
+        store: store,
+        address: address,
+        distance: distance,
+        extraCharge: extraCharge,
+      );
+    }
 
     // Only make take-away orders free by definition. Do not
     // override the calculated deliveryCharge to 0 based on

@@ -15,6 +15,7 @@ abstract class CheckoutServiceInterface {
   List<TimeSlotModel>? validateTimeSlot(List<TimeSlotModel> slots, int dateIndex, int? interval, bool? orderPlaceToScheduleInterval);
   Future<Response> getDistanceInMeter(LatLng originLatLng, LatLng destinationLatLng);
   Future<double> getExtraCharge(double? distance);
+  Future<double?> getBlockDeliveryCharge(int storeId, String block);
   Future<Response> placeOrder(PlaceOrderBodyModel orderBody, List<MultipartBody> orderAttachment);
   Future<Response> placePrescriptionOrder(int? storeId, double? distance, String address, String longitude, String latitude, String note,
       List<MultipartBody> orderAttachment, String dmTips, String deliveryInstruction);
