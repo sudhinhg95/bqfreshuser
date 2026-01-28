@@ -154,10 +154,13 @@ class _ReferAndEarnScreenState extends State<ReferAndEarnScreen> {
 
                             InkWell(
                               onTap: () {
-                                Share.share(
-                                  Get.find<SplashController>().configModel?.appUrlAndroid != null ? '${AppConstants.appName} ${'referral_code'.tr}: ${profileController.userInfoModel!.refCode} \n${'download_app_from_this_link'.tr}: ${Get.find<SplashController>().configModel?.appUrlAndroid}'
-                                    : '${AppConstants.appName} ${'referral_code'.tr}: ${profileController.userInfoModel!.refCode}',
-                                );
+                                final String code = profileController.userInfoModel?.refCode ?? '';
+                                final String message = '${AppConstants.appName} ${'referral_code'.tr}:\n$code\n\n'
+                                    '${'download_app_from_this_link'.tr}:\n'
+                                    'Android: ${AppConstants.playStoreUrl}\n'
+                                    'iOS: ${AppConstants.appStoreUrl}';
+
+                                Share.share(message);
                               },
                               child: Container(
                                 decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/support/widgets/web_help_support_widget.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/common/widgets/custom_app_bar.dart';
@@ -62,14 +63,15 @@ class _SupportScreenState extends State<SupportScreen> {
             const SizedBox(height: Dimensions.paddingSizeSmall),
 
             SupportButtonWidget(
-              icon: Icons.mail_outline, title: 'email_us'.tr, color: Colors.green,
-              info: Get.find<SplashController>().configModel!.email,
-              onTap: () {
-                final Uri emailLaunchUri = Uri(
-                  scheme: 'mailto',
-                  path: Get.find<SplashController>().configModel!.email,
-                );
-                launchUrlString(emailLaunchUri.toString());
+              icon: Icons.call, title: 'call'.tr, color: Colors.red,
+              info: AppConstants.supportAlternatePhone,
+              onTap: () async {
+                final String phone = AppConstants.supportAlternatePhone;
+                if(await canLaunchUrlString('tel:$phone')) {
+                  launchUrlString('tel:$phone');
+                }else {
+                  showCustomSnackBar('${'can_not_launch'.tr} $phone');
+                }
               },
             ),
 
@@ -91,6 +93,40 @@ class _SupportScreenState extends State<SupportScreen> {
                 } else {
                   showCustomSnackBar('${'can_not_launch'.tr} Whatsapp');
                 }
+              },
+            ),
+
+            const SizedBox(height: Dimensions.paddingSizeSmall),
+
+            SupportButtonWidget(
+              icon: Icons.chat,
+              image: Images.whatsapp,
+              title: 'WhatsApp'.tr,
+              color: Colors.green,
+              info: AppConstants.supportAlternatePhone,
+              onTap: () async {
+                final String rawPhone = AppConstants.supportAlternatePhone;
+                final String phone = rawPhone.replaceAll('+', '').replaceAll(' ', '');
+                final String url = 'https://wa.me/$phone';
+                if(await canLaunchUrlString(url)) {
+                  launchUrlString(url, mode: LaunchMode.externalApplication);
+                } else {
+                  showCustomSnackBar('${'can_not_launch'.tr} Whatsapp');
+                }
+              },
+            ),
+
+            const SizedBox(height: Dimensions.paddingSizeSmall),
+
+            SupportButtonWidget(
+              icon: Icons.mail_outline, title: 'email_us'.tr, color: Colors.green,
+              info: Get.find<SplashController>().configModel!.email,
+              onTap: () {
+                final Uri emailLaunchUri = Uri(
+                  scheme: 'mailto',
+                  path: Get.find<SplashController>().configModel!.email,
+                );
+                launchUrlString(emailLaunchUri.toString());
               },
             ),
 

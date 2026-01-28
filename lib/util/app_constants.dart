@@ -16,6 +16,13 @@ class AppConstants {
   static const String baseUrl = 'https://admin.bqfresh.com';
 //  static const String baseUrl = 'http://localhost/admin.bqfresh.com';
 
+  /// Store links
+  static const String playStoreUrl = 'https://play.google.com/store/apps/details?id=com.bqfresh.app';
+  static const String appStoreUrl = 'https://apps.apple.com/bh/app/bqfresh-app/id6748672983';
+
+  /// Support contacts
+  static const String supportAlternatePhone = '38751237';
+
 
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';

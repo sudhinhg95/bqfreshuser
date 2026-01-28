@@ -600,8 +600,8 @@ class OrderInfoWidget extends StatelessWidget {
                       }
                     },
                     child: SizedBox(
-                      height: 26,
-                      width: 26,
+                      height: 30,
+                      width: 30,
                       child: Image.asset(Images.whatsapp, fit: BoxFit.contain),
                     ),
                   ),
