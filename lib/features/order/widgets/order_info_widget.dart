@@ -118,7 +118,7 @@ class OrderInfoWidget extends StatelessWidget {
               Divider(height: Dimensions.paddingSizeLarge, color: Theme.of(context).disabledColor.withOpacity( 0.30)),
 
               Row(children: [
-                Text(order.orderType!.tr, style: robotoMedium),
+                Text('Payment Type', style: robotoRegular),
                 const Expanded(child: SizedBox()),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
@@ -567,15 +567,47 @@ class OrderInfoWidget extends StatelessWidget {
 
                 ) : const SizedBox(),
 
-                (showChatPermission && !parcel && order.orderStatus != 'delivered' && order.orderStatus != 'failed' && order.orderStatus != 'canceled' && order.orderStatus != 'refunded') ? InkWell(
-                  onTap: () async {
-                    await Get.toNamed(RouteHelper.getChatRoute(
-                      notificationBody: NotificationBodyModel(orderId: order.id, restaurantId: order.store!.vendorId),
-                      user: User(id: order.store!.vendorId, fName: order.store!.name, lName: '', imageFullUrl: order.store!.logoFullUrl),
-                    ));
-                  },
-                  child: Image.asset(Images.chatOrderDetails, height: 20, width: 20),
-                ) : const SizedBox(),
+                (order.store != null && order.store!.phone != null && order.store!.phone!.isNotEmpty) ? Row(children: [
+                  const SizedBox(width: Dimensions.paddingSizeSmall),
+
+                  InkWell(
+                    onTap: () async {
+                      const String phone = '+97317406237';
+                      if (await canLaunchUrlString('tel:$phone')) {
+                        launchUrlString('tel:$phone', mode: LaunchMode.externalApplication);
+                      } else {
+                        showCustomSnackBar('${'can_not_launch'.tr} $phone');
+                      }
+                    },
+                    child: SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: Image.asset(Images.phoneOrderDetails, fit: BoxFit.contain),
+                    ),
+                  ),
+
+                  const SizedBox(width: Dimensions.paddingSizeSmall),
+
+                  InkWell(
+                    onTap: () async {
+                      const String rawPhone = '+97317406237';
+                      final String phone = rawPhone.replaceAll('+', '').replaceAll(' ', '');
+                      final String url = 'https://wa.me/$phone';
+                      if (await canLaunchUrlString(url)) {
+                        await launchUrlString(url, mode: LaunchMode.externalApplication);
+                      } else {
+                        showCustomSnackBar('${'can_not_launch'.tr} Whatsapp');
+                      }
+                    },
+                    child: SizedBox(
+                      height: 26,
+                      width: 26,
+                      child: Image.asset(Images.whatsapp, fit: BoxFit.contain),
+                    ),
+                  ),
+                ]) : const SizedBox(),
+
+                const SizedBox(),
 
                 !isGuestLoggedIn && (Get.find<SplashController>().configModel!.refundActiveStatus! && order.orderStatus == 'delivered' && !parcel
                 && (parcel || (orderController.orderDetails!.isNotEmpty && orderController.orderDetails![0].itemCampaignId == null))) ? InkWell(

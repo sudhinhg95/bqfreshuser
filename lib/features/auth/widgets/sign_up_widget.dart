@@ -147,7 +147,7 @@ class SignUpWidgetState extends State<SignUpWidget> {
 
                     Expanded(
                       child: CustomTextField(
-                        titleText: 'xxx-xxx-xxxxx'.tr,
+                        titleText: 'xxxx-xxxx'.tr,
                         labelText: 'phone'.tr,
                         showLabelText: true,
                         required: true,

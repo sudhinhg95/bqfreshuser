@@ -247,26 +247,124 @@ class ItemRepository implements ItemRepositoryInterface {
 
   Future<ItemModel?> _getFeaturedCategoriesItemList({required DataSourceEnum source}) async {
     ItemModel? featuredCategoriesItem;
-    String cacheId = '${AppConstants.featuredCategoriesItemsUri}?limit=30&offset=1${Get.find<SplashController>().module!.id!}';
 
-    switch(source) {
+    // Per-category UI limit: how many items to show for each category.
+    const int perCategoryLimit = 30;
 
+    // Fetch a larger pool from the backend, then apply the per-category
+    // limit on the client side so each category can contribute up to
+    // `perCategoryLimit` items.
+    const int serverLimit = perCategoryLimit * 50; // adjust multiplier if needed
+
+    String cacheId = '${AppConstants.featuredCategoriesItemsUri}?limit=$serverLimit&offset=1${Get.find<SplashController>().module!.id!}';
+
+    switch (source) {
       case DataSourceEnum.client:
-        Response response = await apiClient.getData('${AppConstants.featuredCategoriesItemsUri}?limit=30&offset=1');
+        Response response = await apiClient.getData(
+          '${AppConstants.featuredCategoriesItemsUri}?limit=$serverLimit&offset=1',
+        );
         if (response.statusCode == 200) {
           featuredCategoriesItem = ItemModel.fromJson(response.body);
-          LocalClient.organize(DataSourceEnum.client, cacheId, jsonEncode(response.body), apiClient.getHeader());
+          LocalClient.organize(
+            DataSourceEnum.client,
+            cacheId,
+            jsonEncode(response.body),
+            apiClient.getHeader(),
+          );
         }
+        break;
 
       case DataSourceEnum.local:
-        String? cacheResponseData = await LocalClient.organize(DataSourceEnum.local, cacheId, null, null);
-        if(cacheResponseData != null) {
+        String? cacheResponseData = await LocalClient.organize(
+          DataSourceEnum.local,
+          cacheId,
+          null,
+          null,
+        );
+        if (cacheResponseData != null) {
           featuredCategoriesItem = ItemModel.fromJson(jsonDecode(cacheResponseData));
         }
+        break;
+    }
+
+    if (featuredCategoriesItem != null) {
+      _applyPerCategoryLimitToFeatured(featuredCategoriesItem!, perCategoryLimit);
     }
 
     return featuredCategoriesItem;
   }
+
+  void _applyPerCategoryLimitToFeatured(ItemModel model, int perCategoryLimit) {
+    if (perCategoryLimit <= 0) return;
+    final items = model.items;
+    final categories = model.categories;
+    if (items == null || items.isEmpty || categories == null || categories.isEmpty) {
+      return;
+    }
+
+    // Collect valid category IDs from the response.
+    final Set<int> categoryIdSet = categories
+        .map((c) {
+          try {
+            return int.tryParse(c.id.toString());
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<int>()
+        .toSet();
+
+    final Map<int, int> perCategoryCount = {};
+    final List<Item> filtered = [];
+
+    for (final item in items) {
+      int? primaryCategoryId = item.categoryId;
+      if (primaryCategoryId == null && item.categoryIds != null && item.categoryIds!.isNotEmpty) {
+        primaryCategoryId = item.categoryIds!.first.id;
+      }
+      if (primaryCategoryId == null || !categoryIdSet.contains(primaryCategoryId)) {
+        continue;
+      }
+      final used = perCategoryCount[primaryCategoryId] ?? 0;
+      if (used >= perCategoryLimit) {
+        continue;
+      }
+      perCategoryCount[primaryCategoryId] = used + 1;
+      filtered.add(item);
+    }
+
+    model.items = filtered;
+    model.limit = perCategoryLimit.toString();
+  }
+
+//   Future<ItemModel?> _getFeaturedCategoriesItemList({required DataSourceEnum source}) async {
+//     ItemModel? featuredCategoriesItem;
+//     String cacheId = '${AppConstants.featuredCategoriesItemsUri}?limit=1&offset=1${Get.find<SplashController>().module!.id!}';
+
+//     switch(source) {
+
+//       case DataSourceEnum.client:
+//         Response response = await apiClient.getData('${AppConstants.featuredCategoriesItemsUri}?limit=1&offset=1');
+//         if (response.statusCode == 200) {
+//           featuredCategoriesItem = ItemModel.fromJson(response.body);
+
+//           LocalClient.organize(DataSourceEnum.client, cacheId, jsonEncode(response.body), apiClient.getHeader());
+//         }
+
+//       case DataSourceEnum.local:
+//         String? cacheResponseData = await LocalClient.organize(DataSourceEnum.local, cacheId, null, null);
+//         if(cacheResponseData != null) {
+//           featuredCategoriesItem = ItemModel.fromJson(jsonDecode(cacheResponseData));
+//         }
+//     }
+// print(
+//   const JsonEncoder.withIndent('  ').convert({
+//     "featured list": featuredCategoriesItem?.toJson(),
+//   }),
+// );
+
+//     return featuredCategoriesItem;
+//   }
 
   Future<List<Item>?> _getRecommendedItemList(String type, {required DataSourceEnum source}) async {
     List<Item>? recommendedItemList;

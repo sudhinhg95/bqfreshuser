@@ -24,6 +24,7 @@ class _LoyaltyBottomSheetWidgetState extends State<LoyaltyBottomSheetWidget> {
 
   final TextEditingController _amountController = TextEditingController();
 
+  int _selectedAmount = 100;
 
   int? exchangePointRate = Get.find<SplashController>().configModel!.loyaltyPointExchangeRate ?? 0;
   int? minimumExchangePoint = Get.find<SplashController>().configModel!.minimumPointToTransfer ?? 0;
@@ -31,8 +32,21 @@ class _LoyaltyBottomSheetWidgetState extends State<LoyaltyBottomSheetWidget> {
   @override
   void initState() {
     super.initState();
+    int availablePoints = int.tryParse(widget.amount) ?? 0;
 
-    _amountController.text = widget.amount;
+    if(availablePoints >= 500) {
+      _selectedAmount = 500;
+    }else if(availablePoints >= 400) {
+      _selectedAmount = 400;
+    }else if(availablePoints >= 300) {
+      _selectedAmount = 300;
+    }else if(availablePoints >= 200) {
+      _selectedAmount = 200;
+    }else if(availablePoints >= 100) {
+      _selectedAmount = 100;
+    }
+
+    _amountController.text = _selectedAmount.toString();
   }
 
   @override
@@ -66,27 +80,40 @@ class _LoyaltyBottomSheetWidgetState extends State<LoyaltyBottomSheetWidget> {
               const SizedBox(height: Dimensions.paddingSizeSmall),
 
               Text(
-                '(${'from'.tr} ${widget.amount} ${'points'.tr})',
+                'Available Points: ${widget.amount}',
                 style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
                 maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
               ),
               const SizedBox(height: Dimensions.paddingSizeSmall),
 
               Text(
-                'amount_can_be_convert_into_wallet_money'.tr,
+                'Once converted, it will show in your wallet.',
                 style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
                 maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center,
               ),
               SizedBox(height: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeExtraLarge :  Dimensions.paddingSizeLarge),
 
               SizedBox(
-                width: ResponsiveHelper.isDesktop(context) ? 260 : null,
-                child: CustomTextField(
-                  titleText: 'enter_amount'.tr,
-                  controller: _amountController,
-                  inputType: TextInputType.phone,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
+                width: ResponsiveHelper.isDesktop(context) ? 260 : 180,
+                child: DropdownButtonFormField<int>(
+                  value: _selectedAmount,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(Dimensions.radiusSmall)),
+                    labelText: 'Select points to convert',
+                  ),
+                  items: const [100, 200, 300, 400, 500].map((value) => DropdownMenuItem<int>(
+                    value: value,
+                    child: Text(value.toString()),
+                  )).toList(),
+                  onChanged: (value) {
+                    if(value != null) {
+                      setState(() {
+                        _selectedAmount = value;
+                        _amountController.text = value.toString();
+                      });
+                    }
+                  },
                 ),
               ),
 

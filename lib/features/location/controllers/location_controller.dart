@@ -525,23 +525,15 @@ class LocationController extends GetxController implements GetxService {
     final bool isConnected = !results.contains(ConnectivityResult.none);
 
     if (!isConnected) {
-      Get.offAll(() => const NoInternetScreen());
+      showCustomSnackBar('no_internet_connection'.tr);
       return false;
     }
 
-    try {
-      final response = await http.get(Uri.parse('https://www.google.com'))
-          .timeout(const Duration(seconds: 3));
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        Get.offAll(() => const NoInternetScreen());
-        return false;
-      }
-    } on SocketException catch (_) {
-      Get.offAll(() => const NoInternetScreen());
-      return false;
-    }
+    // Do not hard-redirect to a global NoInternetScreen here.
+    // Rely on actual API call failures (handled by ApiClient/ApiChecker)
+    // instead of probing an external site like Google, which can be
+    // blocked or slow on some networks (especially iOS/carrier networks).
+    return true;
   }
 
 

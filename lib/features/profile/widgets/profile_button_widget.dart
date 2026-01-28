@@ -27,7 +27,25 @@ class ProfileButtonWidget extends StatelessWidget {
           boxShadow: [BoxShadow(color: Theme.of(context).primaryColor.withOpacity( 0.1), spreadRadius: 1, blurRadius: 5)],
         ),
         child: Row(children: [
-          iconImage != null ? Image.asset(iconImage!, height: 18, width: 25) : Icon(icon, size: 25, color: color ?? Theme.of(context).textTheme.bodyMedium!.color),
+          iconImage != null
+              ? Image.asset(
+                  iconImage!,
+                  height: 18,
+                  width: 25,
+                  // Make asset icons white in dark mode by default
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? (color ?? Colors.white)
+                      : color,
+                )
+              : Icon(
+                  icon,
+                  size: 25,
+                  // Use white icons in dark mode unless an
+                  // explicit color is provided.
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? (color ?? Colors.white)
+                      : (color ?? Theme.of(context).textTheme.bodyMedium!.color),
+                ),
           const SizedBox(width: Dimensions.paddingSizeSmall),
 
           Expanded(child: Text(title, style: robotoRegular)),
@@ -37,10 +55,13 @@ class ProfileButtonWidget extends StatelessWidget {
             child: Switch(
               value: isButtonActive!,
               onChanged: (bool value) => onTap(),
-              activeColor: Theme.of(context).primaryColor, // Thumb color when ON
-              activeTrackColor: Theme.of(context).primaryColor, // Track color when ON
-              inactiveThumbColor: Colors.grey, // Thumb color when OFF
-              inactiveTrackColor: Theme.of(context).primaryColor.withOpacity(0.5), // Track color when OFF
+              // Use a bright thumb and softer track so the toggle
+              // stays clearly visible on both light and dark
+              // backgrounds.
+              activeColor: Colors.white,
+              activeTrackColor: Theme.of(context).primaryColor,
+              inactiveThumbColor: Colors.white70,
+              inactiveTrackColor: Theme.of(context).disabledColor.withOpacity(0.6),
             )
 
           ) : const SizedBox()

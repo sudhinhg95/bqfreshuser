@@ -18,6 +18,10 @@ class LoyaltyCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<ProfileController>(
       builder: (profileController) {
+        final int availablePoints = profileController.userInfoModel?.loyaltyPoint ?? 0;
+        final int minimumExchangePoint = Get.find<SplashController>().configModel!.minimumPointToTransfer ?? 0;
+        final int convertiblePoints = minimumExchangePoint;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -33,23 +37,24 @@ class LoyaltyCardWidget extends StatelessWidget {
                 const SizedBox(width: Dimensions.paddingSizeExtraLarge),
 
                 Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-
-                  ResponsiveHelper.isDesktop(context) ? const SizedBox() : Text(
-                    '${'convertible_points'.tr} !',
+                  Text(
+                    'Available Points',
                     style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge!.color),
                   ),
 
                   Text(
-                    profileController.userInfoModel!.loyaltyPoint == null ? '0' : profileController.userInfoModel!.loyaltyPoint.toString(),
+                    availablePoints.toString(),
                     style: robotoBold.copyWith(fontSize: Dimensions.fontSizeOverLarge, color: Theme.of(context).textTheme.bodyLarge!.color),
                   ),
 
-                  ResponsiveHelper.isDesktop(context) ? Text(
-                    '${'convertible_points'.tr} !',
-                    style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge!.color),
-                  ) : const SizedBox(),
-
                   const SizedBox(height: Dimensions.paddingSizeSmall),
+
+                  Text(
+                    'Minimum Points to Convert: $convertiblePoints',
+                    style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge!.color),
+                  ),
+
+                  const SizedBox(height: Dimensions.paddingSizeExtraSmall),
                 ]),
               ]),
             ),

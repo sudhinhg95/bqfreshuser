@@ -14,7 +14,8 @@ class AppConstants {
   static const bool useReactWebsite = false;
  
   static const String baseUrl = 'https://admin.bqfresh.com';
-  // static const String baseUrl = 'http://localhost/admin.bqfresh.com';
+//  static const String baseUrl = 'http://localhost/admin.bqfresh.com';
+
 
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';
@@ -43,7 +44,9 @@ class AppConstants {
   static const String addressListUri = '/api/v1/customer/address/list';
   static const String zoneUri = '/api/v1/config/get-zone-id';
   static const String checkZoneUri = '/api/v1/zone/check';
-  static const String removeAddressUri = '/api/v1/customer/address/delete?address_id=';
+  // Backend expects the address ID as a path segment,
+  // e.g. /api/v1/customer/address/delete/12
+  static const String removeAddressUri = '/api/v1/customer/address/delete/';
   static const String addAddressUri = '/api/v1/customer/address/add';
   static const String updateAddressUri = '/api/v1/customer/address/update/';
   static const String setMenuUri = '/api/v1/items/set-menu';

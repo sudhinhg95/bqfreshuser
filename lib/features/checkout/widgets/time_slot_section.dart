@@ -34,7 +34,7 @@ class TimeSlotSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text('preference_time'.tr, style: robotoMedium),
+            Text('Choose Delivery Time', style: robotoMedium),
             const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
             JustTheTooltip(
@@ -86,7 +86,15 @@ class TimeSlotSection extends StatelessWidget {
                 Expanded(
                   child: ((checkoutController.selectedDateSlot == 0 && todayClosed) || (checkoutController.selectedDateSlot == 1 && tomorrowClosed))
                     ? Center(child: Text(module!.showRestaurantText! ? 'restaurant_is_closed'.tr : 'store_is_closed'.tr))
-                    : Text(checkoutController.preferableTime.isNotEmpty ? checkoutController.preferableTime : 'instance'.tr),
+                    : Builder(builder: (_) {
+                        String label = checkoutController.preferableTime;
+                        if (label.isEmpty) {
+                          label = 'Standard Delivery Time';
+                        } else if (label.toLowerCase() == 'instance' || label == 'instance'.tr) {
+                          label = 'Standard Delivery Time';
+                        }
+                        return Text(label);
+                      }),
                 ),
 
                 const Icon(Icons.arrow_drop_down, size: 28),

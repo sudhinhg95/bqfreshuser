@@ -19,7 +19,16 @@ class PortionWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall),
         child: Column(children: [
           Row(children: [
-            Image.asset(icon, height: 16, width: 16),
+            Image.asset(
+              icon,
+              height: 16,
+              width: 16,
+              // Force white icons in dark mode so they are
+              // clearly visible on the dark menu background.
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : null,
+            ),
             const SizedBox(width: Dimensions.paddingSizeSmall),
 
             Expanded(child: Text(title, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeDefault))),

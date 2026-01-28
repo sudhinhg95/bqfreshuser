@@ -1,6 +1,7 @@
 import 'package:sixam_mart/features/review/controllers/review_controller.dart';
 import 'package:sixam_mart/features/review/domain/models/review_body_model.dart';
 import 'package:sixam_mart/features/order/domain/models/order_details_model.dart';
+import 'package:sixam_mart/helper/route_helper.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/styles.dart';
@@ -148,6 +149,22 @@ class _ItemReviewWidgetState extends State<ItemReviewWidget> {
                             if (value.isSuccess) {
                               showCustomSnackBar(value.message, isError: false);
                               reviewController.setReview(index, '');
+
+                              // Mark this order as reviewed and, if all items are submitted,
+                              // redirect the user back to the home screen.
+                              reviewController.markOrderReviewed(widget.orderDetailsList[index].orderId);
+
+                              bool allSubmitted = true;
+                              for (bool submitted in reviewController.submitList) {
+                                if (!submitted) {
+                                  allSubmitted = false;
+                                  break;
+                                }
+                              }
+
+                              if (allSubmitted) {
+                                Get.offAllNamed(RouteHelper.getInitialRoute());
+                              }
                             } else {
                               showCustomSnackBar(value.message);
                             }

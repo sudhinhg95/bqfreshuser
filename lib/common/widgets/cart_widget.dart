@@ -29,7 +29,14 @@ class CartWidget extends StatelessWidget {
               cartController.cartList.length.toString(),
               style: robotoRegular.copyWith(
                 fontSize: size < 20 ? size/3 : size/3.8,
-                color: fromStore ? Theme.of(context).primaryColor : Theme.of(context).cardColor,
+                // In dark mode use white so the badge count is
+                // clearly visible; keep existing colors for
+                // light mode to match the design.
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : (fromStore
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).cardColor),
               ),
             ),
           ),

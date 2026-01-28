@@ -17,7 +17,7 @@ class DateConverter {
   }
 
   static String dateToDateAndTimeAm(DateTime dateTime) {
-    return DateFormat('yyyy-MM-dd ${_timeFormatter()}').format(dateTime);
+    return DateFormat('dd MMM yyyy,  ${_timeFormatter()}').format(dateTime);
   }
 
   static String dateToDate(DateTime dateTime) {

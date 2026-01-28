@@ -139,7 +139,18 @@ class _CartScreenState extends State<CartScreen> {
                         color: Theme.of(context).disabledColor.withOpacity( 0.5),
                         borderRadius: const BorderRadius.only(topLeft: Radius.circular(Dimensions.radiusDefault), topRight: Radius.circular(Dimensions.radiusDefault)),
                       ),
-                      child: Icon(Icons.drag_handle, color: Theme.of(context).hintColor, size: 25),
+                      child: Center(
+                        // Use a standard drag handle bar instead of a "^" text
+                        // so it clearly indicates the section can be dragged.
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).hintColor.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -276,13 +287,13 @@ class _CartScreenState extends State<CartScreen> {
                         ) : const SizedBox(),
                         const SizedBox(height: Dimensions.paddingSizeSmall),
 
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        cartController.itemDiscountPrice > 0 ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                           Text('discount'.tr, style: robotoRegular),
                           storeController.store != null ? Row(children: [
                             Text('(-)', style: robotoRegular),
                             PriceConverter.convertAnimationPrice(cartController.itemDiscountPrice, textStyle: robotoRegular),
                           ]) : Text('calculating'.tr, style: robotoRegular),
-                        ]),
+                        ]) : const SizedBox(),
                         SizedBox(height: Get.find<SplashController>().configModel!.moduleConfig!.module!.addOn! ? Dimensions.paddingSizeSmall : 0),
 
                         Get.find<SplashController>().configModel!.moduleConfig!.module!.addOn! ? Row(
@@ -391,14 +402,14 @@ class _CartScreenState extends State<CartScreen> {
                 ) : const SizedBox(),
                 const SizedBox(height: Dimensions.paddingSizeSmall),
 
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                cartController.itemDiscountPrice > 0 ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Text('discount'.tr, style: robotoRegular),
                   storeController.store != null ? Row(children: [
                     Text('(-)', style: robotoRegular),
                     PriceConverter.convertAnimationPrice(cartController.itemDiscountPrice, textStyle: robotoRegular),
                   ]) : Text('calculating'.tr, style: robotoRegular),
                   // Text('(-) ${PriceConverter.convertPrice(cartController.itemDiscountPrice)}', style: robotoRegular, textDirection: TextDirection.ltr),
-                ]),
+                ]) : const SizedBox(),
                 SizedBox(height: Get.find<SplashController>().configModel!.moduleConfig!.module!.addOn! ? 10 : 0),
 
                 Get.find<SplashController>().configModel!.moduleConfig!.module!.addOn! ? Row(
@@ -420,10 +431,14 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget suggestedItemView(List<CartModel> cartList){
-    return Container(
-      decoration: BoxDecoration(color: Theme.of(context).cardColor),
-      width: double.infinity,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    return Padding(
+      padding: const EdgeInsets.only(top: Dimensions.paddingSizeSmall),
+      child: Container(
+        // Match the home "LatestItemView" section so cards stand out
+        // on light theme with a soft tinted background.
+        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        width: double.infinity,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
         GetBuilder<StoreController>(builder: (storeController) {
           List<Item>? suggestedItems;
@@ -482,6 +497,7 @@ class _CartScreenState extends State<CartScreen> {
           ) : const SizedBox();
         }),
       ]),
+      ),
     );
   }
 
@@ -512,20 +528,78 @@ class CheckoutButton extends StatelessWidget {
       ),
       child: GetBuilder<StoreController>(
         builder: (storeController) {
-          if(Get.find<StoreController>().store != null && !Get.find<StoreController>().store!.freeDelivery!
-            && (Get.find<SplashController>().configModel?.adminFreeDelivery?.status == true && (Get.find<SplashController>().configModel?.adminFreeDelivery?.type != null && Get.find<SplashController>().configModel?.adminFreeDelivery?.type == 'free_delivery_by_order_amount') && (Get.find<SplashController>().configModel!.adminFreeDelivery?.freeDeliveryOver != null))){
+          final store = storeController.store;
+          print('----- free delivery: ${store?.freeDelivery}');
+          if(store != null && !store.freeDelivery!
+            && (Get.find<SplashController>().configModel?.adminFreeDelivery?.status == true
+                && (Get.find<SplashController>().configModel?.adminFreeDelivery?.type != null
+                    && Get.find<SplashController>().configModel?.adminFreeDelivery?.type == 'free_delivery_by_order_amount')
+                && (Get.find<SplashController>().configModel!.adminFreeDelivery?.freeDeliveryOver != null))){
             percentage = cartController.subTotal/Get.find<SplashController>().configModel!.adminFreeDelivery!.freeDeliveryOver!;
           }
+
+          final double minOrder = store?.minimumOrder ?? 0;
+          final bool hasMinOrderConfig = minOrder > 0;
+          final bool isMinOrderSatisfied = !hasMinOrderConfig || cartController.subTotal >= minOrder;
+
+          double remainingMinOrder = hasMinOrderConfig ? (minOrder - cartController.subTotal) : 0;
+          if(remainingMinOrder < 0) {
+            remainingMinOrder = 0;
+          }
+
+          double minOrderProgress = 0;
+          if(hasMinOrderConfig && minOrder > 0) {
+            minOrderProgress = cartController.subTotal / minOrder;
+            if(minOrderProgress > 1) {
+              minOrderProgress = 1;
+            }
+          }
+
+
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
 
-              (storeController.store != null && !storeController.store!.freeDelivery! && (Get.find<SplashController>().configModel?.adminFreeDelivery?.status == true && (Get.find<SplashController>().configModel?.adminFreeDelivery?.type != null && Get.find<SplashController>().configModel?.adminFreeDelivery?.type == 'free_delivery_by_order_amount') && (Get.find<SplashController>().configModel!.adminFreeDelivery?.freeDeliveryOver != null)) && percentage < 1)
+              // Show remaining amount to reach minimum order, styled like free-delivery line
+              hasMinOrderConfig && !isMinOrderSatisfied
               ? Column(children: [
                   Row(children: [
-                    Image.asset(Images.percentTag, height: 20, width: 20),
+                    Text(
+                      PriceConverter.convertPrice(remainingMinOrder),
+                      style: robotoMedium.copyWith(color: Theme.of(context).primaryColor),
+                      textDirection: TextDirection.ltr,
+                    ),
                     const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
+                    Expanded(
+                      child: Text(
+                        '${'more_for_minimum_order'.tr} ${PriceConverter.convertPrice(minOrder)}',
+                        style: robotoMedium.copyWith(color: Theme.of(context).disabledColor),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+
+                  LinearProgressIndicator(
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    value: minOrderProgress,
+                  ),
+                ])
+              : const SizedBox(),
+                hasMinOrderConfig && !isMinOrderSatisfied
+                  ? const SizedBox(height: Dimensions.paddingSizeDefault)
+                  : const SizedBox(),
+
+              (store != null && !store.freeDelivery!
+                  && (Get.find<SplashController>().configModel?.adminFreeDelivery?.status == true
+                      && (Get.find<SplashController>().configModel?.adminFreeDelivery?.type != null
+                          && Get.find<SplashController>().configModel?.adminFreeDelivery?.type == 'free_delivery_by_order_amount')
+                      && (Get.find<SplashController>().configModel!.adminFreeDelivery?.freeDeliveryOver != null))
+                  && percentage < 1)
+              ? Column(children: [
+                  Row(children: [
                     Text(
                       PriceConverter.convertPrice(Get.find<SplashController>().configModel!.adminFreeDelivery!.freeDeliveryOver! - cartController.subTotal),
                       style: robotoMedium.copyWith(color: Theme.of(context).primaryColor), textDirection: TextDirection.ltr,
@@ -537,7 +611,8 @@ class CheckoutButton extends StatelessWidget {
                 const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
                 LinearProgressIndicator(
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity( 0.2),
+                  backgroundColor: Colors.green.withOpacity(0.2),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
                   value: percentage,
                 ),
               ]) : const SizedBox(),
@@ -604,7 +679,7 @@ class CheckoutButton extends StatelessWidget {
                   fontSize: ResponsiveHelper.isDesktop(context) ? Dimensions.fontSizeSmall : Dimensions.fontSizeLarge,
                   isBold:  ResponsiveHelper.isDesktop(context) ? false : true,
                   radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
-                  onPressed: () {
+                  onPressed: isMinOrderSatisfied ? () {
                   if(!cartController.cartList.first.item!.scheduleOrder! && availableList.contains(false)) {
                     showCustomSnackBar('one_or_more_product_unavailable'.tr);
                   } /*else if(AuthHelper.isGuestLoggedIn() && !Get.find<SplashController>().configModel!.guestCheckoutStatus!) {
@@ -624,7 +699,7 @@ class CheckoutButton extends StatelessWidget {
 
                     Get.toNamed(RouteHelper.getCheckoutRoute('cart'));
                   }
-                }),
+                } : null),
               ),
             ],
           );

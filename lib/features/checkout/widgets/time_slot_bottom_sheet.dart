@@ -62,7 +62,7 @@ class _TimeSlotBottomSheetState extends State<TimeSlotBottomSheet> {
 
         return Container(
           width: ResponsiveHelper.isDesktop(context) ? 550 : context.width,
-          constraints: BoxConstraints(maxHeight: context.height * 0.8, minHeight: 0),
+          constraints: BoxConstraints(maxHeight: context.height * 0.6, minHeight: 0),
           margin: EdgeInsets.only(top: GetPlatform.isWeb ? 0 : 30),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,

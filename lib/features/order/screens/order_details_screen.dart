@@ -26,6 +26,7 @@ import 'package:sixam_mart/features/order/widgets/cancellation_dialogue_widget.d
 import 'package:sixam_mart/features/order/widgets/order_calcuation_widget.dart';
 import 'package:sixam_mart/features/order/widgets/order_info_widget.dart';
 import 'package:sixam_mart/features/review/screens/rate_review_screen.dart';
+import 'package:sixam_mart/features/review/controllers/review_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -346,13 +347,19 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
         ),
       ),
 
-      !AuthHelper.isGuestLoggedIn() && (order.orderStatus == 'delivered' && (parcel ? order.deliveryMan != null : (orderController.orderDetails!.isNotEmpty && orderController.orderDetails![0].itemCampaignId == null))) ? Center(
+      !AuthHelper.isGuestLoggedIn()
+      && (order.orderStatus == 'delivered' && (parcel ? order.deliveryMan != null : (orderController.orderDetails!.isNotEmpty && orderController.orderDetails![0].itemCampaignId == null)))
+      && !Get.find<ReviewController>().isOrderReviewed(order.id) ? Center(
         child: Container(
           width: Dimensions.webMaxWidth,
           padding: ResponsiveHelper.isDesktop(context) ? null : const EdgeInsets.all(Dimensions.paddingSizeSmall),
           child: CustomButton(
             buttonText: 'review'.tr,
             onPressed: () {
+              // Mark this order as reviewed as soon as user enters the
+              // review flow so the Review button does not reappear.
+              Get.find<ReviewController>().markOrderReviewed(order.id);
+
               List<OrderDetailsModel> orderDetailsList = [];
               List<int?> orderDetailsIdList = [];
               for (var orderDetail in orderController.orderDetails!) {

@@ -555,7 +555,16 @@ class CheckoutController extends GetxController implements GetxService {
           ));
         }
       } else {
-        double total = ((amount / 100) * Get.find<SplashController>().configModel!.loyaltyPointItemPurchasePoint!);
+        // Debug: log loyalty calculation inputs
+        final double perHundred = Get.find<SplashController>().configModel!.loyaltyPointItemPurchasePoint ?? 0;
+        if (kDebugMode) {
+          print('LOYALTY_DEBUG => amount: $amount, perHundred: $perHundred');
+        }
+
+        double total = ((amount / 100) * perHundred);
+        if (kDebugMode) {
+          print('LOYALTY_DEBUG => rawTotal: $total, rounded: ${total.toStringAsFixed(0)}');
+        }
         if(AuthHelper.isLoggedIn()) {
           Get.find<AuthController>().saveEarningPoint(total.toStringAsFixed(0));
         }

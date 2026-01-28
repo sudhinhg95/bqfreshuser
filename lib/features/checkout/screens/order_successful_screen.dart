@@ -138,12 +138,42 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
-                  child: Text(
-                    success ? parcel ? 'your_parcel_request_is_placed_successfully'.tr
-                      : 'Your order is placed successfully. We will start our delivery process and you will receive your item soon.' : 'your_order_is_failed_to_place_because'.tr,
-                    style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).disabledColor),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: success && !parcel
+                      ? RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: robotoBold.copyWith(
+                              fontSize: Dimensions.fontSizeSmall,
+                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text:
+                                    'Thank you for your Order!\nWe will process your order soon, you can track your order status till the order is delivered to you.',
+                              ),
+                              TextSpan(
+                                text:
+                                    '\nYou can cancel your order before your Order is Confirmed by BQ Team.',
+                                style: robotoBold.copyWith(
+                                  fontSize: Dimensions.fontSizeSmall,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Text(
+                          success
+                              ? parcel
+                                  ? 'your_parcel_request_is_placed_successfully'.tr
+                                  : 'Thank you for your Order!\nWe will process your order soon, you can track your order status till the order is delivered to you. You can cancel your order before your Order is Confirmed by BQ Team.'
+                              : 'your_order_is_failed_to_place_because'.tr,
+                          style: robotoMedium.copyWith(
+                            fontSize: Dimensions.fontSizeSmall,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                 ),
 
                 ResponsiveHelper.isDesktop(context) && (success && Get.find<SplashController>().configModel!.loyaltyPointStatus == 1 && total.floor() > 0 ) && AuthHelper.isLoggedIn()  ? Column(children: [

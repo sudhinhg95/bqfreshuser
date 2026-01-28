@@ -78,6 +78,8 @@ class CategoryRepository implements CategoryRepositoryInterface {
 
   Future<ItemModel?> _getCategoryItemList(String? categoryID, int offset, String type) async {
     ItemModel? categoryItem;
+    // AppConstants.categoryItemUri already contains the trailing slash, so
+    // avoid adding another one here to prevent URLs like `items//{id}`.
     Response response = await apiClient.getData('${AppConstants.categoryItemUri}$categoryID?limit=10&offset=$offset&type=$type');
     if (response.statusCode == 200) {
       categoryItem = ItemModel.fromJson(response.body);

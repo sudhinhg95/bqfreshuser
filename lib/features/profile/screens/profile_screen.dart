@@ -97,6 +97,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
+                              isLoggedIn && (profileController.userInfoModel?.phone != null && profileController.userInfoModel!.phone!.isNotEmpty) ? Text(
+                                profileController.userInfoModel!.phone!,
+                                style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).textTheme.bodyLarge!.color),
+                              ) : const SizedBox(),
+
+                              isLoggedIn && (profileController.userInfoModel?.phone != null && profileController.userInfoModel!.phone!.isNotEmpty)
+                                  ? const SizedBox(height: Dimensions.paddingSizeExtraSmall)
+                                  : const SizedBox(),
+
                               isLoggedIn ? Text(
                                 '${'joined'.tr} ${DateConverter.containTAndZToUTCFormat(profileController.userInfoModel!.createdAt!)}',
                                 style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).primaryColor),

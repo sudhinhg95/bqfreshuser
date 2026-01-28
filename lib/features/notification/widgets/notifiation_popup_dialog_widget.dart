@@ -67,12 +67,20 @@ class _NewRequestDialogState extends State<NotificationPopUpDialogWidget> {
                 if(widget.payloadModel.image != 'null')
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: FadeInImage.assetNetwork(
-                      image: widget.payloadModel.image!,
-                      height: 100,
-                      width: 500,
-                      placeholder: Images.placeholder,
-                      imageErrorBuilder: (c, o, s) => Image.asset(Images.placeholder, height: 70, width: 80, fit: BoxFit.cover),
+                    child: SizedBox(
+                      width: 220,
+                      height: 120,
+                      child: FadeInImage.assetNetwork(
+                        image: widget.payloadModel.image!,
+                        placeholder: Images.placeholder,
+                        fit: BoxFit.cover,
+                        imageErrorBuilder: (c, o, s) => Image.asset(
+                          Images.placeholder,
+                          height: 70,
+                          width: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ),
 

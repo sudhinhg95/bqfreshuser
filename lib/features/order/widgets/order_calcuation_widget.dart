@@ -145,11 +145,14 @@ class OrderCalculationWidget extends StatelessWidget {
                     ) : const SizedBox(),
                     SizedBox(height: Get.find<SplashController>().getModuleConfig(order.moduleType).addOn! ? 10 : 0),
 
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Text('discount'.tr, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall)),
-                      Text('(-) ${PriceConverter.convertPrice(discount)}', style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall), textDirection: TextDirection.ltr),
-                    ]),
-                    const SizedBox(height: 10),
+                    discount > 0 ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('discount'.tr, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall)),
+                        Text('(-) ${PriceConverter.convertPrice(discount)}', style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall), textDirection: TextDirection.ltr),
+                      ],
+                    ) : const SizedBox(),
+                    SizedBox(height: discount > 0 ? 10 : 0),
 
                     couponDiscount > 0 ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       Text('coupon_discount'.tr, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall)),
@@ -282,36 +285,7 @@ class OrderCalculationWidget extends StatelessWidget {
             ),
             const SizedBox(height: Dimensions.paddingSizeSmall),
 
-            AuthHelper.isLoggedIn() ? TextButton(
-              onPressed: () async {
-                if(ResponsiveHelper.isDesktop(context)) {
-                  await Get.dialog(Dialog(child: SupportReasonBottomSheet(orderId: order.id!, timerCancel: timerCancel, startApiCall: startApiCall,)));
-                } else {
-                  await Get.bottomSheet(SupportReasonBottomSheet(orderId: order.id!, timerCancel: timerCancel, startApiCall: startApiCall,), backgroundColor: Colors.transparent, isScrollControlled: true,);
-                }
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  const CustomAssetImageWidget(Images.chatSupport, height: 20, width: 20),
-                  const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-
-                  Flexible(
-                    child: RichText(text: TextSpan(children: [
-                      TextSpan(
-                        text: '${'message_to'.tr} ',
-                        style: robotoMedium.copyWith(color: Theme.of(context).textTheme.bodyMedium!.color),
-                      ),
-                      TextSpan(
-                        text: Get.find<SplashController>().configModel!.businessName,
-                        style: robotoMedium.copyWith(color: Colors.blue, fontSize: Dimensions.fontSizeDefault, decoration: TextDecoration.underline),
-                      ),
-                    ]), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ),
-                ],
-              ),
-            ) : const SizedBox(),
+            const SizedBox(),
 
             SizedBox(height: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeLarge : 0),
             ResponsiveHelper.isDesktop(context) ? Padding(

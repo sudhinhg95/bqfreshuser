@@ -5,6 +5,7 @@ import 'package:sixam_mart/features/review/domain/models/review_body_model.dart'
 import 'package:sixam_mart/features/review/domain/models/review_model.dart';
 import 'package:sixam_mart/features/order/domain/models/order_details_model.dart';
 import 'package:sixam_mart/features/review/domain/services/review_service_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReviewController extends GetxController implements GetxService {
   final ReviewServiceInterface reviewServiceInterface;
@@ -30,6 +31,43 @@ class ReviewController extends GetxController implements GetxService {
 
   int _deliveryManRating = 0;
   int get deliveryManRating => _deliveryManRating;
+
+  final Set<int> _reviewedOrderIds = <int>{};
+
+  static const String _reviewedOrdersKey = 'reviewed_orders';
+  bool _reviewedLoaded = false;
+
+  void _loadReviewedFromStorage() {
+    if (_reviewedLoaded) return;
+    try {
+      final SharedPreferences prefs = Get.find<SharedPreferences>();
+      final List<String> stored = prefs.getStringList(_reviewedOrdersKey) ?? <String>[];
+      _reviewedOrderIds
+        ..clear()
+        ..addAll(stored.map((e) => int.tryParse(e)).whereType<int>());
+    } catch (_) {}
+    _reviewedLoaded = true;
+  }
+
+  bool isOrderReviewed(int? orderId) {
+    if (orderId == null) {
+      return false;
+    }
+    _loadReviewedFromStorage();
+    return _reviewedOrderIds.contains(orderId);
+  }
+
+  void markOrderReviewed(int? orderId) {
+    if (orderId != null) {
+      _loadReviewedFromStorage();
+      if (_reviewedOrderIds.add(orderId)) {
+        try {
+          final SharedPreferences prefs = Get.find<SharedPreferences>();
+          prefs.setStringList(_reviewedOrdersKey, _reviewedOrderIds.map((e) => e.toString()).toList());
+        } catch (_) {}
+      }
+    }
+  }
 
   Future<void> getStoreReviewList(String? storeID) async {
     _storeReviewList = null;

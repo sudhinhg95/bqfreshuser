@@ -373,7 +373,14 @@ class MenuIconButton extends StatelessWidget {
                 decoration: BoxDecoration(shape: BoxShape.circle, color: Theme.of(context).primaryColor),
                 child: Text(
                   cartController.cartList.length.toString(),
-                  style: robotoRegular.copyWith(fontSize: 12, color: Theme.of(context).cardColor),
+                  style: robotoRegular.copyWith(
+                    fontSize: 12,
+                    // Use white text for the badge in dark mode
+                    // so the count is clearly visible.
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Theme.of(context).cardColor,
+                  ),
                 ),
               ),
             ) : const SizedBox()

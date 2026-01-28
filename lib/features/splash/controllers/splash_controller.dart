@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:sixam_mart/common/enums/data_source_enum.dart';
 import 'package:sixam_mart/common/models/response_model.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
@@ -137,7 +138,20 @@ class SplashController extends GetxController implements GetxService {
           );
           return;
         } else {
-          _hasConnection = false;
+          bool isOffline = true;
+          try {
+            final List<ConnectivityResult> results = await Connectivity().checkConnectivity();
+            isOffline = results.contains(ConnectivityResult.none);
+          } catch (_) {
+            // If connectivity check fails, keep treating as offline
+          }
+
+          if(isOffline) {
+            _hasConnection = false;
+          } else {
+            // Server/API issue while device still has network
+            showCustomSnackBar(ApiClient.noInternetMessage);
+          }
         }
       }
     }

@@ -80,6 +80,22 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                     SizedBox(height: isLoggedIn && profileController.userInfoModel == null ? Dimensions.paddingSizeSmall : Dimensions.paddingSizeExtraSmall),
 
+                    if(isLoggedIn && profileController.userInfoModel != null
+                      && profileController.userInfoModel!.phone != null
+                      && profileController.userInfoModel!.phone!.isNotEmpty)
+                      Text(
+                        profileController.userInfoModel!.phone!,
+                        style: robotoRegular.copyWith(
+                          fontSize: Dimensions.fontSizeSmall,
+                          color: Theme.of(context).cardColor,
+                        ),
+                      ),
+
+                    if(isLoggedIn && profileController.userInfoModel != null
+                      && profileController.userInfoModel!.phone != null
+                      && profileController.userInfoModel!.phone!.isNotEmpty)
+                      const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+
                     isLoggedIn && profileController.userInfoModel == null ? Shimmer(
                       child: Container(
                         height: 15, width: 100,
@@ -144,7 +160,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     child: Column(children: [
                       PortionWidget(icon: Images.profileIcon, title: 'profile'.tr, route: RouteHelper.getProfileRoute()),
                       PortionWidget(icon: Images.addressIcon, title: 'my_address'.tr, route: RouteHelper.getAddressRoute()),
-                      PortionWidget(icon: Images.languageIcon, title: 'language'.tr, hideDivider: true, onTap: ()=> _manageLanguageFunctionality(), route: ''),
+                      PortionWidget(icon: Images.languageIcon, title: 'language'.tr, onTap: ()=> _manageLanguageFunctionality(), route: ''),
                     ]),
                   )
 
@@ -173,17 +189,15 @@ class _MenuScreenState extends State<MenuScreen> {
                     child: Column(children: [
                       PortionWidget(
                         icon: Images.couponIcon, title: 'coupon'.tr, route: RouteHelper.getCouponRoute(),
-                        hideDivider: Get.find<SplashController>().configModel!.loyaltyPointStatus == 1 || Get.find<SplashController>().configModel!.customerWalletStatus == 1 ? false : true,
                       ),
 
                       (Get.find<SplashController>().configModel!.loyaltyPointStatus == 1) ? PortionWidget(
                           icon: Images.pointIcon, title: 'loyalty_points'.tr, route: RouteHelper.getLoyaltyRoute(),
-                        hideDivider: Get.find<SplashController>().configModel!.customerWalletStatus == 1 ? false : true,
                         suffix: !isLoggedIn ? null : '${profileController.userInfoModel?.loyaltyPoint != null ? profileController.userInfoModel!.loyaltyPoint.toString() : '0'} ${'points'.tr}' ,
                       ) : const SizedBox(),
 
                       (Get.find<SplashController>().configModel!.customerWalletStatus == 1) ? PortionWidget(
-                          icon: Images.walletIcon, title: 'my_wallet'.tr, hideDivider: true, route: RouteHelper.getWalletRoute(),
+                          icon: Images.walletIcon, title: 'my_wallet'.tr, route: RouteHelper.getWalletRoute(),
                         suffix: !isLoggedIn ? null : PriceConverter.convertPrice(profileController.userInfoModel != null ? profileController.userInfoModel!.walletBalance : 0),
                       ) : const SizedBox(),
                     ]),
@@ -216,18 +230,15 @@ class _MenuScreenState extends State<MenuScreen> {
 
                       (Get.find<SplashController>().configModel!.refEarningStatus == 1 ) ? PortionWidget(
                           icon: Images.referIcon, title: 'refer_and_earn'.tr, route: RouteHelper.getReferAndEarnRoute(),
-                        hideDivider: (Get.find<SplashController>().configModel!.toggleDmRegistration! && !ResponsiveHelper.isDesktop(context)) ||
-                            (Get.find<SplashController>().configModel!.toggleStoreRegistration! && !ResponsiveHelper.isDesktop(context)) ? false : true,
                       ) : const SizedBox(),
 
                       (Get.find<SplashController>().configModel!.toggleDmRegistration! && !ResponsiveHelper.isDesktop(context)) ? PortionWidget(
                           icon: Images.dmIcon, title: 'join_as_a_delivery_man'.tr, route: RouteHelper.getDeliverymanRegistrationRoute(),
-                        hideDivider: (Get.find<SplashController>().configModel!.toggleStoreRegistration! && !ResponsiveHelper.isDesktop(context)) ? false : true,
                       ) : const SizedBox(),
 
-                      (Get.find<SplashController>().configModel!.toggleStoreRegistration! && !ResponsiveHelper.isDesktop(context)) ? PortionWidget(
-                          icon: Images.storeIcon, title: 'open_vendor'.tr, hideDivider: true, route: RouteHelper.getRestaurantRegistrationRoute(),
-                      ) : const SizedBox(),
+                        (Get.find<SplashController>().configModel!.toggleStoreRegistration! && !ResponsiveHelper.isDesktop(context)) ? PortionWidget(
+                          icon: Images.storeIcon, title: 'open_vendor'.tr, route: RouteHelper.getRestaurantRegistrationRoute(),
+                        ) : const SizedBox(),
                     ]),
                   )
                 ]) : const SizedBox(),
@@ -261,18 +272,15 @@ class _MenuScreenState extends State<MenuScreen> {
 
                       (Get.find<SplashController>().configModel!.refundPolicyStatus == 1 ) ? PortionWidget(
                           icon: Images.refundIcon, title: 'refund_policy'.tr, route: RouteHelper.getHtmlRoute('refund-policy'),
-                        hideDivider: (Get.find<SplashController>().configModel!.cancellationPolicyStatus == 1 ) ||
-                            (Get.find<SplashController>().configModel!.shippingPolicyStatus == 1 ) ? false : true,
                       ) : const SizedBox(),
 
                       (Get.find<SplashController>().configModel!.cancellationPolicyStatus == 1 ) ? PortionWidget(
                           icon: Images.cancelationIcon, title: 'cancellation_policy'.tr, route: RouteHelper.getHtmlRoute('cancellation-policy'),
-                        hideDivider: (Get.find<SplashController>().configModel!.shippingPolicyStatus == 1 ) ? false : true,
                       ) : const SizedBox(),
 
-                      (Get.find<SplashController>().configModel!.shippingPolicyStatus == 1 ) ? PortionWidget(
-                          icon: Images.shippingIcon, title: 'shipping_policy'.tr, hideDivider: true, route: RouteHelper.getHtmlRoute('shipping-policy'),
-                      ) : const SizedBox(),
+                        (Get.find<SplashController>().configModel!.shippingPolicyStatus == 1 ) ? PortionWidget(
+                          icon: Images.shippingIcon, title: 'shipping_policy'.tr, route: RouteHelper.getHtmlRoute('shipping-policy'),
+                        ) : const SizedBox(),
                     ]),
                   )
                 ]),

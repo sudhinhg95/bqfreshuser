@@ -127,8 +127,11 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
               cart = OnlineCart(
                 cartId, widget.item!.id, null, priceWithDiscount.toString(), '',
                 variation != null ? [variation] : [], null,
-                itemController.cartIndex != -1 ? cartController.cartList[itemController.cartIndex].quantity
-                    : itemController.quantity, listOfAddOnId, addOnsList, listOfAddOnQty, 'Item',
+                // Always use the editable quantity from itemController so that
+                // changes made with +/- are only applied to the cart when the
+                // user taps Add/Update in Cart.
+                itemController.quantity,
+                listOfAddOnId, addOnsList, listOfAddOnQty, 'Item',
                 taxFlag: (widget.item!.tax != null && widget.item!.tax == 1) ? 1 : 0,
               );
               priceWithAddons = priceWithQuantity + (Get.find<SplashController>().configModel!.moduleConfig!.module!.addOn! ? addonsCost : 0);
@@ -213,9 +216,10 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                         // Quantity + all variation lines for this item in cart
                         GetBuilder<CartController>(
                           builder: (cartController) {
-                            final int quantity = itemController.cartIndex != -1
-                                ? cartController.cartList[itemController.cartIndex].quantity ?? 0
-                                : itemController.quantity ?? 0;
+                            // Use the item controller's quantity as the editable value.
+                            // The cart quantities shown in "Your order" will only change
+                            // after the user taps Add/Update in Cart.
+                            final int quantity = itemController.quantity ?? 0;
 
                             // Find all cart lines for this item (all variations)
                             List<Widget> variationLines = [];
@@ -287,14 +291,8 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                     child: Row(children: [
                                       InkWell(
                                         onTap: cartController.isLoading ? null : () {
-                                          if(itemController.cartIndex != -1) {
-                                            if(cartController.cartList[itemController.cartIndex].quantity! > 1) {
-                                              cartController.setQuantity(false, itemController.cartIndex, stock, cartController.cartList[itemController.cartIndex].quantity);
-                                            }
-                                          }else {
-                                            if(itemController.quantity! > 1) {
-                                              itemController.setQuantity(false, stock, itemController.item!.quantityLimit);
-                                            }
+                                          if(itemController.quantity! > 1) {
+                                            itemController.setQuantity(false, stock, itemController.item!.quantityLimit);
                                           }
                                         },
                                         child: const Padding(
@@ -309,9 +307,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                       ),
 
                                       InkWell(
-                                        onTap: cartController.isLoading ? null : () => itemController.cartIndex != -1
-                                            ? cartController.setQuantity(true, itemController.cartIndex, stock, cartController.cartList[itemController.cartIndex].quantityLimit)
-                                            : itemController.setQuantity(true, stock, itemController.item!.quantityLimit),
+                                        onTap: cartController.isLoading ? null : () {
+                                          itemController.setQuantity(true, stock, itemController.item!.quantityLimit);
+                                        },
                                         child: const Padding(
                                           padding: EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
                                           child: Icon(Icons.add, size: 20),
@@ -454,56 +452,92 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
 
                 GetBuilder<CartController>(
                   builder: (cartController) {
+                    final bool hasSchedule = itemController.item!.availableDateStarts != null;
+                    final bool combinationExists = itemController.cartIndex != -1;
+                    final int? originalQuantity = itemController.quantity;
+                    final int? currentCartQuantity = combinationExists
+                        ? cartController.cartList[itemController.cartIndex].quantity
+                        : null;
+                    final bool quantityChanged = combinationExists
+                        ? (originalQuantity != null && currentCartQuantity != null && originalQuantity != currentCartQuantity)
+                        : false;
+
+                    String primaryButtonText;
+                    if (hasSchedule) {
+                      primaryButtonText = 'order_now'.tr;
+                    } else if (combinationExists && !quantityChanged) {
+                      primaryButtonText = 'view_cart'.tr;
+                    } else if (combinationExists && quantityChanged) {
+                      primaryButtonText = 'update_in_cart'.tr;
+                    } else {
+                      primaryButtonText = 'add_to_cart'.tr;
+                    }
+
                     return Container(
                       width: 1170,
                       padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
                       child: CustomButton(
                         isLoading: cartController.isLoading,
                         // Hide visible 'out_of_stock' label; button remains disabled when stock <= 0
-                        buttonText: itemController.item!.availableDateStarts != null ? 'order_now'.tr : itemController.cartIndex != -1 ? 'update_in_cart'.tr : 'add_to_cart'.tr,
+                        buttonText: primaryButtonText,
+                        color: (!hasSchedule && combinationExists && !quantityChanged)
+                            ? Colors.green
+                            : null,
                         onPressed: (!Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! || stock! > 0) ?  () async {
                           if(!Get.find<SplashController>().configModel!.moduleConfig!.module!.stock! || stock! > 0) {
-                            if(itemController.item!.availableDateStarts != null) {
+                            if(hasSchedule) {
                               Get.toNamed(RouteHelper.getCheckoutRoute('campaign'), arguments: CheckoutScreen(
                                 storeId: null, fromCart: false, cartList: [cartModel],
                               ));
                             }else {
-                              if (cartController.existAnotherStoreItem(cartModel!.item!.storeId, Get.find<SplashController>().module == null ? Get.find<SplashController>().cacheModule!.id : Get.find<SplashController>().module!.id)) {
-                                Get.dialog(ConfirmationDialog(
-                                  icon: Images.warning,
-                                  title: 'are_you_sure_to_reset'.tr,
-                                  description: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText!
-                                      ? 'if_you_continue'.tr : 'if_you_continue_without_another_store'.tr,
-                                  onYesPressed: () {
-                                    Get.back();
-                                    cartController.clearCartOnline().then((success) async {
-                                      if(success) {
-                                        await cartController.addToCartOnline(cart!);
+                              // If current combination already exists and quantity is unchanged,
+                              // simply take the user to the cart instead of updating.
+                              if (combinationExists && !quantityChanged) {
+                                Get.toNamed(RouteHelper.getCartRoute());
+                              } else {
+                                if (cartController.existAnotherStoreItem(cartModel!.item!.storeId,
+                                    Get.find<SplashController>().module == null
+                                        ? Get.find<SplashController>().cacheModule!.id
+                                        : Get.find<SplashController>().module!.id)) {
+                                  Get.dialog(ConfirmationDialog(
+                                    icon: Images.warning,
+                                    title: 'are_you_sure_to_reset'.tr,
+                                    description: Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText!
+                                        ? 'if_you_continue'.tr
+                                        : 'if_you_continue_without_another_store'.tr,
+                                    onYesPressed: () {
+                                      Get.back();
+                                      cartController.clearCartOnline().then((success) async {
+                                        if (success) {
+                                          await cartController.addToCartOnline(cart!);
+                                          itemController.setExistInCart(widget.item, null);
+                                          showCartSnackBar();
+                                        }
+                                      });
+                                    },
+                                  ), barrierDismissible: false);
+                                } else {
+                                  if (!combinationExists) {
+                                    await cartController.addToCartOnline(cart!).then((success) {
+                                      if (success) {
                                         itemController.setExistInCart(widget.item, null);
                                         showCartSnackBar();
+                                        _key.currentState!.shake();
                                       }
                                     });
-
-                                  },
-                                ), barrierDismissible: false);
-                              } else {
-                                if(itemController.cartIndex == -1) {
-                                  await cartController.addToCartOnline(cart!).then((success) {
-                                    if(success){
-                                      itemController.setExistInCart(widget.item, null);
-                                      showCartSnackBar();
-                                      _key.currentState!.shake();
-                                    }
-                                  });
-                                } else {
-                                  await cartController.updateCartOnline(cart!).then((success) {
-                                    if(success) {
-                                      showCartSnackBar();
-                                      _key.currentState!.shake();
-                                    }
-                                  });
+                                  } else {
+                                    await cartController.updateCartOnline(cart!).then((success) {
+                                      if (success) {
+                                        // Refresh itemController's view of this cart line so
+                                        // the updated quantity becomes the new baseline and
+                                        // the button label changes back to "View cart".
+                                        itemController.setExistInCart(widget.item, null);
+                                        showCartSnackBar();
+                                        _key.currentState!.shake();
+                                      }
+                                    });
+                                  }
                                 }
-
                               }
                             }
                           }

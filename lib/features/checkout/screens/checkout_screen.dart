@@ -133,18 +133,21 @@ class CheckoutScreenState extends State<CheckoutScreen> {
         widget.fromCart ? _cartList!.addAll(Get.find<CartController>().cartList) : _cartList!.addAll(widget.cartList!);
         if(_cartList != null && _cartList!.isNotEmpty) {
           await Get.find<CheckoutController>().initCheckoutData(_cartList![0]!.item!.storeId);
-          // Compute initial distance using the currently selected address (index 0 in-zone),
-          // falling back to saved address if list is not yet available.
+          // Compute initial distance using the same address as the
+          // Home screen "your location" (saved user address),
+          // falling back to the first in-zone saved address list.
           final store = Get.find<CheckoutController>().store;
           final addrList = Get.find<AddressController>().addressList;
+          final saved = AddressHelper.getUserAddressFromSharedPref();
           AddressModel? origin;
-          if (store != null && addrList != null && addrList.isNotEmpty) {
+          if (store != null && saved != null && saved.zoneIds != null && saved.zoneIds!.contains(store.zoneId)) {
+            origin = saved;
+          } else if (store != null && addrList != null && addrList.isNotEmpty) {
             final inZone = addrList.where((a) => a.zoneIds != null && a.zoneIds!.contains(store.zoneId)).toList();
             if (inZone.isNotEmpty) {
               origin = inZone.first;
             }
           }
-          origin ??= AddressHelper.getUserAddressFromSharedPref();
           if (origin != null && store != null) {
             await Get.find<CheckoutController>().getDistanceInKM(
               LatLng(double.parse(origin.latitude!), double.parse(origin.longitude!)),
@@ -159,14 +162,16 @@ class CheckoutScreenState extends State<CheckoutScreen> {
         // Compute initial distance as above for direct store checkout
         final store = Get.find<CheckoutController>().store;
         final addrList = Get.find<AddressController>().addressList;
+        final saved = AddressHelper.getUserAddressFromSharedPref();
         AddressModel? origin;
-        if (store != null && addrList != null && addrList.isNotEmpty) {
+        if (store != null && saved != null && saved.zoneIds != null && saved.zoneIds!.contains(store.zoneId)) {
+          origin = saved;
+        } else if (store != null && addrList != null && addrList.isNotEmpty) {
           final inZone = addrList.where((a) => a.zoneIds != null && a.zoneIds!.contains(store.zoneId)).toList();
           if (inZone.isNotEmpty) {
             origin = inZone.first;
           }
         }
-        origin ??= AddressHelper.getUserAddressFromSharedPref();
         if (origin != null && store != null) {
           await Get.find<CheckoutController>().getDistanceInKM(
             LatLng(double.parse(origin.latitude!), double.parse(origin.longitude!)),
@@ -686,14 +691,26 @@ class CheckoutScreenState extends State<CheckoutScreen> {
 
   List<AddressModel> _getAddressList({required List<AddressModel>? addressList, required Store? store}) {
     List<AddressModel> address = [];
-    // Prefer the user's saved addresses (with "home" first) over the
-    // generic stored location used on the store/home screens.
+    final saved = AddressHelper.getUserAddressFromSharedPref();
+
+    // Always try to put the currently selected "your location" first,
+    // as long as it is in the same zone as the store.
+    if (store != null && saved != null && saved.zoneIds != null && saved.zoneIds!.contains(store.zoneId)) {
+      address.add(saved);
+    }
+
+    // Then append any other saved addresses returned from backend that
+    // are in the same zone, avoiding duplicates and ordering by
+    // Home -> Office -> Others.
     if (addressList != null && store != null) {
       final List<AddressModel> filtered = addressList
           .where((a) => a.zoneIds != null && a.zoneIds!.contains(store.zoneId))
           .toList();
 
-      // Sort so that Home appears first, then Office, then Others.
+      if (saved != null && saved.id != null) {
+        filtered.removeWhere((a) => a.id == saved.id);
+      }
+
       filtered.sort((a, b) {
         int score(AddressModel m) {
           if (m.addressType == 'home') return 0;
@@ -707,14 +724,12 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       address.addAll(filtered);
     }
 
-    // As a fallback (e.g. no address list loaded yet), still use the
-    // shared-pref user address if present.
-    if (address.isEmpty) {
-      final saved = AddressHelper.getUserAddressFromSharedPref();
-      if (saved != null) {
-        address.add(saved);
-      }
+    // As a final fallback (e.g. address list null or no in-zone
+    // addresses), still use the shared-pref user address if present.
+    if (address.isEmpty && saved != null) {
+      address.add(saved);
     }
+
     return address;
   }
 
@@ -948,17 +963,17 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     for (final cartModel in cartList) {
       if (cartModel == null || cartModel.item == null) continue;
 
-      // In this setup, the item price we receive from the cart
-      // already represents the full line total (i.e. unit price
-      // multiplied by quantity, including variations/add-ons and
-      // item-level discounts). We should NOT multiply by quantity
-      // again when building the taxable amount.
-      double lineBase;
-      if (cartModel.discountedPrice != null) {
-        lineBase = cartModel.discountedPrice!;
+      // Build the line total as unit price (discounted if available)
+      // multiplied by quantity, so VAT scales correctly with quantity.
+      final int quantity = cartModel.quantity ?? 1;
+      double unitBase;
+      if (cartModel.discountedPrice != null && cartModel.discountedPrice! > 0) {
+        unitBase = cartModel.discountedPrice!;
       } else {
-        lineBase = cartModel.price ?? 0;
+        unitBase = cartModel.price ?? 0;
       }
+
+      final double lineBase = unitBase * quantity;
 
       if (lineBase <= 0) continue;
 
@@ -1106,9 +1121,22 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       );
     }
 
-    // Only make take-away orders free by definition. Do not
-    // override the calculated deliveryCharge to 0 based on
-    // store/admin/coupon flags so that the real fee is shown.
+    // Apply admin "free delivery by order amount" rule based on
+    // the order amount BEFORE VAT/tax. If the pre-tax amount is
+    // greater than or equal to the configured minimum, delivery
+    // should be free.
+    final configModel = Get.find<SplashController>().configModel;
+    final adminFree = configModel?.adminFreeDelivery;
+    if (orderType != 'take_away' &&
+        adminFree != null &&
+        adminFree.status == true &&
+        adminFree.type == 'free_delivery_by_order_amount' &&
+        adminFree.freeDeliveryOver != null &&
+        orderAmount >= adminFree.freeDeliveryOver!) {
+      deliveryCharge = 0;
+    }
+
+    // Only make take-away orders free by definition.
     if (orderType == 'take_away') {
       deliveryCharge = 0;
     }

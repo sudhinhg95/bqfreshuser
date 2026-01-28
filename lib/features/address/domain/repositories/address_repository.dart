@@ -34,7 +34,16 @@ class AddressRepository implements AddressRepositoryInterface<AddressModel> {
   }
 
   Future<ResponseModel> _removeAddressByID(int? id) async {
-    Response response = await apiClient.postData('${AppConstants.removeAddressUri}$id', {"_method": "delete"}, handleError: false);
+    // Send the ID both in the URL and in the body so the
+    // backend can read it as a path param or as address_id.
+    Response response = await apiClient.postData(
+      '${AppConstants.removeAddressUri}$id',
+      {
+        '_method': 'delete',
+        'address_id': id,
+      },
+      handleError: false,
+    );
     if (response.statusCode == 200) {
       return ResponseModel(true, response.body['message']);
     } else {

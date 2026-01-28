@@ -65,25 +65,21 @@ class _AccessLocationScreenState extends State<AccessLocationScreen> {
     final bool isNetworkAvailable = !results.contains(ConnectivityResult.none);
 
     if (!isNetworkAvailable) {
-      Get.offAll(() => const NoInternetScreen());
+      // Show a lightweight message instead of kicking the user
+      // out to a global NoInternetScreen, which felt like the
+      // app was randomly restarting.
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('no_internet_connection'.tr, style: const TextStyle(color: Colors.white)),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(Dimensions.paddingSizeSmall),
+      ));
       return;
     }
 
-    try {
-      final response = await http.get(Uri.parse('https://www.google.com'))
-          .timeout(const Duration(seconds: 3));
-
-      if (response.statusCode != 200) {
-        Get.offAll(() => const NoInternetScreen());
-      }
-
-    } on SocketException catch (_) {
-      Get.offAll(() => const NoInternetScreen());
-    } on TimeoutException catch (_) {
-      Get.offAll(() => const NoInternetScreen());
-    } catch (_) {
-      Get.offAll(() => const NoInternetScreen());
-    }
+    // Do not probe an external site like Google; rely on actual
+    // API call failures to reflect connectivity issues.
   }
 
   @override

@@ -68,11 +68,19 @@ class PaymentSection extends StatelessWidget {
 
         ]) : const SizedBox() : InkWell(
           onTap: () {
-            if(ResponsiveHelper.isDesktop(context) && checkoutController.paymentMethodIndex == -1){
+            if(ResponsiveHelper.isDesktop(context)){
               Get.dialog(Dialog(backgroundColor: Colors.transparent, child: PaymentMethodBottomSheet(
                 isCashOnDeliveryActive: isCashOnDeliveryActive, isDigitalPaymentActive: isDigitalPaymentActive,
                 isWalletActive: isWalletActive, storeId: storeId, totalPrice: total, isOfflinePaymentActive: isOfflinePaymentActive,
               )));
+            } else {
+              Get.bottomSheet(
+                PaymentMethodBottomSheet(
+                  isCashOnDeliveryActive: isCashOnDeliveryActive, isDigitalPaymentActive: isDigitalPaymentActive,
+                  isWalletActive: isWalletActive, storeId: storeId, totalPrice: total, isOfflinePaymentActive: isOfflinePaymentActive,
+                ),
+                backgroundColor: Colors.transparent, isScrollControlled: true,
+              );
             }
           },
           child: Row(children: [
