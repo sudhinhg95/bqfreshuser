@@ -390,6 +390,7 @@
   "ratings": "ratings",
   "select_module": "Select Module",
   "no_module_found": "No module found",
+  "please_upload_lower_size_file": "Please upload a smaller image (max 1 MB).",
   "year": "year",
   "month": "month",
   "week": "week",

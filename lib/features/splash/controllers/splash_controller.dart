@@ -123,6 +123,13 @@ class SplashController extends GetxController implements GetxService {
       } else {
         route(body: notificationBody);
       }
+      // Once we have successfully loaded config at least once, we
+      // should not hard-switch the entire app into a global
+      // "No internet" state on later transient failures. Keeping
+      // `_hasConnection` true after a success avoids random
+      // full-screen offline pages on iOS while the device is
+      // actually online.
+      _hasConnection = true;
       _onRemoveLoader();
     }else {
       if(response.statusText == ApiClient.noInternetMessage) {
@@ -147,7 +154,15 @@ class SplashController extends GetxController implements GetxService {
           }
 
           if(isOffline) {
-            _hasConnection = false;
+            // Only show the blocking NoInternetScreen when we have
+            // never loaded config before. If config is already in
+            // memory, keep the app usable and surface issues via a
+            // snackbar instead of a full-page error.
+            if (_configModel == null) {
+              _hasConnection = false;
+            } else {
+              showCustomSnackBar(ApiClient.noInternetMessage);
+            }
           } else {
             // Server/API issue while device still has network
             showCustomSnackBar(ApiClient.noInternetMessage);

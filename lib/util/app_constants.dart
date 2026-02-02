@@ -14,7 +14,6 @@ class AppConstants {
   static const bool useReactWebsite = false;
  
   static const String baseUrl = 'https://admin.bqfresh.com';
-//  static const String baseUrl = 'http://localhost/admin.bqfresh.com';
 
   /// Store links
   static const String playStoreUrl = 'https://play.google.com/store/apps/details?id=com.bqfresh.app';
