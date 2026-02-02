@@ -190,10 +190,22 @@ class LocationController extends GetxController implements GetxService {
       return;
     }
 
-    ZoneResponseModel response = await getZone(AddressHelper.getUserAddressFromSharedPref()!.latitude, AddressHelper.getUserAddressFromSharedPref()!.longitude, false, updateInAddress: true);
-    if(response.zoneIds.isEmpty) {
-      await AddressHelper.saveUserAddressInSharedPref(AddressModel());
-      Get.toNamed(RouteHelper.getAccessLocationRoute(RouteHelper.splash));
+    AddressModel? savedAddress = AddressHelper.getUserAddressFromSharedPref();
+
+    // If there is no saved address yet, do not force navigation from here.
+    if (savedAddress == null || savedAddress.latitude == null || savedAddress.longitude == null) {
+      return;
+    }
+
+    ZoneResponseModel response = await getZone(savedAddress.latitude, savedAddress.longitude, false, updateInAddress: true);
+
+    // If zone lookup failed or returned no zones, keep existing address/zone
+    // and show a lightweight message instead of clearing address or
+    // redirecting to the Access Location screen on every app reopen.
+    if (!response.isSuccess || response.zoneIds.isEmpty) {
+      if (response.message != null && response.message!.isNotEmpty) {
+        showCustomSnackBar(response.message!);
+      }
     } else {
       AddressModel address = AddressHelper.getUserAddressFromSharedPref()!;
       address.zoneId = response.zoneIds[0];
