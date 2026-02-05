@@ -23,11 +23,29 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return ResponsiveHelper.isDesktop(context) ? const WebMenuBar() : AppBar(
       title: Text(title, style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge, fontWeight: FontWeight.w600, color: Theme.of(context).textTheme.bodyLarge!.color)),
       centerTitle: true,
-      leading: backButton ? IconButton(
-        icon: leadingIcon != null ? Image.asset(leadingIcon!, height: 22, width: 22) : const Icon(Icons.arrow_back_ios),
-        color: Theme.of(context).textTheme.bodyLarge!.color,
-        onPressed: () => onBackPressed != null ? onBackPressed!() : Navigator.pop(context),
-      ) : const SizedBox(),
+      leadingWidth: 48,
+      leading: backButton
+          ? Padding(
+              padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
+              child: InkWell(
+                onTap: () => onBackPressed != null ? onBackPressed!() : Navigator.pop(context),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: leadingIcon != null
+                        ? Image.asset(leadingIcon!, height: 16, width: 16)
+                        : Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+                  ),
+                ),
+              ),
+            )
+          : const SizedBox(),
       backgroundColor: Theme.of(context).cardColor,
       surfaceTintColor: Theme.of(context).cardColor,
       shadowColor: Theme.of(context).disabledColor.withOpacity( 0.5),

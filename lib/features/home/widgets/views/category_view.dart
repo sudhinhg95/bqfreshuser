@@ -42,7 +42,9 @@ class CategoryView extends StatelessWidget {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 130,
+                    // Slightly increased to prevent bottom overflow of
+                    // image + label on smaller devices / larger text.
+                    height: 140,
                     child: categoryController.categoryList != null ? ListView.builder(
                       controller: scrollController,
                       itemCount: categoryController.categoryList!.length > 10 ? 10 : categoryController.categoryList!.length,

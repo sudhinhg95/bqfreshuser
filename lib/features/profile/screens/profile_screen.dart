@@ -67,9 +67,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
                         child: SafeArea(
                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            !ResponsiveHelper.isDesktop(context) ? IconButton(
-                              onPressed: () => Get.back(),
-                              icon: const Icon(Icons.arrow_back_ios),
+                            !ResponsiveHelper.isDesktop(context) ? Padding(
+                              padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
+                              child: InkWell(
+                                onTap: () => Get.back(),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  height: 32,
+                                  width: 32,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).primaryColor.withOpacity(0.10),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+                                  ),
+                                ),
+                              ),
                             ) : const SizedBox(),
 
                             Text('profile'.tr, style: robotoBold.copyWith(fontSize: Dimensions.fontSizeLarge)),

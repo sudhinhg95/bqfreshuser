@@ -180,17 +180,31 @@ class SearchScreenState extends State<SearchScreen> with TickerProviderStateMixi
               padding: const EdgeInsets.only(bottom: 5),
               child: Row(children: [
 
-                IconButton(
-                  onPressed: (){
-                    if(searchController.isSearchMode) {
-                      Get.back();
-                    } else {
-                      _showSuggestion = false;
-                      searchController.setSearchMode(true);
-                      searchController.setStore(false);
-                    }
-                  },
-                  icon: const Icon(Icons.arrow_back_ios_new),
+                Padding(
+                  padding: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
+                  child: InkWell(
+                    onTap: (){
+                      if(searchController.isSearchMode) {
+                        Get.back();
+                      } else {
+                        _showSuggestion = false;
+                        searchController.setSearchMode(true);
+                        searchController.setStore(false);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      height: 32,
+                      width: 32,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withOpacity(0.10),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+                      ),
+                    ),
+                  ),
                 ),
 
                 Expanded(child: Container(

@@ -190,7 +190,7 @@ class DeliverySection extends StatelessWidget {
               ),
             ),
           ]) : Container(
-            constraints: BoxConstraints(minHeight: ResponsiveHelper.isDesktop(context) ? 80 : 70),
+            constraints: BoxConstraints(minHeight: ResponsiveHelper.isDesktop(context) ? 80 : 80),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
               color: Theme.of(context).primaryColor.withOpacity( 0.1),
@@ -215,7 +215,9 @@ class DeliverySection extends StatelessWidget {
 
               },
               dropdownButtonStyle: DropdownButtonStyle(
-                height: 40,
+                // Slightly taller so the AddressWidget content fits
+                // without causing a bottom overflow inside the row.
+                height: 60,
                 padding: const EdgeInsets.symmetric(
                   vertical: Dimensions.paddingSizeExtraSmall,
                   horizontal: Dimensions.paddingSizeExtraSmall,

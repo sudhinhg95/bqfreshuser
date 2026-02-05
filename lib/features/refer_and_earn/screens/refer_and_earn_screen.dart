@@ -155,7 +155,8 @@ class _ReferAndEarnScreenState extends State<ReferAndEarnScreen> {
                             InkWell(
                               onTap: () {
                                 final String code = profileController.userInfoModel?.refCode ?? '';
-                                final String message = '${AppConstants.appName} ${'referral_code'.tr}:\n$code\n\n'
+                                final String highlightedCode = code.isNotEmpty ? '*$code*' : code;
+                                final String message = '${AppConstants.appName} ${'referral_code'.tr}:\n$highlightedCode\n\n'
                                     '${'download_app_from_this_link'.tr}:\n'
                                     'Android: ${AppConstants.playStoreUrl}\n'
                                     'iOS: ${AppConstants.appStoreUrl}';

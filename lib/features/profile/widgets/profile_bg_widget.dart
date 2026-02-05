@@ -49,9 +49,20 @@ class ProfileBgWidget extends StatelessWidget {
 
         backButton ? Positioned(
           top: MediaQuery.of(context).padding.top, left: 10,
-          child: IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).cardColor, size: 20),
-            onPressed: () => Get.back(),
+          child: InkWell(
+            onTap: () => Get.back(),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              height: 32,
+              width: 32,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor.withOpacity(0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(Icons.arrow_back_rounded, color: Theme.of(context).cardColor, size: 18),
+              ),
+            ),
           ),
         ) : const SizedBox(),
 

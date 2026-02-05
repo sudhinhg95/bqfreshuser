@@ -46,9 +46,23 @@ class _StoreItemSearchScreenState extends State<StoreItemSearchScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeSmall),
                 child: Row(children: [
 
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).primaryColor),
+                  Padding(
+                    padding: const EdgeInsets.only(right: Dimensions.paddingSizeSmall),
+                    child: InkWell(
+                      onTap: () => Get.back(),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        height: 32,
+                        width: 32,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.10),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+                        ),
+                      ),
+                    ),
                   ),
 
                   Expanded(child: TextField(

@@ -153,16 +153,30 @@ class CategoryItemScreenState extends State<CategoryItemScreen> with TickerProvi
               fontSize: Dimensions.fontSizeLarge, color: Theme.of(context).textTheme.bodyLarge!.color,
             )),
             centerTitle: false,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              color: Theme.of(context).textTheme.bodyLarge!.color,
-              onPressed: () {
-                if(catController.isSearching) {
-                  catController.toggleSearch();
-                }else {
-                  Get.back();
-                }
-              },
+            leadingWidth: 48,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
+              child: InkWell(
+                onTap: () {
+                  if(catController.isSearching) {
+                    catController.toggleSearch();
+                  }else {
+                    Get.back();
+                  }
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+                  ),
+                ),
+              ),
             ),
             actions: [
 

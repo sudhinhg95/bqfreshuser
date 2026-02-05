@@ -101,15 +101,30 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Scaffold(
           endDrawer: const MenuDrawer(),endDrawerEnableOpenDragGesture: false,
           appBar: (ResponsiveHelper.isDesktop(context) ? const WebMenuBar() : AppBar(
-            leading: IconButton(
-              onPressed: () {
-                if(widget.fromNotification) {
-                  Get.offAllNamed(RouteHelper.getInitialRoute());
-                }else {
-                  Get.back();
-                }
-              },
-              icon: const Icon(Icons.arrow_back_ios),
+            leadingWidth: 48,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
+              child: InkWell(
+                onTap: () {
+                  if(widget.fromNotification) {
+                    Get.offAllNamed(RouteHelper.getInitialRoute());
+                  }else {
+                    Get.back();
+                  }
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+                  ),
+                ),
+              ),
             ),
             title: Text(
               chatController.messageModel != null ? '${chatController.messageModel!.conversation!.receiver!.fName}'' ${chatController.messageModel!.conversation!.receiver!.lName}' : 'receiver_name'.tr,

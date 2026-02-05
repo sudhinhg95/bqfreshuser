@@ -19,10 +19,28 @@ class SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: (ResponsiveHelper.isDesktop(context) ? null : !widget.exitFromApp ? AppBar(leading: IconButton(
-        onPressed: () => Get.back(),
-        icon: Icon(Icons.arrow_back_ios_rounded, color: Theme.of(context).textTheme.bodyLarge!.color),
-      ), elevation: 0, backgroundColor: Colors.transparent,
+      appBar: (ResponsiveHelper.isDesktop(context) ? null : !widget.exitFromApp ? AppBar(
+        leadingWidth: 48,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: Dimensions.paddingSizeSmall),
+          child: InkWell(
+            onTap: () => Get.back(),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              height: 32,
+              width: 32,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(Icons.arrow_back_rounded, size: 18, color: Theme.of(context).primaryColor),
+              ),
+            ),
+          ),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         actions: const [SizedBox()],
       ) : null),
       backgroundColor: ResponsiveHelper.isDesktop(context) ? Colors.transparent : Theme.of(context).cardColor,
