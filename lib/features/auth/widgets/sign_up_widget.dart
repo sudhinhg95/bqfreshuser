@@ -325,7 +325,8 @@ class SignUpWidgetState extends State<SignUpWidget> {
 
     if (status.isSuccess) {
       if(ResponsiveHelper.isDesktop(context)) {
-        Get.find<CartController>().getCartDataOnline();
+        // On desktop, avoid wiping any existing guest cart immediately after signup.
+        Get.find<CartController>().getCartDataOnline(overrideLocal: false);
       }
       if(status.authResponseModel != null && !status.authResponseModel!.isPhoneVerified!) {
         List<int> encoded = utf8.encode(password);
@@ -344,20 +345,6 @@ class SignUpWidgetState extends State<SignUpWidget> {
               numberWithCountryCode, null, status.message, RouteHelper.signUp, data, CentralizeLoginType.manual.name,
             ));
           }
-        }
-      } else if(status.authResponseModel != null && !status.authResponseModel!.isEmailVerified!) {
-        List<int> encoded = utf8.encode(password);
-        String data = base64Encode(encoded);
-        if(ResponsiveHelper.isDesktop(context)) {
-          Get.back();
-          Get.dialog(VerificationScreen(
-            number: null, email: email, token: status.message, fromSignUp: true,
-            fromForgetPassword: false, loginType: CentralizeLoginType.manual.name, password: password,
-          ));
-        } else {
-          Get.toNamed(RouteHelper.getVerificationRoute(
-            null, email, status.message, RouteHelper.signUp, data, CentralizeLoginType.manual.name,
-          ));
         }
       } else {
         Get.find<ProfileController>().getUserInfo();

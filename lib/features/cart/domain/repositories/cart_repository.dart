@@ -35,6 +35,28 @@ class CartRepository implements CartRepositoryInterface<OnlineCart> {
     await sharedPreferences.setStringList(AppConstants.cartList, cartStringList);
   }
 
+  @override
+  Future<List<CartModel>> getSharedPrefCartList() async {
+    List<CartModel> cartList = [];
+
+    if (sharedPreferences.containsKey(AppConstants.cartList)) {
+      final List<String> carts = sharedPreferences.getStringList(AppConstants.cartList) ?? [];
+
+      for (final String cartString in carts) {
+        if (cartString.isEmpty) continue;
+        final CartModel cartModel = CartModel.fromJson(jsonDecode(cartString));
+
+        // Only restore carts for the currently active module to
+        // avoid mixing data across modules.
+        if (cartModel.item?.moduleId == _getModuleId()) {
+          cartList.add(cartModel);
+        }
+      }
+    }
+
+    return cartList;
+  }
+
   int _getModuleId() {
     return ModuleHelper.getModule()?.id ?? ModuleHelper.getCacheModule()?.id ?? 0;
   }

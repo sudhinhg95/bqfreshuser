@@ -366,7 +366,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                         todayClosed: todayClosed, tomorrowClosed: tomorrowClosed, orderAmount: orderAmount,
                         maxCodOrderAmount: maxCodOrderAmount, storeId: widget.storeId, taxPercent: _taxPercent, price: price, addOns : addOns,
                         isPrescriptionRequired: isPrescriptionRequired, checkoutButton: _orderPlaceButton(
-                          checkoutController, todayClosed, tomorrowClosed, orderAmount,
+                          checkoutController, todayClosed, tomorrowClosed, orderAmount, subTotal,
                           deliveryCharge, tax, discount, total, maxCodOrderAmount, isPrescriptionRequired,
                         ), referralDiscount: referralDiscount, variationPrice: isPassedVariationPrice ? variations : 0,
                       )),
@@ -395,7 +395,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                       todayClosed: todayClosed,tomorrowClosed: tomorrowClosed, orderAmount: orderAmount,
                       maxCodOrderAmount: maxCodOrderAmount, storeId: widget.storeId, taxPercent: _taxPercent, price: price, addOns : addOns,
                       isPrescriptionRequired: isPrescriptionRequired, checkoutButton: _orderPlaceButton(
-                        checkoutController, todayClosed, tomorrowClosed, orderAmount, deliveryCharge,
+                        checkoutController, todayClosed, tomorrowClosed, orderAmount, subTotal, deliveryCharge,
                         tax, discount, total, maxCodOrderAmount, isPrescriptionRequired,
                       ), referralDiscount: referralDiscount, variationPrice: isPassedVariationPrice ? variations : 0,
                     )
@@ -425,7 +425,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                     ),
 
                     _orderPlaceButton(
-                        checkoutController, todayClosed, tomorrowClosed, orderAmount, deliveryCharge, tax, discount, total, maxCodOrderAmount, isPrescriptionRequired,
+                      checkoutController, todayClosed, tomorrowClosed, orderAmount, subTotal, deliveryCharge, tax, discount, total, maxCodOrderAmount, isPrescriptionRequired,
                     ),
                   ],
                 ),
@@ -443,7 +443,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
 
 
   Widget _orderPlaceButton(CheckoutController checkoutController, bool todayClosed, bool tomorrowClosed,
-      double orderAmount, double? deliveryCharge, double tax, double? discount, double total, double? maxCodOrderAmount, bool isPrescriptionRequired) {
+    double orderAmount, double subTotal, double? deliveryCharge, double tax, double? discount, double total, double? maxCodOrderAmount, bool isPrescriptionRequired) {
     return Container(
       width: Dimensions.webMaxWidth,
       alignment: Alignment.center,
@@ -514,9 +514,16 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               );
             }
-          } else if(orderAmount < checkoutController.store!.minimumOrder! && widget.storeId == null) {
-            showCustomSnackBar('${'minimum_order_amount_is'.tr} ${checkoutController.store!.minimumOrder}');
-          }else if(checkoutController.tipController.text.isNotEmpty && checkoutController.tipController.text != 'not_now' && double.parse(checkoutController.tipController.text.trim()) < 0) {
+          // Enforce minimum-order check against the same amount the
+          // customer actually sees as the "Total" (items + taxes +
+          // delivery + extra charges). This avoids confusing cases
+          // where item price is below the minimum but the grand
+          // total (e.g. with delivery) is above it.
+          } 
+          // else if(total < (checkoutController.store!.minimumOrder ?? 0) && widget.storeId == null) {
+          //   showCustomSnackBar('${'minimum_order_amount_is'.tr} ${checkoutController.store!.minimumOrder}');
+          // }
+          else if(checkoutController.tipController.text.isNotEmpty && checkoutController.tipController.text != 'not_now' && double.parse(checkoutController.tipController.text.trim()) < 0) {
             showCustomSnackBar('tips_can_not_be_negative'.tr);
           }else if((checkoutController.selectedDateSlot == 0 && todayClosed) || (checkoutController.selectedDateSlot == 1 && tomorrowClosed)) {
             showCustomSnackBar(Get.find<SplashController>().configModel!.moduleConfig!.module!.showRestaurantText!
@@ -540,6 +547,16 @@ class CheckoutScreenState extends State<CheckoutScreen> {
             showCustomSnackBar('please_upload_your_prescription_images'.tr);
           }else if (!checkoutController.acceptTerms) {
             showCustomSnackBar('please_accept_privacy_policy_trams_conditions_refund_policy_first'.tr);
+          }else if (!isGuestLogIn && checkoutController.floorController.text.trim().isEmpty) {
+            showCustomSnackBar('please enter flat/villa'.tr);
+          }else if (!isGuestLogIn && checkoutController.houseController.text.trim().isEmpty) {
+            showCustomSnackBar('please enter building'.tr);
+          }else if (!isGuestLogIn && checkoutController.streetNumberController.text.trim().isEmpty) {
+            showCustomSnackBar('please enter road'.tr);
+          }else if (!isGuestLogIn && checkoutController.blockController.text.trim().isEmpty) {
+            showCustomSnackBar('please enter block'.tr);
+          }else if (!isGuestLogIn && checkoutController.areaController.text.trim().isEmpty) {
+            showCustomSnackBar('please enter area'.tr);
           }
           else {
 

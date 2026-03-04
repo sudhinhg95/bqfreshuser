@@ -254,7 +254,10 @@ class AuthRepository implements AuthRepositoryInterface{
     sharedPreferences.remove(AppConstants.token);
     sharedPreferences.remove(AppConstants.guestId);
     sharedPreferences.setStringList(AppConstants.cartList, []);
-    // sharedPreferences.remove(AppConstants.userAddress);
+    // Also clear any persisted delivery address so that a
+    // newly-logged-in user never sees a previous user’s address
+    // in checkout.
+    sharedPreferences.remove(AppConstants.userAddress);
     apiClient.token = null;
     // apiClient.updateHeader(null, null, null, null, null, null, null);
     await guestLogin();

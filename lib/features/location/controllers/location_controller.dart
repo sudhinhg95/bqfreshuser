@@ -260,6 +260,9 @@ class LocationController extends GetxController implements GetxService {
 
     bool hasInternet = await checkInternet();
     if (!hasInternet) {
+      if(Get.isDialogOpen == true) {
+        Get.back();
+      }
       return;
     }
 

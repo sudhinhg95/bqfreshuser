@@ -410,14 +410,14 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                         ) : const SizedBox(),
                                         SizedBox(height: widget.forGuest ? Dimensions.paddingSizeLarge : 0),
 
-                                        // Row 1: Flat/Villa, Building
+                                        // Row 1: Flat/Villa, Building (required)
                                         Row(children: [
                                           Expanded(
                                             child: CustomTextField(
                                               hintText: 'Flat/Villa'.tr,
                                               showLabelText: false,
                                               showTitle: true,
-                                              titleText: "${'Flat/Villa'.tr} (${'optional'.tr})",
+                                              titleText: 'Flat/Villa'.tr,
                                               inputType: TextInputType.text,
                                               focusNode: _floorNode,
                                               nextFocus: _houseNode,
@@ -430,7 +430,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                             child: CustomTextField(
                                               showTitle: true,
                                               hintText: 'house_name'.tr,
-                                              titleText: '${'house'.tr} (${'optional'.tr})',
+                                              titleText: 'house'.tr,
                                               showLabelText: false,
                                               inputType: TextInputType.text,
                                               focusNode: _houseNode,
@@ -441,13 +441,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                         ]),
                                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
-                                        // Row 2: Road, Block
+                                        // Row 2: Road, Block (required)
                                         Row(children: [
                                           Expanded(
                                             child: CustomTextField(
                                               showTitle: true,
                                               hintText: 'Road'.tr,
-                                              titleText: '${'Road'.tr} (${'optional'.tr})',
+                                              titleText: 'Road'.tr,
                                               showLabelText: false,
                                               inputType: TextInputType.streetAddress,
                                               focusNode: _streetNode,
@@ -461,7 +461,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                             child: CustomTextField(
                                               showTitle: true,
                                               hintText: 'block'.tr,
-                                              titleText: "${'block'.tr} (${'optional'.tr})",
+                                              titleText: 'block'.tr,
                                               showLabelText: false,
                                               inputType: TextInputType.text,
                                               focusNode: _blockNode,
@@ -472,11 +472,11 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                         ]),
                                         const SizedBox(height: Dimensions.paddingSizeLarge),
 
-                                        // Row 3: Area
+                                        // Row 3: Area (required)
                                         CustomTextField(
                                           showTitle: true,
                                           hintText: 'area'.tr,
-                                          titleText: "${'area'.tr} (${'optional'.tr})",
+                                          titleText: 'area'.tr,
                                           showLabelText: false,
                                           inputType: TextInputType.text,
                                           focusNode: _areaNode,
@@ -724,11 +724,11 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   ) : const SizedBox(),
                   SizedBox(height: widget.forGuest ? Dimensions.paddingSizeExtremeLarge : 0),
 
-                  // Row 1: Flat/Villa, Building
+                  // Row 1: Flat/Villa, Building (required)
                   Row(children: [
                     Expanded(
                       child: CustomTextField(
-                        labelText: "${'Flat/Villa'.tr} (${'optional'.tr})",
+                        labelText: 'Flat/Villa'.tr,
                         titleText: 'Flat/Villa'.tr,
                         inputType: TextInputType.text,
                         focusNode: _floorNode,
@@ -740,7 +740,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                     Expanded(
                       child: CustomTextField(
-                        labelText: '${'Building'.tr} (${'optional'.tr})',
+                        labelText: 'Building'.tr,
                         titleText: 'Building'.tr,
                         inputType: TextInputType.text,
                         focusNode: _houseNode,
@@ -752,11 +752,11 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                   const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
 
-                  // Row 2: Road, Block
+                  // Row 2: Road, Block (required)
                   Row(children: [
                     Expanded(
                       child: CustomTextField(
-                        labelText: '${'Road'.tr} (${'optional'.tr})',
+                        labelText: 'Road'.tr,
                         titleText: 'Road'.tr,
                         inputType: TextInputType.streetAddress,
                         focusNode: _streetNode,
@@ -768,7 +768,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                     Expanded(
                       child: CustomTextField(
-                        labelText: "${'Block'.tr} (${'optional'.tr})",
+                        labelText: 'Block'.tr,
                         titleText: 'Block'.tr,
                         inputType: TextInputType.text,
                         focusNode: _blockNode,
@@ -780,8 +780,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                   const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
 
+                  // Area (required)
                   CustomTextField(
-                    labelText: "${'Area'.tr} (${'optional'.tr})",
+                    labelText: 'Area'.tr,
                     titleText: 'Area'.tr,
                     inputType: TextInputType.text,
                     focusNode: _areaNode,
@@ -870,6 +871,16 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
       showCustomSnackBar('invalid_phone_number'.tr);
     } else if(widget.forGuest && _emailController.text.isEmpty) {
       showCustomSnackBar('please_enter_contact_person_email'.tr);
+    } else if(_floorController.text.isEmpty) {
+      showCustomSnackBar('please enter flat/villa'.tr);
+    } else if(_houseController.text.isEmpty) {
+      showCustomSnackBar('please enter building'.tr);
+    } else if(_streetNumberController.text.isEmpty) {
+      showCustomSnackBar('please enter road'.tr);
+    } else if(_blockController.text.isEmpty) {
+      showCustomSnackBar('please enter block'.tr);
+    } else if(_areaController.text.isEmpty) {
+      showCustomSnackBar('please enter area'.tr);
     } else {
       AddressModel addressModel = AddressModel(
         id: widget.address?.id,

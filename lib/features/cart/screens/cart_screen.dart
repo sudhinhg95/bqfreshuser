@@ -540,16 +540,22 @@ class CheckoutButton extends StatelessWidget {
 
           final double minOrder = store?.minimumOrder ?? 0;
           final bool hasMinOrderConfig = minOrder > 0;
-          final bool isMinOrderSatisfied = !hasMinOrderConfig || cartController.subTotal >= minOrder;
 
-          double remainingMinOrder = hasMinOrderConfig ? (minOrder - cartController.subTotal) : 0;
+          // For the cart banner, mirror checkout logic as closely as
+          // possible by basing the progress on the item subtotal the
+          // user sees there. This keeps the "X more for minimum
+          // order" hint in sync with the actual blocking rule.
+          final double currentForMinOrder = cartController.subTotal;
+          final bool isMinOrderSatisfied = !hasMinOrderConfig || currentForMinOrder >= minOrder;
+
+          double remainingMinOrder = hasMinOrderConfig ? (minOrder - currentForMinOrder) : 0;
           if(remainingMinOrder < 0) {
             remainingMinOrder = 0;
           }
 
           double minOrderProgress = 0;
           if(hasMinOrderConfig && minOrder > 0) {
-            minOrderProgress = cartController.subTotal / minOrder;
+            minOrderProgress = currentForMinOrder / minOrder;
             if(minOrderProgress > 1) {
               minOrderProgress = 1;
             }

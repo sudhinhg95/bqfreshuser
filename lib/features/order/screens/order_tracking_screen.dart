@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:sixam_mart/common/controllers/theme_controller.dart';
@@ -19,6 +20,7 @@ import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/marker_helper.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/common/widgets/custom_app_bar.dart';
@@ -28,6 +30,7 @@ import 'package:sixam_mart/features/order/widgets/tracking_stepper_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class OrderTrackingScreen extends StatefulWidget {
   final String? orderID;
@@ -47,6 +50,7 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
   Timer? _timer;
   bool showChatPermission = true;
   bool isHovered = false;
+  bool _routeErrorShown = false;
 
   void _loadData() async {
     await Get.find<OrderController>().trackOrder(widget.orderID, null, true, contactNumber: widget.contactNumber);
@@ -58,7 +62,7 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   void _startApiCall(){
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
       Get.find<OrderController>().timerTrackOrder(widget.orderID.toString(), contactNumber: widget.contactNumber);
     });
   }
@@ -233,42 +237,67 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
         width: 30, imagePath: takeAway ? Images.myLocationMarker : Images.userMarker,
       );
 
-      /// Animate to coordinate
+      /// Animate to coordinate: compute bounds that include user, store and delivery man
       LatLngBounds? bounds;
       double rotation = 0;
       if(_controller != null) {
-        if (double.parse(addressModel!.latitude!) < double.parse(store!.latitude!)) {
+        List<LatLng> boundPoints = [];
+
+        // For tracking, focus the camera on the live trip only:
+        // rider + user destination. We still show the store marker,
+        // but do not include it in the bounds so the view
+        // stays tight around the current route instead of the
+        // original pickup location.
+        if (addressModel != null && addressModel.latitude != null && addressModel.longitude != null) {
+          boundPoints.add(LatLng(double.parse(addressModel.latitude!), double.parse(addressModel.longitude!)));
+        }
+        if (deliveryMan != null && deliveryMan.lat != null && deliveryMan.lng != null) {
+          boundPoints.add(LatLng(double.parse(deliveryMan.lat!), double.parse(deliveryMan.lng!)));
+        }
+
+        if (boundPoints.length >= 2) {
+          double south = boundPoints.first.latitude;
+          double north = boundPoints.first.latitude;
+          double west = boundPoints.first.longitude;
+          double east = boundPoints.first.longitude;
+
+          for (final point in boundPoints.skip(1)) {
+            south = south > point.latitude ? point.latitude : south;
+            north = north < point.latitude ? point.latitude : north;
+            west = west > point.longitude ? point.longitude : west;
+            east = east < point.longitude ? point.longitude : east;
+          }
+
           bounds = LatLngBounds(
-            southwest: LatLng(double.parse(addressModel.latitude!), double.parse(addressModel.longitude!)),
-            northeast: LatLng(double.parse(store.latitude!), double.parse(store.longitude!)),
+            southwest: LatLng(south, west),
+            northeast: LatLng(north, east),
           );
-          rotation = 0;
-        }else {
-          bounds = LatLngBounds(
-            southwest: LatLng(double.parse(store.latitude!), double.parse(store.longitude!)),
-            northeast: LatLng(double.parse(addressModel.latitude!), double.parse(addressModel.longitude!)),
-          );
-          rotation = 180;
         }
       }
-      LatLng centerBounds = LatLng(
-        (bounds!.northeast.latitude + bounds.southwest.latitude)/2,
-        (bounds.northeast.longitude + bounds.southwest.longitude)/2,
-      );
+      LatLng centerBounds = bounds != null
+          ? LatLng(
+              (bounds.northeast.latitude + bounds.southwest.latitude) / 2,
+              (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
+            )
+          : LatLng(
+              double.parse(addressModel!.latitude!),
+              double.parse(addressModel.longitude!),
+            );
 
       if(fromCurrentLocation && currentAddress != null) {
         LatLng currentLocation = LatLng(
           double.parse(currentAddress.latitude!),
           double.parse(currentAddress.longitude!),
         );
-        _controller!.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(target: currentLocation, zoom: GetPlatform.isWeb ? 7 : 15)));
+        _controller!.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: currentLocation, zoom: GetPlatform.isWeb ? 15 : 17)));
       }
 
-      if(!fromCurrentLocation) {
-        _controller!.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(target: centerBounds, zoom: GetPlatform.isWeb ? 10 : 17)));
-        if(!ResponsiveHelper.isWeb()) {
-          zoomToFit(_controller, bounds, centerBounds, padding: GetPlatform.isWeb ? 15 : 3);
-        }
+      if(!fromCurrentLocation && bounds != null) {
+        // Fit all key points (user, store, rider) nicely on screen with padding
+        _controller!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
+      } else if (!fromCurrentLocation) {
+        // Fallback if bounds could not be computed
+        _controller!.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: centerBounds, zoom: GetPlatform.isWeb ? 15 : 17)));
       }
 
       /// user for normal order , but sender for parcel order
@@ -326,24 +355,37 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
         icon: deliveryBoyImageData,
       )) : const SizedBox();
 
-      // Build a simple straight-line polyline between delivery person and destination/store
+      // Build a route polyline between delivery person and destination/store using direction-api,
+      // falling back to a straight line if route data is unavailable
       try {
         _polylines = HashSet<Polyline>();
-        List<LatLng> points = [];
-        if (deliveryMan != null) {
-          points.add(LatLng(double.parse(deliveryMan.lat ?? '0'), double.parse(deliveryMan.lng ?? '0')));
-        }
-        // prefer destination (addressModel) as the end point, else store coords
-        if (addressModel != null && addressModel.latitude != null) {
-          points.add(LatLng(double.parse(addressModel.latitude!), double.parse(addressModel.longitude!)));
-        } else if (store != null) {
-          points.add(LatLng(double.parse(store.latitude!), double.parse(store.longitude!)));
+
+        LatLng? origin;
+        LatLng? destination;
+
+        if (deliveryMan != null && deliveryMan.lat != null && deliveryMan.lng != null) {
+          origin = LatLng(double.parse(deliveryMan.lat!), double.parse(deliveryMan.lng!));
         }
 
-        if (points.length >= 2) {
+        if (addressModel != null && addressModel.latitude != null && addressModel.longitude != null) {
+          destination = LatLng(double.parse(addressModel.latitude!), double.parse(addressModel.longitude!));
+        } else if (store != null && store.latitude != null && store.longitude != null) {
+          destination = LatLng(double.parse(store.latitude!), double.parse(store.longitude!));
+        }
+
+        List<LatLng> routePoints = [];
+        if (origin != null && destination != null) {
+          routePoints = await _getRoutePoints(origin, destination);
+        }
+
+        if (routePoints.isEmpty && origin != null && destination != null) {
+          routePoints = [origin, destination];
+        }
+
+        if (routePoints.length >= 2) {
           _polylines.add(Polyline(
             polylineId: const PolylineId('route'),
-            points: points,
+            points: routePoints,
             color: Get.theme.primaryColor,
             width: 4,
           ));
@@ -387,6 +429,95 @@ class OrderTrackingScreenState extends State<OrderTrackingScreen> {
     final bool southWestLongitudeCheck = screenBounds.southwest.longitude <= fitBounds.southwest.longitude;
 
     return northEastLatitudeCheck && northEastLongitudeCheck && southWestLatitudeCheck && southWestLongitudeCheck;
+  }
+
+  Future<List<LatLng>> _getRoutePoints(LatLng origin, LatLng destination) async {
+    try {
+      // Call Google Directions directly using the same JSON format you sent.
+      final String url =
+          'https://maps.googleapis.com/maps/api/directions/json?origin='
+          '${origin.latitude},${origin.longitude}&destination='
+          '${destination.latitude},${destination.longitude}'
+          '&mode=driving&key=${AppConstants.googleMapsApiKey}';
+
+      final http.Response response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is Map) {
+          if (data['status'] == 'OK') {
+            final dynamic routes = data['routes'];
+            if (routes is List && routes.isNotEmpty) {
+              final dynamic overview = routes[0]['overview_polyline'];
+              if (overview is Map && overview['points'] is String) {
+                final points = _decodePolyline(overview['points'] as String);
+                if (!_routeErrorShown) {
+                  _routeErrorShown = true;
+                  // ignore: avoid_print
+                  print('Directions OK, route points: ${points.length}');
+                }
+                return points;
+              }
+            }
+          } else if (!_routeErrorShown) {
+            _routeErrorShown = true;
+            final dynamic status = data['status'];
+            final dynamic errorMessage = data['error_message'];
+            // Log once so you can see the real problem in the console
+            // (for example: REQUEST_DENIED, API not enabled, etc.).
+            // This does not crash the app; we still fall back to straight line.
+            // You can see this in "flutter run" / browser console.
+            // ignore: avoid_print
+            print('Google Directions API error: status=' '$status' ', message=' '$errorMessage');
+          }
+        }
+      } else if (!_routeErrorShown) {
+        _routeErrorShown = true;
+        // ignore: avoid_print
+        print('Google Directions HTTP error: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      if (!_routeErrorShown) {
+        _routeErrorShown = true;
+        // ignore: avoid_print
+        print('Google Directions exception: $e');
+      }
+    }
+    return <LatLng>[];
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> points = <LatLng>[];
+    int index = 0;
+    int len = encoded.length;
+    int lat = 0;
+    int lng = 0;
+
+    while (index < len) {
+      int result = 0;
+      int shift = 0;
+      int b;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlat = ((result & 1) != 0) ? ~(result >> 1) : (result >> 1);
+      lat += dlat;
+
+      result = 0;
+      shift = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      int dlng = ((result & 1) != 0) ? ~(result >> 1) : (result >> 1);
+      lng += dlng;
+
+      points.add(LatLng(lat / 1e5, lng / 1e5));
+    }
+
+    return points;
   }
 
   void _checkPermission(Function onTap) async {

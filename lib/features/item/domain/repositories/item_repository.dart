@@ -254,7 +254,7 @@ class ItemRepository implements ItemRepositoryInterface {
     // Fetch a larger pool from the backend, then apply the per-category
     // limit on the client side so each category can contribute up to
     // `perCategoryLimit` items.
-    const int serverLimit = perCategoryLimit * 50; // adjust multiplier if needed
+    const int serverLimit = perCategoryLimit * 100; // adjust multiplier if needed
 
     String cacheId = '${AppConstants.featuredCategoriesItemsUri}?limit=$serverLimit&offset=1${Get.find<SplashController>().module!.id!}';
 

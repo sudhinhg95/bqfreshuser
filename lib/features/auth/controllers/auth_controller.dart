@@ -143,7 +143,10 @@ class AuthController extends GetxController implements GetxService {
         && responseModel.authResponseModel!.isEmailVerified! && responseModel.authResponseModel!.isPersonalInfo!
         && responseModel.authResponseModel!.isExistUser == null) {
       Get.find<ProfileController>().getUserInfo();
-      Get.find<CartController>().getCartDataOnline();
+      // Preserve any existing guest cart when the user just logged in or completed profile.
+      // If the server already has cart items, they will overwrite the local cart;
+      // if the server cart is empty, we keep the current cart as-is.
+      Get.find<CartController>().getCartDataOnline(overrideLocal: false);
     }
   }
 

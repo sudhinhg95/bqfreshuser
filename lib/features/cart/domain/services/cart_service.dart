@@ -171,6 +171,11 @@ class CartService implements CartServiceInterface {
   }
 
   @override
+  Future<List<CartModel>> getSharedPrefCartList() async {
+    return await cartRepositoryInterface.getSharedPrefCartList();
+  }
+
+  @override
   int? getCartId(int cartIndex, List<CartModel> cartList) {
     if(cartIndex != -1) {
       return cartList.isNotEmpty ? cartList[cartIndex].id : null;

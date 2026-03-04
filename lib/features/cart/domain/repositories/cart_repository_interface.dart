@@ -3,6 +3,7 @@ import 'package:sixam_mart/interfaces/repository_interface.dart';
 
 abstract class CartRepositoryInterface<OnlineCart> extends RepositoryInterface<OnlineCart> {
   Future<void> addSharedPrefCartList(List<CartModel> cartProductList);
+  Future<List<CartModel>> getSharedPrefCartList();
   @override
   Future<dynamic> update(Map<String, dynamic> body, int? id, {double price, int quantity, bool isUpdateQty = false});
   @override

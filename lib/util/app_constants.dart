@@ -12,8 +12,12 @@ class AppConstants {
   static const int balanceInputLen = 10;
   static const String webHostedUrl = 'https://bqfresh.com';
   static const bool useReactWebsite = false;
+  // Google Maps API key used for Directions routing on client (match web index.html key)
+  static const String googleMapsApiKey = 'AIzaSyCA5G2-xZk5qkmuw12nw4Rb8gUM1Dp0sTw';
  
   static const String baseUrl = 'https://admin.bqfresh.com';
+  // static const String baseUrl = 'http://localhost/admin.bqfresh.com';
+
 
   /// Store links
   static const String playStoreUrl = 'https://play.google.com/store/apps/details?id=com.bqfresh.app';

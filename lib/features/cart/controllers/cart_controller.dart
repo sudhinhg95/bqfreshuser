@@ -191,6 +191,7 @@ class CartController extends GetxController implements GetxService {
 
   Future<void> clearCartList({bool canRemoveOnline = true}) async {
     _cartList = [];
+    await cartServiceInterface.addSharedPrefCartList(_cartList);
     if((AuthHelper.isLoggedIn() || AuthHelper.isGuestLoggedIn()) && (ModuleHelper.getModule() != null || ModuleHelper.getCacheModule() != null) && canRemoveOnline) {
       clearCartOnline();
     }
@@ -220,6 +221,7 @@ class CartController extends GetxController implements GetxService {
       _cartList = [];
       _cartList.addAll(cartServiceInterface.formatOnlineCartToLocalCart(onlineCartModel: onlineCartList));
       calculationCart();
+      await cartServiceInterface.addSharedPrefCartList(_cartList);
       success = true;
     }
     _isLoading = false;
@@ -237,6 +239,7 @@ class CartController extends GetxController implements GetxService {
       _cartList = [];
       _cartList.addAll(cartServiceInterface.formatOnlineCartToLocalCart(onlineCartModel: onlineCartList));
       calculationCart();
+      await cartServiceInterface.addSharedPrefCartList(_cartList);
       success = true;
     }
     _isLoading = false;
@@ -258,14 +261,35 @@ class CartController extends GetxController implements GetxService {
     update();
   }
 
-  Future<void> getCartDataOnline() async {
+  Future<void> getCartDataOnline({bool overrideLocal = false}) async {
     if(ModuleHelper.getModule() != null || ModuleHelper.getCacheModule() != null) {
       _isLoading = true;
       List<OnlineCartModel>? onlineCartList = await cartServiceInterface.getCartDataOnline();
       if(onlineCartList != null) {
-        _cartList = [];
-        _cartList.addAll(cartServiceInterface.formatOnlineCartToLocalCart(onlineCartModel: onlineCartList));
-        calculationCart();
+        // When overrideLocal is false (e.g., just after login/signup
+        // or after app reload), keep a locally cached cart if the
+        // server has no items yet.
+        if(onlineCartList.isNotEmpty || overrideLocal) {
+          _cartList = [];
+          _cartList.addAll(cartServiceInterface.formatOnlineCartToLocalCart(onlineCartModel: onlineCartList));
+          calculationCart();
+          await cartServiceInterface.addSharedPrefCartList(_cartList);
+        } else {
+          final List<CartModel> localCart = await cartServiceInterface.getSharedPrefCartList();
+          if (localCart.isNotEmpty) {
+            _cartList = localCart;
+            calculationCart();
+          }
+        }
+      } else {
+        // If the network call failed or returned null, fall back to
+        // any locally cached cart data so the user does not lose
+        // their cart on app reload.
+        final List<CartModel> localCart = await cartServiceInterface.getSharedPrefCartList();
+        if (localCart.isNotEmpty) {
+          _cartList = localCart;
+          calculationCart();
+        }
       }
       _isLoading = false;
       update();
@@ -292,6 +316,8 @@ class CartController extends GetxController implements GetxService {
     update();
     bool success = await cartServiceInterface.clearCartOnline();
     if(success) {
+      _cartList = [];
+      await cartServiceInterface.addSharedPrefCartList(_cartList);
       getCartDataOnline();
     }
     _isLoading = false;

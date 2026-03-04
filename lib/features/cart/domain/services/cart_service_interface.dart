@@ -13,6 +13,7 @@ abstract class CartServiceInterface {
   double calculateVariationWithoutDiscountPrice(bool isFoodVariation, CartModel cartModel, double variationWithoutDiscount);
   bool checkVariation(bool isFoodVariation, CartModel cartModel);
   Future<void> addSharedPrefCartList(List<CartModel> cartProductList);
+  Future<List<CartModel>> getSharedPrefCartList();
   int? getCartId(int cartIndex, List<CartModel> cartList);
   Future<int> decideItemQuantity(bool isIncrement, List<CartModel> cartList, int cartIndex, int? stock, int ? quantityLimit, bool moduleStock);
   Future<double> calculateDiscountedPrice(CartModel cartModel, int quantity, bool isFoodVariation);
