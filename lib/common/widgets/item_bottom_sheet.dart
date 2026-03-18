@@ -827,8 +827,18 @@ class NewVariationView extends StatelessWidget {
           padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
           margin: EdgeInsets.only(bottom: index != item!.foodVariations!.length - 1 ? Dimensions.paddingSizeLarge : 0),
           decoration: BoxDecoration(
-            color: itemController.selectedVariations[index].contains(true) ? Theme.of(context).primaryColor.withOpacity( 0.01) : Theme.of(context).disabledColor.withOpacity( 0.05),
-            border: Border.all(color: itemController.selectedVariations[index].contains(true) ? Theme.of(context).primaryColor : Theme.of(context).disabledColor, width: 0.5),
+            // Use a fixed light grey for unselected state instead of
+            // Theme.of(context).disabledColor so the variation card
+            // style stays consistent regardless of theme changes.
+            color: itemController.selectedVariations[index].contains(true)
+                ? Theme.of(context).primaryColor.withOpacity(0.01)
+                : const Color(0xFFF2F2F2),
+            border: Border.all(
+              color: itemController.selectedVariations[index].contains(true)
+                  ? Theme.of(context).primaryColor
+                  : const Color(0xFFDDDDDD),
+              width: 0.5,
+            ),
             borderRadius: BorderRadius.circular(Dimensions.radiusDefault)
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -67,6 +67,10 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     _isLogin = AuthHelper.isLoggedIn();
 
+    // Load persisted "suggested location" status so we know whether
+    // to show the address suggestion popup on this launch.
+    Get.find<SplashController>().getWebSuggestedLocationStatus();
+
     _showRegistrationSuccessBottomSheet();
 
     if(_isLogin){
@@ -113,13 +117,23 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> suggestAddressBottomSheet() async {
     active = await Get.find<LocationController>().checkLocationActive();
-    if(widget.fromSplash && Get.find<LocationController>().showLocationSuggestion && active) {
+    if(widget.fromSplash
+        && Get.find<LocationController>().showLocationSuggestion
+        && active
+        // If the user has already dismissed/handled the suggestion on a
+        // previous launch (persisted in SharedPreferences), do not show it
+        // again on app restart even if location changed or is not selected.
+        && !Get.find<SplashController>().webSuggestedLocation
+    ) {
       Future.delayed(const Duration(seconds: 1), () {
         showModalBottomSheet(
           context: Get.context!, isScrollControlled: true, backgroundColor: Colors.transparent,
           builder: (con) => const AddressBottomSheetWidget(),
         ).then((value) {
           Get.find<LocationController>().showSuggestedLocation(false);
+          // Remember that we've already shown this suggestion so it stays
+          // hidden on subsequent app restarts.
+          Get.find<SplashController>().saveWebSuggestedLocationStatus(true);
           setState(() {});
         });
       });

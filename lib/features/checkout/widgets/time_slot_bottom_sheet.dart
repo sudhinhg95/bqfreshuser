@@ -37,32 +37,44 @@ class _TimeSlotBottomSheetState extends State<TimeSlotBottomSheet> {
   Widget build(BuildContext context) {
     return GetBuilder<CheckoutController>(builder: (checkoutController) {
       return GetBuilder<StoreController>(builder: (storeController) {
-        // Custom slot logic
+        // Custom slot logic with three delivery windows:
+        // 7:00 AM - 10:00 AM, 10:00 AM - 1:00 PM, 1:00 PM - 4:00 PM
         final now = DateTime.now();
         final todaySlots = <String>[];
         final tomorrowSlots = <String>[];
 
-        // Today: only 10AM-12PM, 12PM-3PM (if after 10AM, only 12PM-3PM)
+        const slotMorning = '7:00 AM - 10:00 AM';
+        const slotMidday = '10:00 AM - 1:00 PM';
+        const slotAfternoon = '1:00 PM - 4:00 PM';
+
+        // Today: hide slots that are already in the past
         if (checkoutController.selectedDateSlot == 0) {
-          if (now.hour < 10) {
-            todaySlots.add('10:00 AM - 12:00 PM');
-            todaySlots.add('12:00 PM - 3:00 PM');
-          } else if (now.hour < 12) {
-            todaySlots.add('12:00 PM - 3:00 PM');
+          if (now.hour < 7) {
+            todaySlots.addAll([slotMorning, slotMidday, slotAfternoon]);
+          } else if (now.hour < 10) {
+            todaySlots.addAll([slotMidday, slotAfternoon]);
+          } else if (now.hour < 15) {
+            todaySlots.add(slotAfternoon);
           }
         }
-        // Tomorrow: 7AM-10AM, 10AM-12PM, 12PM-3PM
+
+        // Tomorrow: always offer all three slots
         if (checkoutController.selectedDateSlot == 1) {
-          tomorrowSlots.add('7:00 AM - 10:00 AM');
-          tomorrowSlots.add('10:00 AM - 12:00 PM');
-          tomorrowSlots.add('12:00 PM - 3:00 PM');
+          tomorrowSlots.addAll([slotMorning, slotMidday, slotAfternoon]);
         }
 
         final slots = checkoutController.selectedDateSlot == 0 ? todaySlots : tomorrowSlots;
+        final bool isClosedDay =
+          (checkoutController.selectedDateSlot == 0 && widget.todayClosed) ||
+          (checkoutController.selectedDateSlot == 1 && widget.tomorrowClosed);
+        final bool noSlots = !isClosedDay && slots.isEmpty;
 
         return Container(
           width: ResponsiveHelper.isDesktop(context) ? 550 : context.width,
-          constraints: BoxConstraints(maxHeight: context.height * 0.6, minHeight: 0),
+          constraints: BoxConstraints(
+            maxHeight: noSlots ? context.height * 0.5 : context.height * 0.8,
+            minHeight: 0,
+          ),
           margin: EdgeInsets.only(top: GetPlatform.isWeb ? 0 : 30),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
@@ -113,19 +125,17 @@ class _TimeSlotBottomSheetState extends State<TimeSlotBottomSheet> {
                       ]),
                       const SizedBox(height: Dimensions.paddingSizeSmall),
                       Flexible(
-                        child: ((checkoutController.selectedDateSlot == 0 && widget.todayClosed) || (checkoutController.selectedDateSlot == 1 && widget.tomorrowClosed))
+                        child: isClosedDay
                             ? Center(child: Text(widget.module!.showRestaurantText! ? 'restaurant_is_closed'.tr : 'store_is_closed'.tr))
                             : slots.isNotEmpty
                                 ? GridView.builder(
                                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
+                                      crossAxisCount: ResponsiveHelper.isDesktop(context) ? 3 : 2,
                                       mainAxisSpacing: Dimensions.paddingSizeSmall,
-                                      crossAxisSpacing: Dimensions.paddingSizeExtraSmall,
+                                      crossAxisSpacing: Dimensions.paddingSizeSmall,
                                       childAspectRatio: ResponsiveHelper.isDesktop(context)
-                                          ? 4
-                                          : ResponsiveHelper.isMobile(context)
-                                              ? 2.5
-                                              : 3,
+                                          ? 3
+                                          : 2.2,
                                     ),
                                     shrinkWrap: true,
                                     padding: const EdgeInsets.only(left: 2),
@@ -145,7 +155,19 @@ class _TimeSlotBottomSheetState extends State<TimeSlotBottomSheet> {
                                       );
                                     },
                                   )
-                                : Center(child: Text('no_slot_available'.tr)),
+                                : Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
+                                      child: Text(
+                                        'no_slot_available'.tr,
+                                        style: robotoMedium.copyWith(
+                                          fontSize: Dimensions.fontSizeSmall * 1.25,
+                                          color: Theme.of(context).disabledColor,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
                       ),
                     ]),
                   ),

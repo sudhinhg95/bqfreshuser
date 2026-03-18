@@ -16,7 +16,7 @@ class SlotWidget extends StatelessWidget {
       child: InkWell(
         onTap: onTap as void Function()?,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeExtraSmall, horizontal: Dimensions.paddingSizeExtraSmall),
+          padding: const EdgeInsets.symmetric(vertical: Dimensions.paddingSizeSmall, horizontal: Dimensions.paddingSizeSmall),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).cardColor,
@@ -26,7 +26,7 @@ class SlotWidget extends StatelessWidget {
             title, maxLines: 2, overflow: TextOverflow.ellipsis,
             style: robotoRegular.copyWith(
               color: isSelected ? Theme.of(context).cardColor : Theme.of(context).textTheme.bodyLarge!.color,
-              fontSize: Dimensions.fontSizeExtraSmall,
+              fontSize: Dimensions.fontSizeSmall,
             ),
           ),
         ),

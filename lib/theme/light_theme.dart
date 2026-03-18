@@ -5,7 +5,7 @@ ThemeData light({Color color = const Color(0xFFea3244)}) => ThemeData(
   fontFamily: AppConstants.fontFamily,
   primaryColor: color,
   secondaryHeaderColor: const Color.fromARGB(255, 30, 87, 25),
-  disabledColor: const Color(0xFFBABFC4),
+  disabledColor: const Color.fromARGB(255, 240, 65, 52),
   brightness: Brightness.light,
   hintColor: const Color(0xFF9F9F9F),
   cardColor: Colors.white,

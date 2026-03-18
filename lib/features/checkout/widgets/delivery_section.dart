@@ -72,7 +72,7 @@ class DeliverySection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('deliver_to'.tr, style: robotoMedium),
+			Text('Confirm Delivery Address', style: robotoMedium),
             TextButton.icon(
               onPressed: () async {
                 var address = await Get.toNamed(RouteHelper.getAddAddressRoute(true, false, checkoutController.store!.zoneId));
@@ -245,6 +245,27 @@ class DeliverySection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Dimensions.paddingSizeLarge),
+
+          // Detailed Address heading
+          Text.rich(
+            TextSpan(children: [
+              TextSpan(
+                text: 'detailed_address'.tr,
+                style: robotoMedium.copyWith(
+                  fontSize: Dimensions.fontSizeDefault,
+                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                ),
+              ),
+              TextSpan(
+                text: ' *',
+                style: robotoMedium.copyWith(
+                  fontSize: Dimensions.fontSizeDefault,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ]),
+          ),
+          const SizedBox(height: Dimensions.paddingSizeSmall),
 
           // Row 1: Flat/Villa, Building
           Row(children: [

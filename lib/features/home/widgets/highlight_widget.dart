@@ -477,89 +477,86 @@ class AdvertisementShimmer extends StatelessWidget {
               const SizedBox(height: Dimensions.paddingSizeDefault * 2,),
 
               SizedBox(
-                height: 250,
+                height: 230,
                 child: ListView.builder(
                   itemCount: ResponsiveHelper.isDesktop(context) ? 3 : 1,
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
                     return SizedBox(
                       width: ResponsiveHelper.isDesktop(context) ? (Dimensions.webMaxWidth - 20) / 3 : MediaQuery.of(context).size.width,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Padding(padding: const EdgeInsets.only(bottom: 0, left: 10, right: 10),
-                            child: Container(
-                              height: 250,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
-                                color: Theme.of(context).shadowColor,
-                                border: Border.all(color: Theme.of(context).hintColor.withOpacity( 0.2),),
-                              ),
-                              padding: const EdgeInsets.only(bottom: 25),
-                              child: const Center(child: Icon(Icons.play_circle, color: Colors.white,size: 45,),),
-                            ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 0, left: 10, right: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
+                            color: Theme.of(context).cardColor,
+                            border: Border.all(color: Theme.of(context).hintColor.withOpacity(0.2)),
                           ),
-
-                          Positioned( bottom: 0, left: 0,right: 0, child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
-                                color: Theme.of(context).cardColor,
-                                border: Border.all(color: Theme.of(context).shadowColor)
-                            ),
-                            padding: const EdgeInsets.all(Dimensions.paddingSizeDefault),
-                            margin: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
-                            child: Column(children: [
-                              Row( children: [
-
-                                Expanded(
-                                  child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                    Container(
-                                      height: 17, width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                                        color: Theme.of(context).shadowColor,
-                                      ),
-                                    ),
-
-                                    const SizedBox(height: Dimensions.paddingSizeSmall,),
-                                    Container(
-                                      height: 17, width: 150,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                                        color: Theme.of(context).shadowColor,
-                                      ),
-                                    ),
-
-                                    const SizedBox(height: Dimensions.paddingSizeExtraSmall,),
-
-                                    Container(
-                                      height: 17, width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
-                                        color: Theme.of(context).shadowColor,
-                                      ),
-                                    )
-                                  ]),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Image area placeholder
+                              Container(
+                                height: 130,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(Dimensions.radiusLarge)),
+                                  color: Theme.of(context).shadowColor,
                                 ),
+                              ),
 
-                                const SizedBox(width: Dimensions.paddingSizeLarge,),
+                              const SizedBox(height: Dimensions.paddingSizeSmall),
 
-                                InkWell(
-                                  onTap: () => Get.back(),
-                                  child: Container(
-                                    margin: const EdgeInsets.only(top: Dimensions.paddingSizeExtraSmall),
-                                    padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall + 5, vertical: Dimensions.paddingSizeSmall),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-                                      color: Theme.of(context).shadowColor,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      height: 16,
+                                      width: 180,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                                        color: Theme.of(context).shadowColor,
+                                      ),
                                     ),
-                                    child:  Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white.withOpacity( 0.8),),
-                                  ),
-                                )
-                              ],)
-                            ],),
-                          ))
-                        ],
+                                    const SizedBox(height: Dimensions.paddingSizeSmall),
+                                    Container(
+                                      height: 14,
+                                      width: 220,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                                        color: Theme.of(context).shadowColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: Dimensions.paddingSizeSmall),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          height: 14,
+                                          width: 80,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                                            color: Theme.of(context).shadowColor,
+                                          ),
+                                        ),
+                                        const SizedBox(width: Dimensions.paddingSizeSmall),
+                                        Container(
+                                          height: 14,
+                                          width: 60,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                                            color: Theme.of(context).shadowColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: Dimensions.paddingSizeDefault),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },

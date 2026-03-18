@@ -143,19 +143,21 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
                           textAlign: TextAlign.center,
                           text: TextSpan(
                             style: robotoBold.copyWith(
-                              fontSize: Dimensions.fontSizeSmall,
+                              fontSize: Dimensions.fontSizeSmall * 1.3,
                               color: Theme.of(context).textTheme.bodyLarge!.color,
                             ),
                             children: [
                               const TextSpan(
-                                text:
-                                    'Thank you for your Order!\nWe will process your order soon, you can track your order status till the order is delivered to you.',
+                                text: 'Thank you for your Order!\n\n',
+                              ),
+                              const TextSpan(
+                                text: 'Track your Order in Orders tab.\n\n',
                               ),
                               TextSpan(
                                 text:
-                                    '\nYou can cancel your order before your Order is Confirmed by BQ Team.',
+                                    'You can CANCEL your order before it is confirmed by BQ Fresh Team',
                                 style: robotoBold.copyWith(
-                                  fontSize: Dimensions.fontSizeSmall,
+                                  fontSize: Dimensions.fontSizeSmall * 1.3,
                                   color: Colors.red,
                                 ),
                               ),
@@ -166,10 +168,10 @@ class _OrderSuccessfulScreenState extends State<OrderSuccessfulScreen> {
                           success
                               ? parcel
                                   ? 'your_parcel_request_is_placed_successfully'.tr
-                                  : 'Thank you for your Order!\nWe will process your order soon, you can track your order status till the order is delivered to you. You can cancel your order before your Order is Confirmed by BQ Team.'
+                                  : 'Thank you for your Order!\n\nTrack your Order in Orders tab.\n\nYou can CANCEL your order before it is confirmed by BQ Fresh Team'
                               : 'your_order_is_failed_to_place_because'.tr,
                           style: robotoMedium.copyWith(
-                            fontSize: Dimensions.fontSizeSmall,
+                            fontSize: Dimensions.fontSizeSmall * 1.3,
                             color: Theme.of(context).disabledColor,
                           ),
                           textAlign: TextAlign.center,

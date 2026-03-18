@@ -557,8 +557,11 @@ class CheckoutScreenState extends State<CheckoutScreen> {
             showCustomSnackBar('please enter block'.tr);
           }else if (!isGuestLogIn && checkoutController.areaController.text.trim().isEmpty) {
             showCustomSnackBar('please enter area'.tr);
-          }
-          else {
+          }else if (checkoutController.store!.scheduleOrder!
+              && checkoutController.selectedDateSlot == 0
+              && checkoutController.selectedTimeSlot == 0) {
+            showCustomSnackBar('please_select_delivery_time'.tr);
+          } else {
 
             AddressModel? finalAddress = isGuestLogIn ? checkoutController.guestAddress : address[checkoutController.addressIndex!];
 

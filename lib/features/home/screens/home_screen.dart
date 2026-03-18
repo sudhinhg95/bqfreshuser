@@ -888,7 +888,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'your_location'.tr,
+                                      'Your Location',
                                       style: robotoMedium.copyWith(
                                         color: Theme.of(context).textTheme.bodyLarge!.color,
                                         fontSize: Dimensions.fontSizeDefault,

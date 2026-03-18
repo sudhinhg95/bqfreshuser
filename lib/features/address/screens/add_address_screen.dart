@@ -342,7 +342,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                       child: CustomTextField(
                                         suffixIcon: Icons.my_location,
                                         showTitle: true,
-                                        titleText: 'delivery_address'.tr,
+                                        titleText: 'map_location_code'.tr,
                                         hintText: 'write_delivery_address'.tr,
                                         inputType: TextInputType.streetAddress,
                                         controller: _addressController,
@@ -409,6 +409,30 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                                           inputType: TextInputType.emailAddress,
                                         ) : const SizedBox(),
                                         SizedBox(height: widget.forGuest ? Dimensions.paddingSizeLarge : 0),
+
+                                        // Detailed Address heading
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text.rich(
+                                            TextSpan(children: [
+                                              TextSpan(
+                                                text: 'detailed_address'.tr,
+                                                style: robotoMedium.copyWith(
+                                                  fontSize: Dimensions.fontSizeDefault,
+                                                  color: Theme.of(context).textTheme.bodyMedium!.color,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: ' *',
+                                                style: robotoMedium.copyWith(
+                                                  fontSize: Dimensions.fontSizeDefault,
+                                                  color: Theme.of(context).colorScheme.error,
+                                                ),
+                                              ),
+                                            ]),
+                                          ),
+                                        ),
+                                        const SizedBox(height: Dimensions.paddingSizeSmall),
 
                                         // Row 1: Flat/Villa, Building (required)
                                         Row(children: [
@@ -677,7 +701,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   const SizedBox(height: Dimensions.paddingSizeExtremeLarge),
 
                   CustomTextField(
-                    labelText: widget.fromRide || (Get.find<SplashController>().module != null && Get.find<SplashController>().module!.moduleType.toString() == AppConstants.taxi) ? 'pickup_address'.tr : 'delivery_address'.tr,
+                    labelText: widget.fromRide || (Get.find<SplashController>().module != null && Get.find<SplashController>().module!.moduleType.toString() == AppConstants.taxi) ? 'pickup_address'.tr : 'map_location_code'.tr,
                     titleText: 'write_delivery_address'.tr,
                     inputType: TextInputType.streetAddress,
                     controller: _addressController,
@@ -723,6 +747,27 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     prefixIcon: Icons.mail,
                   ) : const SizedBox(),
                   SizedBox(height: widget.forGuest ? Dimensions.paddingSizeExtremeLarge : 0),
+
+                  // Detailed Address heading
+                  Text.rich(
+                    TextSpan(children: [
+                      TextSpan(
+                        text: 'detailed_address'.tr,
+                        style: robotoMedium.copyWith(
+                          fontSize: Dimensions.fontSizeDefault,
+                          color: Theme.of(context).textTheme.bodyMedium!.color,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' *',
+                        style: robotoMedium.copyWith(
+                          fontSize: Dimensions.fontSizeDefault,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(height: Dimensions.paddingSizeSmall),
 
                   // Row 1: Flat/Villa, Building (required)
                   Row(children: [

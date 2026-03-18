@@ -34,7 +34,18 @@ class TimeSlotSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeLarge, vertical: Dimensions.paddingSizeSmall),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text('Choose Delivery Time', style: robotoMedium),
+            Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                  text: 'Choose Delivery Time',
+                  style: robotoMedium,
+                ),
+                TextSpan(
+                  text: ' *',
+                  style: robotoMedium.copyWith(color: Theme.of(context).colorScheme.error),
+                ),
+              ]),
+            ),
             const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
             JustTheTooltip(

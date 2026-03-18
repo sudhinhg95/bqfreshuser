@@ -18,7 +18,7 @@ class NoteAndPrescriptionSection extends StatelessWidget {
 
       CustomTextField(
         controller: checkoutController.noteController,
-        titleText: 'Ex: Please deliver before 6 PM',
+        titleText: 'Ex: Please call me only after reaching my location',
         showLabelText: false,
         maxLines: 3,
         inputType: TextInputType.multiline,

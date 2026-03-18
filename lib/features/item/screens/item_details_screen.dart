@@ -193,14 +193,23 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                                       alignment: Alignment.center,
                                       padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeExtraSmall),
                                       decoration: BoxDecoration(
-                                        color: itemController.variationIndex![index] != i ? Theme.of(context).disabledColor : Theme.of(context).primaryColor,
+                                        // Selected chip uses the app's primary color.
+                                        // Unselected chip is white with a primary-colored border.
+                                        color: itemController.variationIndex![index] == i
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.white,
                                         borderRadius: BorderRadius.circular(5),
-                                        border: itemController.variationIndex![index] != i ? Border.all(color: Theme.of(context).disabledColor, width: 2) : null,
+                                        border: Border.all(
+                                          color: Theme.of(context).primaryColor,
+                                          width: itemController.variationIndex![index] == i ? 0 : 1,
+                                        ),
                                       ),
                                       child: Text(
                                         itemController.item!.choiceOptions![index].options![i].trim(), maxLines: 1, overflow: TextOverflow.ellipsis,
                                         style:robotoRegular.copyWith(
-                                          color: itemController.variationIndex![index] != i ? Colors.black : Colors.white,
+                                          color: itemController.variationIndex![index] == i
+                                              ? Colors.white
+                                              : Theme.of(context).primaryColor,
                                         ),
                                       ),
                                     ),

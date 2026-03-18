@@ -22,9 +22,13 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDisabled = onPressed == null || isLoading;
     final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-      backgroundColor: onPressed == null ? Theme.of(context).disabledColor : transparent
-          ? Colors.transparent : color ?? Theme.of(context).primaryColor,
+      backgroundColor: isDisabled
+          ? Colors.grey[300]
+          : transparent
+              ? Colors.transparent
+              : color ?? Theme.of(context).primaryColor,
       minimumSize: Size(width != null ? width! : Dimensions.webMaxWidth, height != null ? height! : 50),
       padding: EdgeInsets.zero,
       shape: RoundedRectangleBorder(

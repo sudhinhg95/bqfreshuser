@@ -25,6 +25,12 @@ class LocationRepository implements LocationRepositoryInterface {
 
   @override
   Future<ZoneResponseModel> getZone(String? lat, String? lng, {bool handleError = false}) async {
+    // If location is not available (permission denied or not yet set),
+    // avoid calling the backend with "null" or empty coordinates,
+    // which can cause internal server errors.
+    if (lat == null || lng == null || lat.toString().isEmpty || lng.toString().isEmpty || lat == 'null' || lng == 'null') {
+      return ZoneResponseModel(false, 'invalid_location', [], [], [], 400);
+    }
     Response response = await apiClient.getData('${AppConstants.zoneUri}?lat=$lat&lng=$lng', handleError: handleError);
     if(response.statusCode == 200) {
       ZoneResponseModel responseModel;

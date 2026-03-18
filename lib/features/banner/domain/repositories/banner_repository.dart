@@ -64,7 +64,13 @@ Future<BannerModel?> _getPopUpBannerList() async {
 
   try {
     print('🔔 Popup API: Calling ${AppConstants.popupBannerUri}');
-    Response response = await apiClient.getData(AppConstants.popupBannerUri).timeout(
+    // Popup banners are non-critical; fetch them without triggering global
+    // error handling so a 500 here does not show an "internal server error"
+    // toast to the user.
+    Response response = await apiClient.getData(
+      AppConstants.popupBannerUri,
+      handleError: false,
+    ).timeout(
       const Duration(seconds: 10),
       onTimeout: () {
         print('🔔 Popup API: Request timed out after 10 seconds');
@@ -74,6 +80,12 @@ Future<BannerModel?> _getPopUpBannerList() async {
     print('🔔 Popup API: Response Status: ${response.statusCode}');
     print('🔔 Popup API: Response Body: ${response.body}');
 
+    // If server returns non-200 (including 500 internal server error),
+    // just log and skip showing any popup instead of surfacing an error.
+    if (response.statusCode != 200 || response.body == null) {
+      print('🔔 Popup API: Non-success status (${response.statusCode}); skipping popup banner parsing');
+      return null;
+    }
     if (response.statusCode == 200 && response.body != null) {
       print('🔔 Popup API: Response body type: ${response.body.runtimeType}');
       // Check if response.body is already a BannerModel structure
