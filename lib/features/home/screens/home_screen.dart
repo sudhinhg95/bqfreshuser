@@ -930,6 +930,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           }),
                           onTap: () => Get.toNamed(RouteHelper.getNotificationRoute()),
                         ),
+                        const SizedBox(width: Dimensions.paddingSizeSmall),
+                        Builder(
+                          builder: (ctx) => InkWell(
+                            onTap: () => Scaffold.of(ctx).openEndDrawer(),
+                            child: Icon(
+                              Icons.menu,
+                              size: 24,
+                              color: Theme.of(context).textTheme.bodyLarge!.color,
+                            ),
+                          ),
+                        ),
                       ]),
                     )),
                     actions: const [SizedBox()],

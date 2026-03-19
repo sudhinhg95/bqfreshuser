@@ -558,8 +558,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
           }else if (!isGuestLogIn && checkoutController.areaController.text.trim().isEmpty) {
             showCustomSnackBar('please enter area'.tr);
           }else if (checkoutController.store!.scheduleOrder!
-              && checkoutController.selectedDateSlot == 0
-              && checkoutController.selectedTimeSlot == 0) {
+              && checkoutController.preferableTime.isEmpty) {
             showCustomSnackBar('please_select_delivery_time'.tr);
           } else {
 

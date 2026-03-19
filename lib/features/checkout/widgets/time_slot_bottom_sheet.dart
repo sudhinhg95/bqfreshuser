@@ -69,6 +69,22 @@ class _TimeSlotBottomSheetState extends State<TimeSlotBottomSheet> {
           (checkoutController.selectedDateSlot == 1 && widget.tomorrowClosed);
         final bool noSlots = !isClosedDay && slots.isEmpty;
 
+        // If there is exactly one or more available slots and nothing has been
+        // selected in this bottom sheet instance yet, default the selection so
+        // pressing "Schedule" immediately applies a valid time.
+        if (!isClosedDay && slots.isNotEmpty && selectedTimeSlot.isEmpty) {
+          if (checkoutController.preferableTime.isNotEmpty) {
+            final existingIndex = slots.indexOf(checkoutController.preferableTime);
+            if (existingIndex != -1) {
+              selectedTimeSlotIndex = existingIndex;
+              selectedTimeSlot = slots[existingIndex];
+            }
+          } else {
+            selectedTimeSlotIndex = 0;
+            selectedTimeSlot = slots[0];
+          }
+        }
+
         return Container(
           width: ResponsiveHelper.isDesktop(context) ? 550 : context.width,
           constraints: BoxConstraints(
